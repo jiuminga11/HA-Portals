@@ -1,0 +1,102 @@
+@import './styles/themes.css';
+@import './styles/theme.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Base Resets ───────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-bg);
+  font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', 'Noto Sans SC', 'WenQuanYi Micro Hei', sans-serif;
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Prose Overrides ──────────────────────────────────────────── */
+.prose a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.prose a:hover {
+  color: var(--color-gradient);
+}
+.prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+}
+
+/* ─── Scrollbar ─────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* ─── Quill Editor Styles ──────────────────────────────────────── */
+.ql-editor {
+  min-height: 200px;
+  font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', 'Noto Sans SC', sans-serif;
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.ql-toolbar {
+  border-color: #E2E8F0 !important;
+  border-radius: 0.375rem 0.375rem 0 0 !important;
+  background: #F8FAFC;
+}
+
+.ql-toolbar .ql-stroke { stroke: #64748B; }
+.ql-toolbar .ql-fill { fill: #64748B; }
+.ql-toolbar .ql-picker { color: #64748B; }
+.ql-toolbar button:hover .ql-stroke,
+.ql-toolbar button.ql-active .ql-stroke { stroke: #1E3A8A; }
+.ql-toolbar button:hover .ql-fill,
+.ql-toolbar button.ql-active .ql-fill { fill: #1E3A8A; }
+
+.ql-container {
+  border-color: #E2E8F0 !important;
+  border-radius: 0 0 0.375rem 0.375rem !important;
+  background: #FFFFFF;
+  color: #1E293B;
+}
+
+.ql-editor.ql-blank::before {
+  color: #94A3B8;
+}
+
+/* ─── Selection Color ──────────────────────────────────────────── */
+::selection {
+  background: rgba(30, 58, 138, 0.2);
+  color: #0F172A;
+}

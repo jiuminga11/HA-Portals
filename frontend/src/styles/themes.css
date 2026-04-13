@@ -1,0 +1,253 @@
+/* ===================================================================
+ * Theme Color Presets — 3 palettes × 2 modes (light/dark)
+ *
+ * Active preset driven by `data-theme` attribute on <html>.
+ * Dark mode driven by `.dark` class on <html> (from useTheme hook).
+ * CSS selector: [data-theme="teal-amber"].dark { ... }
+ * =================================================================== */
+
+/* ===== Theme A: Teal + Amber (心理学 × 医学) — Light ===== */
+[data-theme="teal-amber"] {
+  --color-primary: #0D9488;
+  --color-primary-hover: #0F766E;
+  --color-accent: #D97706;
+  --color-accent-hover: #B45309;
+  --color-highlight: #059669;
+  --color-bg: #FAFAF9;
+  --color-bg-secondary: #F5F5F4;
+  --color-bg-card: #FFFFFF;
+  --color-text: #1E293B;
+  --color-text-secondary: #64748B;
+  --color-text-muted: #94A3B8;
+  --color-border: #E2E8F0;
+  --color-gradient-from: #0D9488;
+  --color-gradient-to: #D97706;
+
+  /* Component tokens */
+  --glow-primary: rgba(13, 148, 136, 0.25);
+  --glow-cyan: rgba(217, 119, 6, 0.2);
+  --glow-purple: rgba(5, 150, 105, 0.2);
+  --border-glow: rgba(13, 148, 136, 0.25);
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  --nav-bg: rgba(255,255,255,0.92);
+  --footer-bg: #0F172A;
+  --footer-text: #94A3B8;
+  --table-header-text: #FFFFFF;
+  --table-row-alt: #FAFAF9;
+  --badge-bg: rgba(13,148,136,0.08);
+  --hover-bg: rgba(13,148,136,0.05);
+}
+
+/* ===== Theme A: Teal + Amber — Dark ===== */
+[data-theme="teal-amber"].dark {
+  --color-primary: #2DD4BF;
+  --color-primary-hover: #14B8A6;
+  --color-accent: #FBBF24;
+  --color-accent-hover: #F59E0B;
+  --color-highlight: #34D399;
+  --color-bg: #0F172A;
+  --color-bg-secondary: #1E293B;
+  --color-bg-card: #1E293B;
+  --color-text: #F1F5F9;
+  --color-text-secondary: #CBD5E1;
+  --color-text-muted: #64748B;
+  --color-border: #334155;
+  --color-gradient-from: #2DD4BF;
+  --color-gradient-to: #FBBF24;
+
+  /* Component tokens — dark */
+  --glow-primary: rgba(45, 212, 191, 0.25);
+  --glow-cyan: rgba(251, 191, 36, 0.2);
+  --glow-purple: rgba(52, 211, 153, 0.2);
+  --border-glow: rgba(45, 212, 191, 0.25);
+  --card-shadow: 0 4px 30px rgba(0,0,0,0.35);
+  --nav-bg: rgba(15,23,42,0.82);
+  --footer-bg: #0F172A;
+  --footer-text: #94A3B8;
+  --table-header-text: #FFFFFF;
+  --table-row-alt: rgba(255,255,255,0.03);
+  --badge-bg: rgba(45,212,191,0.08);
+  --hover-bg: rgba(45,212,191,0.05);
+}
+
+/* ===== Theme B: Deep Indigo + Sage (认知科学) — Light ===== */
+[data-theme="deep-indigo"] {
+  --color-primary: #312E81;
+  --color-primary-hover: #3730A3;
+  --color-accent: #059669;
+  --color-accent-hover: #047857;
+  --color-highlight: #E11D48;
+  --color-bg: #F5F5F4;
+  --color-bg-secondary: #FAFAF9;
+  --color-bg-card: #FFFFFF;
+  --color-text: #1C1917;
+  --color-text-secondary: #57534E;
+  --color-text-muted: #A8A29E;
+  --color-border: #D6D3D1;
+  --color-gradient-from: #312E81;
+  --color-gradient-to: #059669;
+
+  /* Component tokens */
+  --glow-primary: rgba(49, 46, 129, 0.25);
+  --glow-cyan: rgba(5, 150, 105, 0.2);
+  --glow-purple: rgba(225, 29, 72, 0.2);
+  --border-glow: rgba(49, 46, 129, 0.25);
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  --nav-bg: rgba(255,255,255,0.92);
+  --footer-bg: #0F172A;
+  --footer-text: #94A3B8;
+  --table-header-text: #FFFFFF;
+  --table-row-alt: #F5F5F4;
+  --badge-bg: rgba(49,46,129,0.08);
+  --hover-bg: rgba(49,46,129,0.05);
+}
+
+/* ===== Theme B: Deep Indigo + Sage — Dark ===== */
+[data-theme="deep-indigo"].dark {
+  --color-primary: #818CF8;
+  --color-primary-hover: #6366F1;
+  --color-accent: #34D399;
+  --color-accent-hover: #10B981;
+  --color-highlight: #FB7185;
+  --color-bg: #1E1B4B;
+  --color-bg-secondary: #312E81;
+  --color-bg-card: #312E81;
+  --color-text: #E0E7FF;
+  --color-text-secondary: #A5B4FC;
+  --color-text-muted: #6366F1;
+  --color-border: #4338CA;
+  --color-gradient-from: #818CF8;
+  --color-gradient-to: #34D399;
+
+  /* Component tokens — dark */
+  --glow-primary: rgba(129, 140, 248, 0.25);
+  --glow-cyan: rgba(52, 211, 153, 0.2);
+  --glow-purple: rgba(251, 113, 133, 0.2);
+  --border-glow: rgba(129, 140, 248, 0.25);
+  --card-shadow: 0 4px 30px rgba(0,0,0,0.35);
+  --nav-bg: rgba(30,27,75,0.82);
+  --footer-bg: #0F172A;
+  --footer-text: #94A3B8;
+  --table-header-text: #FFFFFF;
+  --table-row-alt: rgba(255,255,255,0.03);
+  --badge-bg: rgba(129,140,248,0.08);
+  --hover-bg: rgba(129,140,248,0.05);
+}
+
+/* ===== Theme C: Forest + Terracotta (跨界创新) — Light ===== */
+[data-theme="forest-terracotta"] {
+  --color-primary: #065F46;
+  --color-primary-hover: #064E3B;
+  --color-accent: #C2410C;
+  --color-accent-hover: #9A3412;
+  --color-highlight: #2563EB;
+  --color-bg: #FFFBEB;
+  --color-bg-secondary: #FEF3C7;
+  --color-bg-card: #FFFFFF;
+  --color-text: #1C1917;
+  --color-text-secondary: #57534E;
+  --color-text-muted: #A8A29E;
+  --color-border: #D6D3D1;
+  --color-gradient-from: #065F46;
+  --color-gradient-to: #C2410C;
+
+  /* Component tokens */
+  --glow-primary: rgba(6, 95, 70, 0.25);
+  --glow-cyan: rgba(194, 65, 12, 0.2);
+  --glow-purple: rgba(37, 99, 235, 0.2);
+  --border-glow: rgba(6, 95, 70, 0.25);
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  --nav-bg: rgba(255,251,235,0.92);
+  --footer-bg: #0F172A;
+  --footer-text: #94A3B8;
+  --table-header-text: #FFFFFF;
+  --table-row-alt: #FFFBEB;
+  --badge-bg: rgba(6,95,70,0.08);
+  --hover-bg: rgba(6,95,70,0.05);
+}
+
+/* ===== Theme C: Forest + Terracotta — Dark ===== */
+[data-theme="forest-terracotta"].dark {
+  --color-primary: #6EE7B7;
+  --color-primary-hover: #34D399;
+  --color-accent: #FB923C;
+  --color-accent-hover: #F97316;
+  --color-highlight: #60A5FA;
+  --color-bg: #1C1917;
+  --color-bg-secondary: #292524;
+  --color-bg-card: #292524;
+  --color-text: #FEF3C7;
+  --color-text-secondary: #D6D3D1;
+  --color-text-muted: #78716C;
+  --color-border: #44403C;
+  --color-gradient-from: #6EE7B7;
+  --color-gradient-to: #FB923C;
+
+  /* Component tokens — dark */
+  --glow-primary: rgba(110, 231, 183, 0.25);
+  --glow-cyan: rgba(251, 146, 60, 0.2);
+  --glow-purple: rgba(96, 165, 250, 0.2);
+  --border-glow: rgba(110, 231, 183, 0.25);
+  --card-shadow: 0 4px 30px rgba(0,0,0,0.35);
+  --nav-bg: rgba(28,25,23,0.82);
+  --footer-bg: #0F172A;
+  --footer-text: #94A3B8;
+  --table-header-text: #FFFFFF;
+  --table-row-alt: rgba(255,255,255,0.03);
+  --badge-bg: rgba(110,231,183,0.08);
+  --hover-bg: rgba(110,231,183,0.05);
+}
+
+/* ===== Default fallback (teal-amber light) =====
+ * Applied when no data-theme is set. Also defines backward-compatible
+ * aliases so existing components using old variable names still work.
+ */
+:root {
+  /* Primary theme variables */
+  --color-primary: #0D9488;
+  --color-primary-hover: #0F766E;
+  --color-accent: #D97706;
+  --color-accent-hover: #B45309;
+  --color-highlight: #059669;
+  --color-bg: #FAFAF9;
+  --color-bg-secondary: #F5F5F4;
+  --color-bg-card: #FFFFFF;
+  --color-text: #1E293B;
+  --color-text-secondary: #64748B;
+  --color-text-muted: #94A3B8;
+  --color-border: #E2E8F0;
+  --color-gradient-from: #0D9488;
+  --color-gradient-to: #D97706;
+
+  /* Backward-compatible aliases (used by existing display components) */
+  --bg-base: var(--color-bg);
+  --bg-surface: var(--color-bg-card);
+  --bg-elevated: var(--color-bg-secondary);
+  --bg-card: var(--color-bg-card);
+  --text-base: var(--color-text);
+  --text-muted: var(--color-text-secondary);
+  --text-faint: var(--color-text-muted);
+  --border-glass: var(--color-border);
+  --bg-hero-start: var(--color-gradient-from);
+  --bg-hero-end: var(--color-gradient-to);
+  --color-gradient: var(--color-gradient-to);
+  --card-bg: var(--color-bg-card);
+  --card-border: var(--color-border);
+  --input-bg: var(--color-bg-card);
+  --input-border: var(--color-border);
+  --nav-border: var(--color-border);
+
+  /* Component tokens (default) */
+  --glow-primary: rgba(13, 148, 136, 0.25);
+  --glow-cyan: rgba(217, 119, 6, 0.2);
+  --glow-purple: rgba(5, 150, 105, 0.2);
+  --border-glow: rgba(13, 148, 136, 0.25);
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  --nav-bg: rgba(255,255,255,0.92);
+  --footer-bg: #0F172A;
+  --footer-text: #94A3B8;
+  --table-header-text: #FFFFFF;
+  --table-row-alt: var(--color-bg);
+  --badge-bg: rgba(13,148,136,0.08);
+  --hover-bg: rgba(13,148,136,0.05);
+}

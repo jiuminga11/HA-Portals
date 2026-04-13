@@ -1,0 +1,216 @@
+/* styles/theme.css — Utility classes & animations */
+/* Theme color variables are defined in themes.css */
+/* ─── Keyframe Animations ────────────────────────────────────────── */
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50%       { background-position: 100% 50%; }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 15px var(--glow-primary); }
+  50%       { box-shadow: 0 0 30px var(--glow-primary), 0 0 60px rgba(30, 58, 138, 0.08); }
+}
+
+@keyframes float-orb {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.5; }
+  33%       { transform: translate(40px, -30px) scale(1.08); opacity: 0.7; }
+  66%       { transform: translate(-25px, 15px) scale(0.92); opacity: 0.4; }
+}
+
+@keyframes text-shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* ─── Scroll Reveal ─────────────────────────────────────────────── */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.75s ease, transform 0.75s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ─── Core Theme Utilities ──────────────────────────────────────── */
+
+.bg-primary        { background-color: var(--color-primary); }
+.bg-gradient-theme {
+  background: linear-gradient(135deg, var(--bg-hero-start) 0%, var(--bg-hero-end) 100%);
+  background-size: 200% 200%;
+  animation: gradient-shift 12s ease infinite;
+}
+.bg-accent         { background-color: var(--color-accent); }
+.text-primary      { color: var(--color-primary); }
+.text-accent       { color: var(--color-accent); }
+.border-primary    { border-color: var(--color-primary); }
+.ring-primary      { --tw-ring-color: var(--color-primary); }
+
+/* Hover overrides */
+.hover\:text-primary:hover   { color: var(--color-primary); }
+.hover\:border-primary:hover { border-color: var(--color-primary); }
+.hover\:bg-primary:hover     { background-color: var(--color-primary); }
+
+/* Focus ring */
+.focus\:ring-primary:focus { ring-color: var(--color-primary); }
+
+/* ─── Glassmorphism ─────────────────────────────────────────────── */
+
+.glass {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-glass);
+}
+
+.glass-dark {
+  background: rgba(30, 58, 138, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.glass-nav {
+  background: var(--nav-bg);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid var(--nav-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+/* ─── Glow Effects ──────────────────────────────────────────────── */
+
+.glow-primary {
+  box-shadow: 0 0 20px var(--glow-primary);
+}
+.glow-primary:hover {
+  box-shadow: 0 0 30px var(--glow-primary), 0 0 60px rgba(30, 58, 138, 0.08);
+}
+.glow-cyan {
+  box-shadow: 0 0 20px var(--glow-cyan);
+}
+.glow-animate {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+/* ─── Gradient Utilities ────────────────────────────────────────── */
+
+.gradient-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--color-primary) 30%, var(--color-gradient) 70%, transparent 100%);
+  opacity: 0.5;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-gradient) 50%, var(--color-accent) 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: text-shimmer 5s linear infinite;
+}
+
+/* ─── Button Styles ─────────────────────────────────────────────── */
+
+.btn-gradient {
+  background: linear-gradient(135deg, var(--color-primary) 0%, #2563EB 50%, var(--color-gradient) 100%);
+  background-size: 200% auto;
+  color: white;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px var(--glow-primary);
+}
+.btn-gradient:hover {
+  background-position: right center;
+  box-shadow: 0 6px 25px var(--glow-primary);
+  transform: translateY(-1px);
+}
+
+/* ─── Card Hover ───────────────────────────────────────────────── */
+
+.card-glow {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--card-shadow);
+  transition: all 0.3s ease;
+}
+.card-glow:hover {
+  border-color: rgba(30, 58, 138, 0.3);
+  box-shadow: 0 4px 20px rgba(30, 58, 138, 0.1), 0 8px 30px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+/* ─── Section Accent ────────────────────────────────────────────── */
+
+.section-accent-line {
+  width: 3rem;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-gradient));
+  margin: 0.75rem auto 0;
+  border-radius: 2px;
+}
+
+/* ─── Animated Background Orbs ─────────────────────────────────── */
+
+.bg-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(72px);
+  pointer-events: none;
+}
+.bg-orb-1 { animation: float-orb 10s ease-in-out infinite; }
+.bg-orb-2 { animation: float-orb 14s ease-in-out infinite reverse; }
+.bg-orb-3 { animation: float-orb 18s ease-in-out infinite 4s; }
+
+/* ─── Grid/Dot Pattern Overlay ──────────────────────────────────── */
+
+.tech-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* ─── Prose Light Overrides ──────────────────────────────────────── */
+
+.prose-dark {
+  color: var(--text-base);
+}
+.prose-dark h1,
+.prose-dark h2,
+.prose-dark h3,
+.prose-dark h4 {
+  color: #0F172A;
+}
+.prose-dark a {
+  color: var(--color-primary);
+}
+.prose-dark strong {
+  color: #0F172A;
+}
+.prose-dark blockquote {
+  border-left-color: var(--color-primary);
+  color: var(--text-muted);
+}
+.prose-dark code {
+  background: rgba(30, 58, 138, 0.08);
+  color: var(--color-primary);
+  border-radius: 4px;
+  padding: 0.1em 0.4em;
+}
+.prose-dark pre {
+  background: #F1F5F9;
+  border: 1px solid var(--border-glass);
+}
+.prose-dark hr {
+  border-color: var(--border-glass);
+}
+.prose-dark table thead tr {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-gradient));
+}
+.prose-dark table td,
+.prose-dark table th {
+  border-color: var(--border-glass);
+}
