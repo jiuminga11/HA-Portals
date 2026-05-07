@@ -89,170 +89,170 @@ export default function ProfileHero({ content }: Props) {
   const mission = localized(mission_zh, mission_en);
 
   return (
-    <div className="flex flex-col items-center text-center py-20 sm:py-28 px-6">
-      {/* Avatar */}
-      <div className="mb-8">
-        {avatar_url ? (
-          <img
-            src={resolveMediaUrl(avatar_url)}
-            alt={name}
-            className="w-32 h-32 rounded-full object-cover"
+    <div className="relative overflow-hidden px-6 py-20 sm:py-24 lg:py-32">
+      {/* Background ambient lights — theme-driven */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        aria-hidden="true"
+        style={{
+          background:
+            "radial-gradient(circle at 18% 25%, rgba(var(--color-primary-rgb), 0.14), transparent 35%), " +
+            "radial-gradient(circle at 82% 30%, rgba(var(--color-accent-rgb), 0.12), transparent 32%)",
+        }}
+      />
+
+      <div className="relative max-w-6xl mx-auto grid lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-16 items-center">
+        {/* Left column: narrative */}
+        <div className="text-left order-2 lg:order-1">
+          {/* Decorative gradient line — academic minimal */}
+          <div
+            className="mb-5 h-px w-12"
             style={{
-              border: '3px solid var(--color-primary)',
-              boxShadow: '0 0 24px var(--glow-primary)',
+              background: "linear-gradient(90deg, var(--color-primary), var(--color-accent))",
             }}
           />
-        ) : (
-          <div
-            className="w-32 h-32 rounded-full flex items-center justify-center text-3xl font-bold"
-            style={{
-              background: 'var(--bg-elevated)',
-              border: '3px solid var(--color-primary)',
-              color: 'var(--color-primary)',
-              boxShadow: '0 0 24px var(--glow-primary)',
-            }}
+
+          {/* Name — serif display */}
+          <h1
+            className="font-display font-semibold tracking-tight leading-[0.95] text-5xl sm:text-6xl lg:text-7xl mb-6"
+            style={{ color: "var(--text-base)" }}
           >
-            {getInitials(name_zh, name_en)}
-          </div>
-        )}
-      </div>
+            {name}
+          </h1>
 
-      {/* Name */}
-      <h1
-        className="text-4xl sm:text-5xl font-bold font-display mb-4"
-        style={{ color: 'var(--text-base)' }}
-      >
-        {name}
-      </h1>
+          {tagline && (
+            <p
+              className="text-xl sm:text-2xl mb-6 leading-relaxed max-w-xl"
+              style={{ color: "var(--text-base)", opacity: 0.85 }}
+            >
+              {tagline}
+            </p>
+          )}
 
-      {/* Tagline */}
-      {tagline && (
-        <p
-          className="text-xl sm:text-2xl mb-6 max-w-2xl"
-          style={{ color: 'var(--text-muted)' }}
-        >
-          {tagline}
-        </p>
-      )}
-
-      {/* Mission quote */}
-      {mission && (
-        <blockquote
-          className="text-base sm:text-lg italic max-w-xl mb-8 leading-relaxed"
-          style={{
-            color: 'var(--text-muted)',
-            borderLeft: '3px solid var(--color-primary)',
-            paddingLeft: '1rem',
-            textAlign: 'left',
-          }}
-        >
-          {mission}
-        </blockquote>
-      )}
-
-      {/* Tags */}
-      {tags.length > 0 && (
-        <div className="flex flex-wrap justify-center gap-2 mb-8">
-          {tags.map((tag, idx) => (
-            <span
-              key={idx}
-              className="text-sm font-medium px-3 py-1 rounded-full"
+          {mission && (
+            <blockquote
+              className="text-base sm:text-lg italic max-w-xl mb-8 leading-relaxed font-display"
               style={{
-                background: 'var(--badge-bg)',
-                color: 'var(--color-primary)',
-                border: '1px solid var(--border-glow)',
+                color: "var(--text-muted)",
+                borderLeft: "3px solid var(--color-primary)",
+                paddingLeft: "1rem",
               }}
             >
-              {tag}
-            </span>
-          ))}
-        </div>
-      )}
+              {mission}
+            </blockquote>
+          )}
 
-      {/* Social links */}
-      {social_links.length > 0 && (
-        <div className="flex flex-wrap justify-center gap-3 mb-8">
-          {social_links.map((link, idx) => (
-            <a
-              key={idx}
-              href={link.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              title={link.label}
-              className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300"
-              style={{
-                background: 'var(--bg-elevated)',
-                border: '1px solid var(--card-border)',
-                color: 'var(--text-muted)',
-              }}
-              onMouseEnter={(e) => {
-                const el = e.currentTarget;
-                el.style.background = 'var(--badge-bg)';
-                el.style.borderColor = 'var(--border-glow)';
-                el.style.color = 'var(--color-primary)';
-                el.style.boxShadow = '0 0 12px var(--glow-primary)';
-                el.style.transform = 'translateY(-2px)';
-              }}
-              onMouseLeave={(e) => {
-                const el = e.currentTarget;
-                el.style.background = 'var(--bg-elevated)';
-                el.style.borderColor = 'var(--card-border)';
-                el.style.color = 'var(--text-muted)';
-                el.style.boxShadow = '';
-                el.style.transform = '';
-              }}
-            >
-              <SocialIcon platform={link.platform} />
-            </a>
-          ))}
-        </div>
-      )}
+          {tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-8">
+              {tags.map((tag, idx) => (
+                <span
+                  key={idx}
+                  className="text-xs font-semibold uppercase tracking-wide px-3 py-1.5 rounded-full"
+                  style={{
+                    background: "rgba(var(--color-primary-rgb), 0.10)",
+                    color: "var(--color-primary)",
+                    border: "1px solid rgba(var(--color-primary-rgb), 0.25)",
+                  }}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
 
-      {/* CTA buttons */}
-      {cta_buttons.length > 0 && (
-        <div className="flex flex-wrap justify-center gap-4">
-          {cta_buttons.map((btn, idx) => {
-            const label = localized(btn.label_zh, btn.label_en);
-            const isPrimary = idx === 0;
-            const isInternal = btn.url.startsWith("/") && !btn.url.startsWith("//");
+          {cta_buttons.length > 0 && (
+            <div className="flex flex-wrap gap-3">
+              {cta_buttons.map((btn, idx) => {
+                const label = localized(btn.label_zh, btn.label_en);
+                const isPrimary = idx === 0;
+                const isInternal = btn.url.startsWith("/") && !btn.url.startsWith("//");
 
-            const className = isPrimary
-              ? "btn-gradient px-8 py-3 rounded-xl text-base font-semibold transition-all duration-300"
-              : "px-8 py-3 rounded-xl text-base font-semibold transition-all duration-300";
+                const className = isPrimary
+                  ? "btn-gradient px-8 py-3 rounded-xl text-base font-semibold transition-all duration-300 motion-reduce:transition-none hover:-translate-y-0.5 motion-reduce:transform-none"
+                  : "px-8 py-3 rounded-xl text-base font-semibold transition-all duration-300 motion-reduce:transition-none hover:-translate-y-0.5 motion-reduce:transform-none";
 
             const secondaryStyle = !isPrimary ? {
-              background: 'var(--bg-elevated)',
-              border: '1px solid var(--card-border)',
-              color: 'var(--text-base)',
+                      background: "var(--bg-elevated)",
+                      border: "1px solid var(--card-border)",
+                      color: "var(--text-base)",
             } : undefined;
 
-            const hoverHandlers = !isPrimary ? {
-              onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
-                const el = e.currentTarget;
-                el.style.borderColor = 'var(--border-glow)';
-                el.style.boxShadow = '0 4px 15px var(--glow-primary)';
-                el.style.transform = 'translateY(-1px)';
-              },
-              onMouseLeave: (e: React.MouseEvent<HTMLElement>) => {
-                const el = e.currentTarget;
-                el.style.borderColor = 'var(--card-border)';
-                el.style.boxShadow = '';
-                el.style.transform = '';
-              },
-            } : {};
-
-            return isInternal ? (
-              <Link key={idx} to={btn.url} className={className} style={secondaryStyle} {...hoverHandlers}>
-                {label}
-              </Link>
-            ) : (
-              <a key={idx} href={btn.url} target="_blank" rel="noopener noreferrer" className={className} style={secondaryStyle} {...hoverHandlers}>
-                {label}
-              </a>
-            );
-          })}
+                return isInternal ? (
+                  <Link key={idx} to={btn.url} className={className} style={secondaryStyle}>
+                    {label}
+                  </Link>
+                ) : (
+                  <a key={idx} href={btn.url} target="_blank" rel="noopener noreferrer" className={className} style={secondaryStyle}>
+                    {label}
+                  </a>
+                );
+              })}
+            </div>
+          )}
         </div>
-      )}
+
+        {/* Right column: identity card */}
+        <div className="flex flex-col items-center lg:items-end order-1 lg:order-2">
+          <div className="relative">
+            {/* Soft glow backdrop */}
+            <div
+              className="absolute -inset-1 rounded-full opacity-60 motion-reduce:hidden"
+              aria-hidden="true"
+              style={{
+                background: "linear-gradient(135deg, var(--color-primary), var(--color-accent))",
+                filter: "blur(12px)",
+              }}
+            />
+            {avatar_url ? (
+              <img
+                src={resolveMediaUrl(avatar_url)}
+                alt={name}
+                className="relative w-44 h-44 sm:w-48 sm:h-48 rounded-full object-cover"
+                style={{
+                  border: "4px solid var(--bg-base)",
+                  boxShadow: "0 12px 40px rgba(var(--color-primary-rgb), 0.25)",
+                }}
+              />
+            ) : (
+              <div
+                className="relative w-44 h-44 sm:w-48 sm:h-48 rounded-full flex items-center justify-center text-5xl font-display font-bold"
+                style={{
+                  background: "var(--bg-elevated)",
+                  border: "4px solid var(--bg-base)",
+                  color: "var(--color-primary)",
+                  boxShadow: "0 12px 40px rgba(var(--color-primary-rgb), 0.25)",
+                }}
+              >
+                {getInitials(name_zh, name_en)}
+              </div>
+            )}
+          </div>
+
+          {/* Social links — pure CSS hover (C-6 fix) */}
+          {social_links.length > 0 && (
+            <div className="flex flex-wrap justify-center gap-2 mt-6">
+              {social_links.map((link, idx) => (
+                <a
+                  key={idx}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={link.label}
+                  aria-label={link.label || link.platform}
+                  className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 motion-reduce:transition-none hover:-translate-y-0.5 motion-reduce:transform-none social-link"
+                  style={{
+                    background: "var(--bg-elevated)",
+                    border: "1px solid var(--card-border)",
+                    color: "var(--text-muted)",
+                  }}
+                >
+                  <SocialIcon platform={link.platform} />
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
