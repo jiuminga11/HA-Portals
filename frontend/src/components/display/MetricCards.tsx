@@ -17,52 +17,40 @@ export default function MetricCards({ content }: Props) {
     );
   }
 
-  // Responsive grid: 1 col mobile, 2 col sm, up to 4 col lg
-  const gridCols =
-    cards.length <= 2
-      ? "grid-cols-1 sm:grid-cols-2"
-      : cards.length === 3
-        ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-        : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4";
-
   return (
-    <div className={`grid ${gridCols} gap-6`}>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
       {cards.map((card, idx) => (
         <div
           key={idx}
-          className="relative rounded-xl px-6 py-8 text-center transition-all duration-300"
+          className="relative rounded-2xl px-6 py-7 text-left transition-all duration-300 motion-reduce:transition-none group"
           style={{
             background: 'var(--card-bg)',
             border: '1px solid var(--card-border)',
-            boxShadow: 'var(--card-shadow)',
-          }}
-          onMouseEnter={(e) => {
-            const el = e.currentTarget;
-            el.style.borderColor = 'var(--border-glow)';
-            el.style.boxShadow = '0 4px 20px var(--glow-primary), 0 8px 30px rgba(0,0,0,0.08)';
-            el.style.transform = 'translateY(-3px)';
-          }}
-          onMouseLeave={(e) => {
-            const el = e.currentTarget;
-            el.style.borderColor = 'var(--card-border)';
-            el.style.boxShadow = 'var(--card-shadow)';
-            el.style.transform = '';
           }}
         >
-          {/* Big value */}
+          {/* Top gradient line — expands on hover */}
           <div
-            className="text-3xl sm:text-4xl font-bold font-display mb-3"
+            className="absolute top-0 left-6 right-6 h-px transition-all duration-300 motion-reduce:transition-none group-hover:left-0 group-hover:right-0"
+            aria-hidden="true"
+            style={{
+              background: 'linear-gradient(90deg, var(--color-primary), var(--color-accent))',
+            }}
+          />
+
+          {/* Label — small, uppercase, tracked */}
+          <div
+            className="text-xs font-semibold uppercase tracking-widest mb-3"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            {localized(card.label_zh, card.label_en)}
+          </div>
+
+          {/* Big value — mono + tabular */}
+          <div
+            className="font-mono font-semibold tracking-tight tabular-nums leading-none mb-4 text-5xl sm:text-6xl"
             style={{ color: 'var(--color-primary)' }}
           >
             {card.value}
-          </div>
-
-          {/* Label */}
-          <div
-            className="text-base font-semibold mb-2"
-            style={{ color: 'var(--text-base)' }}
-          >
-            {localized(card.label_zh, card.label_en)}
           </div>
 
           {/* Detail */}
@@ -74,14 +62,6 @@ export default function MetricCards({ content }: Props) {
               {localized(card.detail_zh, card.detail_en)}
             </div>
           )}
-
-          {/* Subtle top accent bar */}
-          <div
-            className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-0.5 rounded-b"
-            style={{
-              background: 'linear-gradient(90deg, var(--color-primary), var(--color-gradient))',
-            }}
-          />
         </div>
       ))}
     </div>
