@@ -31,7 +31,7 @@ class SiteConfig(Base):
     gradient_color: str = Column(String(20), nullable=False, default="#7C3AED")
     accent_color: str = Column(String(20), nullable=False, default="#F59E0B")
     theme_preset: str = Column(
-        String(50), nullable=False, default="academic-slate-blue"
+        String(50), nullable=False, default="teal-amber"
     )
     font_size: str = Column(String(20), nullable=False, default="standard")
     default_theme: str = Column(String(20), nullable=False, default="system")

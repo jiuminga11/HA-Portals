@@ -81,7 +81,7 @@ class SiteConfigUpdate(BaseModel):
     def validate_theme_preset(cls, v: str | None) -> str | None:
         if v is None:
             return v
-        allowed = ("academic-slate-blue", "medical-teal", "dawn-soft-dark")
+        allowed = ("teal-amber", "deep-indigo", "forest-terracotta")
         if v not in allowed:
             raise ValueError(f"theme_preset 必须为 {allowed} 之一")
         return v

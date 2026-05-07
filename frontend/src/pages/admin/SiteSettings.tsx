@@ -26,7 +26,7 @@ export default function SiteSettings() {
     primary_color: "#1E3A8A",
     gradient_color: "#3B82F6",
     accent_color: "#0284C7",
-    theme_preset: "academic-slate-blue",
+    theme_preset: "teal-amber",
     font_size: "standard",
   });
   const [loading, setLoading] = useState(true);
@@ -46,7 +46,7 @@ export default function SiteSettings() {
           primary_color: config.primary_color,
           gradient_color: config.gradient_color,
           accent_color: config.accent_color,
-          theme_preset: config.theme_preset || "academic-slate-blue",
+          theme_preset: config.theme_preset || "teal-amber",
           font_size: config.font_size || "standard",
         });
       } catch {
@@ -69,7 +69,7 @@ export default function SiteSettings() {
     Object.entries(preset.colors).forEach(([key, value]) => {
       root.style.setProperty(key, value);
     });
-    root.setAttribute("data-theme", preset.mode);
+    root.setAttribute("data-theme", preset.id);
   };
 
   const handleSave = async (overrides?: Partial<SettingsForm>) => {
