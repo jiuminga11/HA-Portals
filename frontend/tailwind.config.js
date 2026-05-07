@@ -7,9 +7,35 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['-apple-system', '"PingFang SC"', '"Microsoft YaHei"', '"Helvetica Neue"', '"Noto Sans SC"', 'sans-serif'],
-        display: ['-apple-system', '"PingFang SC"', '"Microsoft YaHei"', '"Helvetica Neue"', '"Noto Sans SC"', 'sans-serif'],
-        mono: ['"JetBrains Mono"', 'monospace'],
+        sans: [
+          'ui-sans-serif',
+          'system-ui',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          '"Segoe UI"',
+          '"PingFang SC"',
+          '"Hiragino Sans GB"',
+          '"Microsoft YaHei"',
+          'sans-serif',
+        ],
+        display: [
+          'ui-serif',
+          'Georgia',
+          '"Times New Roman"',
+          '"Songti SC"',
+          '"STSong"',
+          'SimSun',
+          'serif',
+        ],
+        mono: [
+          'ui-monospace',
+          'SFMono-Regular',
+          'Menlo',
+          'Monaco',
+          'Consolas',
+          '"JetBrains Mono"',
+          'monospace',
+        ],
       },
       colors: {
         /* Theme-aware colors via CSS variables */

@@ -9,7 +9,7 @@
 
 @keyframes glow-pulse {
   0%, 100% { box-shadow: 0 0 15px var(--glow-primary); }
-  50%       { box-shadow: 0 0 30px var(--glow-primary), 0 0 60px rgba(30, 58, 138, 0.08); }
+  50%       { box-shadow: 0 0 30px var(--glow-primary), 0 0 60px rgba(var(--color-primary-rgb), 0.3); }
 }
 
 @keyframes float-orb {
@@ -67,10 +67,10 @@
 }
 
 .glass-dark {
-  background: rgba(30, 58, 138, 0.9);
+  background: var(--color-bg-card);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(var(--color-primary-rgb), 0.10);
 }
 
 .glass-nav {
@@ -87,7 +87,7 @@
   box-shadow: 0 0 20px var(--glow-primary);
 }
 .glow-primary:hover {
-  box-shadow: 0 0 30px var(--glow-primary), 0 0 60px rgba(30, 58, 138, 0.08);
+  box-shadow: 0 0 30px var(--glow-primary), 0 0 60px rgba(var(--color-primary-rgb), 0.08);
 }
 .glow-cyan {
   box-shadow: 0 0 20px var(--glow-cyan);
@@ -116,15 +116,15 @@
 /* ─── Button Styles ─────────────────────────────────────────────── */
 
 .btn-gradient {
-  background: linear-gradient(135deg, var(--color-primary) 0%, #2563EB 50%, var(--color-gradient) 100%);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
   background-size: 200% auto;
   color: white;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px var(--glow-primary);
+  box-shadow: 0 8px 24px rgba(var(--color-primary-rgb), 0.22);
 }
 .btn-gradient:hover {
   background-position: right center;
-  box-shadow: 0 6px 25px var(--glow-primary);
+  box-shadow: 0 8px 24px rgba(var(--color-primary-rgb), 0.22);
   transform: translateY(-1px);
 }
 
@@ -137,8 +137,8 @@
   transition: all 0.3s ease;
 }
 .card-glow:hover {
-  border-color: rgba(30, 58, 138, 0.3);
-  box-shadow: 0 4px 20px rgba(30, 58, 138, 0.1), 0 8px 30px rgba(0, 0, 0, 0.08);
+  border-color: rgba(var(--color-primary-rgb), 0.3);
+  box-shadow: 0 10px 30px rgba(var(--color-primary-rgb), 0.12), 0 4px 12px rgba(0, 0, 0, 0.04);
   transform: translateY(-2px);
 }
 
@@ -195,7 +195,7 @@
   color: var(--text-muted);
 }
 .prose-dark code {
-  background: rgba(30, 58, 138, 0.08);
+  background: rgba(var(--color-primary-rgb), 0.08);
   color: var(--color-primary);
   border-radius: 4px;
   padding: 0.1em 0.4em;
@@ -213,4 +213,13 @@
 .prose-dark table td,
 .prose-dark table th {
   border-color: var(--border-glass);
+}
+
+/* ─── Social Link Hover (C-6 fix: pure CSS, no inline JS) ─────── */
+
+.social-link:hover {
+  background: rgba(var(--color-primary-rgb), 0.10) !important;
+  border-color: rgba(var(--color-primary-rgb), 0.40) !important;
+  color: var(--color-primary) !important;
+  box-shadow: 0 0 12px rgba(var(--color-primary-rgb), 0.25);
 }

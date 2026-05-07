@@ -22,6 +22,17 @@
   --color-border: #E2E8F0;
   --color-gradient-from: #0D9488;
   --color-gradient-to: #D97706;
+  --color-primary-rgb: 13, 148, 136;
+  --color-accent-rgb: 217, 119, 6;
+  --color-highlight-rgb: 5, 150, 105;
+
+  /* Timeline category colors */
+  --cat-education: #2563EB;
+  --cat-career: var(--color-primary);
+  --cat-research: #7C3AED;
+  --cat-award: var(--color-accent);
+  --cat-publication: var(--color-highlight);
+  --cat-milestone: #F59E0B;
 
   /* Component tokens */
   --glow-primary: rgba(13, 148, 136, 0.25);
@@ -54,6 +65,17 @@
   --color-border: #334155;
   --color-gradient-from: #2DD4BF;
   --color-gradient-to: #FBBF24;
+  --color-primary-rgb: 45, 212, 191;
+  --color-accent-rgb: 251, 191, 36;
+  --color-highlight-rgb: 52, 211, 153;
+
+  /* Timeline category colors */
+  --cat-education: #60A5FA;
+  --cat-career: var(--color-primary);
+  --cat-research: #A78BFA;
+  --cat-award: var(--color-accent);
+  --cat-publication: var(--color-highlight);
+  --cat-milestone: #FBBF24;
 
   /* Component tokens — dark */
   --glow-primary: rgba(45, 212, 191, 0.25);
@@ -86,6 +108,17 @@
   --color-border: #D6D3D1;
   --color-gradient-from: #312E81;
   --color-gradient-to: #059669;
+  --color-primary-rgb: 49, 46, 129;
+  --color-accent-rgb: 5, 150, 105;
+  --color-highlight-rgb: 225, 29, 72;
+
+  /* Timeline category colors */
+  --cat-education: var(--color-primary);
+  --cat-career: #0E7490;
+  --cat-research: var(--color-primary);
+  --cat-award: #D97706;
+  --cat-publication: var(--color-accent);
+  --cat-milestone: var(--color-highlight);
 
   /* Component tokens */
   --glow-primary: rgba(49, 46, 129, 0.25);
@@ -118,6 +151,17 @@
   --color-border: #4338CA;
   --color-gradient-from: #818CF8;
   --color-gradient-to: #34D399;
+  --color-primary-rgb: 129, 140, 248;
+  --color-accent-rgb: 52, 211, 153;
+  --color-highlight-rgb: 251, 113, 133;
+
+  /* Timeline category colors */
+  --cat-education: var(--color-primary);
+  --cat-career: #22D3EE;
+  --cat-research: #C4B5FD;
+  --cat-award: #FBBF24;
+  --cat-publication: var(--color-accent);
+  --cat-milestone: var(--color-highlight);
 
   /* Component tokens — dark */
   --glow-primary: rgba(129, 140, 248, 0.25);
@@ -150,6 +194,17 @@
   --color-border: #D6D3D1;
   --color-gradient-from: #065F46;
   --color-gradient-to: #C2410C;
+  --color-primary-rgb: 6, 95, 70;
+  --color-accent-rgb: 194, 65, 12;
+  --color-highlight-rgb: 37, 99, 235;
+
+  /* Timeline category colors */
+  --cat-education: #1E40AF;
+  --cat-career: var(--color-primary);
+  --cat-research: #6D28D9;
+  --cat-award: var(--color-accent);
+  --cat-publication: var(--color-highlight);
+  --cat-milestone: #B45309;
 
   /* Component tokens */
   --glow-primary: rgba(6, 95, 70, 0.25);
@@ -182,6 +237,17 @@
   --color-border: #44403C;
   --color-gradient-from: #6EE7B7;
   --color-gradient-to: #FB923C;
+  --color-primary-rgb: 110, 231, 183;
+  --color-accent-rgb: 251, 146, 60;
+  --color-highlight-rgb: 96, 165, 250;
+
+  /* Timeline category colors */
+  --cat-education: #93C5FD;
+  --cat-career: var(--color-primary);
+  --cat-research: #C4B5FD;
+  --cat-award: var(--color-accent);
+  --cat-publication: var(--color-highlight);
+  --cat-milestone: #FBBF24;
 
   /* Component tokens — dark */
   --glow-primary: rgba(110, 231, 183, 0.25);
@@ -218,6 +284,17 @@
   --color-border: #E2E8F0;
   --color-gradient-from: #0D9488;
   --color-gradient-to: #D97706;
+  --color-primary-rgb: 13, 148, 136;
+  --color-accent-rgb: 217, 119, 6;
+  --color-highlight-rgb: 5, 150, 105;
+
+  /* Timeline category colors */
+  --cat-education: #2563EB;
+  --cat-career: var(--color-primary);
+  --cat-research: #7C3AED;
+  --cat-award: var(--color-accent);
+  --cat-publication: var(--color-highlight);
+  --cat-milestone: #F59E0B;
 
   /* Backward-compatible aliases (used by existing display components) */
   --bg-base: var(--color-bg);

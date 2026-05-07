@@ -18,8 +18,9 @@ html {
 body {
   margin: 0;
   background-color: var(--color-bg);
-  font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', 'Noto Sans SC', 'WenQuanYi Micro Hei', sans-serif;
-  color: var(--color-text);
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+               "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  color: var(--text-base);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.3s, color 0.3s;
@@ -97,6 +98,60 @@ body {
 
 /* ─── Selection Color ──────────────────────────────────────────── */
 ::selection {
-  background: rgba(30, 58, 138, 0.2);
-  color: #0F172A;
+  background: rgba(var(--color-primary-rgb), 0.24);
+  color: var(--text-base);
+}
+
+/* ─── Tabular Numerals Utility ─────────────────────────────────── */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ===== Print stylesheet — for CV / portfolio printing ===== */
+@media print {
+  /* Reset to print-friendly colors */
+  html, body {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Hide interactive UI */
+  header, nav, footer,
+  button, .no-print,
+  [data-no-print] {
+    display: none !important;
+  }
+
+  /* Remove all shadows, gradients, transforms */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  /* Preserve link URLs */
+  a {
+    color: black !important;
+    text-decoration: underline !important;
+  }
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.85em;
+    color: #555;
+  }
+
+  /* Page break hints */
+  section {
+    page-break-inside: avoid;
+  }
+  h1, h2, h3 {
+    page-break-after: avoid;
+  }
+
+  /* Compact spacing */
+  .reveal {
+    padding: 1rem 0 !important;
+  }
 }
