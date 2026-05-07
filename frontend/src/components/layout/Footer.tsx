@@ -6,87 +6,44 @@ interface Props {
   siteConfig: SiteConfig | null;
 }
 
-export default function Footer({ siteConfig }: Props) {
+export default function Footer({ siteConfig: _siteConfig }: Props) {
   const { t } = useLocale();
   return (
-    <footer
-      className="mt-auto py-10 px-4 text-center"
-      style={{
-        background: "var(--footer-bg)",
-        color: "var(--footer-text)",
-        borderTop: "1px solid var(--border-glass)",
-      }}
-    >
-      <div className="max-w-5xl mx-auto">
-        {/* Decorative separator */}
-        <div className="flex items-center justify-center gap-2 mb-6">
-          <div
-            className="w-1 h-1 rounded-full"
-            style={{ background: "var(--color-primary)", opacity: 0.6 }}
-          />
-          <div
-            className="w-12 h-px"
-            style={{
-              background: "linear-gradient(90deg, var(--color-primary), var(--color-gradient))",
-              opacity: 0.4,
-            }}
-          />
-          <div
-            className="w-1.5 h-1.5 rounded-full"
-            style={{ background: "var(--color-gradient)", opacity: 0.6 }}
-          />
-          <div
-            className="w-12 h-px"
-            style={{
-              background: "linear-gradient(90deg, var(--color-gradient), var(--color-accent))",
-              opacity: 0.4,
-            }}
-          />
-          <div
-            className="w-1 h-1 rounded-full"
-            style={{ background: "var(--color-accent)", opacity: 0.6 }}
-          />
+    <footer className="relative mt-auto py-10 px-4">
+      {/* Single top gradient line */}
+      <div
+        className="absolute top-0 left-0 right-0 h-px"
+        aria-hidden="true"
+        style={{
+          background:
+            'linear-gradient(90deg, transparent, var(--color-primary) 35%, var(--color-accent) 65%, transparent)',
+        }}
+      />
+
+      <div className="max-w-6xl mx-auto">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm" style={{ color: 'var(--text-muted)' }}>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            <span>{t.footer.copyright}</span>
+            <a
+              href={`mailto:${t.footer.email}`}
+              className="hover:underline transition-colors motion-reduce:transition-none"
+              style={{ color: 'var(--color-primary)' }}
+            >
+              {t.footer.email}
+            </a>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <span className="text-xs">{t.footer.builtWith}</span>
+            <Link
+              to="/admin/login"
+              className="text-xs hover:underline transition-colors motion-reduce:transition-none"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              Admin
+            </Link>
+          </div>
         </div>
-
-        {/* Footer text — from admin config */}
-        {siteConfig?.footer_text && (
-          <p className="text-sm mb-3" style={{ color: "var(--footer-text)", opacity: 0.7 }}>
-            {siteConfig.footer_text}
-          </p>
-        )}
-
-        {/* Built with */}
-        <p className="text-xs" style={{ color: "var(--footer-text)", opacity: 0.5 }}>
-          {t.footer.builtWith}
-        </p>
-
-        {/* Admin entry */}
-        <Link
-          to="/admin"
-          className="inline-flex items-center gap-1.5 mt-4 text-xs transition-opacity duration-200"
-          style={{ color: "var(--footer-text)", opacity: 0.4 }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.opacity = "0.8";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.opacity = "0.4";
-          }}
-        >
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-            <path d="M7 11V7a5 5 0 0110 0v4" />
-          </svg>
-          {t.nav.admin}
-        </Link>
       </div>
     </footer>
   );

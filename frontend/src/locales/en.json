@@ -2,6 +2,6 @@
   "nav": { "home": "Home", "about": "About", "research": "Research", "projects": "Projects", "honors": "Honors", "cv": "CV", "blog": "Blog", "admin": "Admin" },
   "common": { "readMore": "Read More", "back": "Back", "downloadCV": "Download CV", "contact": "Contact", "language": "Language", "theme": "Theme", "loading": "Loading...", "error": "Failed to load" },
   "home": { "viewResearch": "View Research", "viewProjects": "View Projects" },
-  "footer": { "builtWith": "Built with FastAPI + React" },
+  "footer": { "builtWith": "Built with FastAPI + React", "copyright": "© 2026 Hu Xing", "email": "huxing@example.com" },
   "section": { "noData": "No data", "present": "Present" }
 }

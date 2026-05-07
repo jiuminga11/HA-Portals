@@ -91,19 +91,22 @@ export default function Header({ siteConfig }: Props) {
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16">
             {/* Left: site name */}
-            <Link
-              to="/"
-              className="flex items-center gap-2 font-bold text-lg tracking-wide transition-colors duration-200"
-              style={{ color: "var(--text-base)" }}
-            >
+            <Link to="/" className="flex items-center gap-3 group">
               <span
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold"
+                className="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold transition-transform duration-200 motion-reduce:transition-none group-hover:-translate-y-0.5 motion-reduce:transform-none"
                 style={{
-                  background: "linear-gradient(135deg, var(--color-primary), var(--color-gradient))",
+                  background: "linear-gradient(135deg, var(--color-primary), var(--color-accent))",
                   color: "#FFFFFF",
+                  boxShadow: "0 4px 12px rgba(var(--color-primary-rgb), 0.25)",
                 }}
               >
                 {siteConfig?.site_title?.slice(0, 2).toUpperCase() || "HP"}
+              </span>
+              <span
+                className="hidden sm:block font-display font-semibold tracking-tight text-base"
+                style={{ color: "var(--text-base)" }}
+              >
+                {siteConfig?.site_title || "Hu Xing"}
               </span>
             </Link>
 
