@@ -69,34 +69,26 @@ export default function SectionRenderer({ section }: Props) {
   return (
     <section
       ref={sectionRef}
-      className="reveal py-16 px-8 sm:px-12"
+      className="reveal py-16 sm:py-20 px-4 sm:px-6"
       id={`section-${section.id}`}
       style={{ scrollMarginTop: '80px' }}
     >
       <div className="max-w-6xl mx-auto">
-        {/* Section header */}
-        <div className="text-center mb-12">
+        <div className="mb-10 max-w-3xl">
+          {/* Top accent line */}
+          <div
+            className="mb-3 h-px w-12"
+            aria-hidden="true"
+            style={{
+              background: 'linear-gradient(90deg, var(--color-primary), var(--color-accent))',
+            }}
+          />
           <h2
-            className="text-4xl font-bold font-display inline-block"
+            className="font-display font-semibold tracking-tight text-3xl sm:text-4xl"
             style={{ color: 'var(--text-base)' }}
           >
             {localized(section.title_zh, section.title_en)}
           </h2>
-
-          {/* Gradient accent line */}
-          <div className="section-accent-line" />
-
-          {/* Subtle dots flanking the line */}
-          <div className="flex items-center justify-center gap-2 mt-2">
-            <div
-              className="w-1 h-1 rounded-full"
-              style={{ background: 'var(--color-gradient)', opacity: 0.5 }}
-            />
-            <div
-              className="w-1 h-1 rounded-full"
-              style={{ background: 'var(--color-accent)', opacity: 0.5 }}
-            />
-          </div>
         </div>
 
         {renderContent(section)}
