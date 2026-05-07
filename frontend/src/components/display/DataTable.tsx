@@ -27,7 +27,7 @@ export default function DataTable({ content }: Props) {
           <tr
             style={{
               background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-gradient) 100%)',
-              borderBottom: '1px solid #1D4ED8',
+              borderBottom: '1px solid rgba(var(--color-primary-rgb), 0.5)',
             }}
           >
             <th

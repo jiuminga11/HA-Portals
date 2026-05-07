@@ -11,7 +11,7 @@ export default function VideoPlayer({ content }: Props) {
   if (items.length === 0) {
     return (
       <div className="text-center py-8" style={{ color: 'var(--text-muted)' }}>
-        <svg className="w-12 h-12 mx-auto mb-3 opacity-30" fill="none" stroke="#3B82F6" viewBox="0 0 24 24">
+        <svg className="w-12 h-12 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
         </svg>
         <p>暂无视频</p>
