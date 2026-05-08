@@ -63,3 +63,9 @@ app.include_router(site_config.router, prefix="/api", tags=["站点配置"])
 app.include_router(sections.router, prefix="/api", tags=["内容区块"])
 app.include_router(upload.router, prefix="/api", tags=["文件上传"])
 app.include_router(pages.router, prefix="/api", tags=["页面管理"])
+
+
+@app.get("/api/health", tags=["健康检查"])
+def health() -> dict[str, str]:
+    """健康检查端点，用于部署验证 / 外部监控 / 负载均衡。"""
+    return {"status": "ok"}

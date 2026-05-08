@@ -51,7 +51,7 @@ export default function PublicLayout() {
       <main className="flex-1 pt-16">
         <Outlet />
       </main>
-      <Footer siteConfig={siteConfig} />
+      <Footer />
     </div>
   );
 }

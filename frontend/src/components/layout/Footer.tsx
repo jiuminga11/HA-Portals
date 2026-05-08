@@ -1,12 +1,7 @@
 import { Link } from "react-router-dom";
 import { useLocale } from "../../hooks/useLocale";
-import type { SiteConfig } from "../../types";
 
-interface Props {
-  siteConfig: SiteConfig | null;
-}
-
-export default function Footer({ siteConfig: _siteConfig }: Props) {
+export default function Footer() {
   const { t } = useLocale();
   return (
     <footer className="relative mt-auto py-10 px-4">

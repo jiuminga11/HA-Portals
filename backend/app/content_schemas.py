@@ -4,14 +4,15 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 
 # ===== rich_text =====
 
 
 class RichTextContent(BaseModel):
-    body: str = ""
+    # 100KB 上限：防恶意提交 GB 级 body 致 OOM。正常富文本远达不到。
+    body: str = Field(default="", max_length=100_000)
 
 
 # ===== image_gallery =====

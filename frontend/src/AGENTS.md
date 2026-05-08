@@ -12,7 +12,7 @@ src/
 │   ├── editor/          # 5 admin editors (one per content type)
 │   ├── layout/          # Header, TopNav, Footer, AdminSidebar
 │   └── common/          # FileUpload, ImageUpload, ConfirmDialog
-├── hooks/               # useActiveSection (scroll), useAuth
+├── hooks/               # useLocale (i18n), useTheme (亮/暗)
 ├── pages/
 │   ├── Home.tsx         # Public single-scroll display page
 │   └── admin/           # Login, Layout, Dashboard, SectionEditor, SiteSettings, FileManager
@@ -28,7 +28,7 @@ src/
 | Add section renderer | `components/display/` + `SectionRenderer.tsx` | Add component + case in switch |
 | Add section editor | `components/editor/` + `pages/admin/SectionEditor.tsx` | Add component + case in switch |
 | Change theme colors | `styles/theme.css` | CSS vars; admin can override at runtime via API |
-| Change scroll behavior | `hooks/useActiveSection.ts` | IntersectionObserver-based |
+| Change theme/locale | `hooks/useTheme.tsx`, `hooks/useLocale.tsx` | Context + localStorage |
 | Change API base URL | `api/client.ts` | Axios interceptors here too |
 | Change routing | `App.tsx` | ProtectedRoute wraps admin routes |
 

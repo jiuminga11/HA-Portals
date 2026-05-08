@@ -36,3 +36,9 @@ React 19 + Vite + FastAPI + SQLite，fork 自 PSY OF XXMU。
 | handoff_id | 状态 | 说明 |
 |---|---|---|
 | handoff_20260413_01~03 | archived | 原 Next.js 静态导出方案的前端 handoff，架构已切换为 FastAPI+SQLite，任务作废 |
+
+## 评审记录
+
+| 日期 | 报告 | 总评 |
+|------|------|------|
+| 2026-05-08 | `docs/reviews/2026-05-08-comprehensive-review.md` | C+ / 及格偏弱（前端 76.5、后端 72、运维 ★★★☆☆）。代码质量好但运维基础设施薄弱：无备份、无监控、无 Alembic、文档与实现脱节。详见报告 P0/P1 修复清单。 |
