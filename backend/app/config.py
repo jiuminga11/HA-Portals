@@ -22,8 +22,9 @@ class Settings(BaseSettings):
         "image/jpeg", "image/png", "image/gif", "image/webp",
     ]
     ALLOWED_VIDEO_TYPES: List[str] = ["video/mp4", "video/webm"]
+    ALLOWED_DOCUMENT_TYPES: List[str] = ["application/pdf"]
     ALLOWED_EXTENSIONS: List[str] = [
-        ".jpg", ".jpeg", ".png", ".gif", ".webp", ".mp4", ".webm",
+        ".jpg", ".jpeg", ".png", ".gif", ".webp", ".mp4", ".webm", ".pdf",
     ]
 
     # 数据库

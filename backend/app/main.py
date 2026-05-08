@@ -5,9 +5,11 @@ from __future__ import annotations
 import logging
 import os
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 from typing import AsyncGenerator
 
 from fastapi import FastAPI
+from sqlalchemy import text
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -67,5 +69,19 @@ app.include_router(pages.router, prefix="/api", tags=["页面管理"])
 
 @app.get("/api/health", tags=["健康检查"])
 def health() -> dict[str, str]:
-    """健康检查端点，用于部署验证 / 外部监控 / 负载均衡。"""
-    return {"status": "ok"}
+    """健康检查。返回服务状态 + 时间戳 + 版本 + DB 连接状态。"""
+    db_status = "ok"
+    db = SessionLocal()
+    try:
+        db.execute(text("SELECT 1"))
+    except Exception as exc:  # noqa: BLE001
+        db_status = f"error: {exc.__class__.__name__}"
+        logger.warning("DB ping failed: %s", exc)
+    finally:
+        db.close()
+    return {
+        "status": "ok" if db_status == "ok" else "degraded",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "version": app.version,
+        "db": db_status,
+    }

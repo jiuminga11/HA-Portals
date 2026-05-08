@@ -1,17 +1,28 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
 import PublicLayout from "./components/layout/PublicLayout";
 import PublicPage from "./pages/public/PublicPage";
-import Login from "./pages/admin/Login";
-import AdminLayout from "./pages/admin/Layout";
-import Dashboard from "./pages/admin/Dashboard";
-import SectionEditor from "./pages/admin/SectionEditor";
-import SiteSettings from "./pages/admin/SiteSettings";
-import FileManager from "./pages/admin/FileManager";
-import Guide from "./pages/admin/Guide";
-import PageManager from "./pages/admin/PageManager";
 import { LocaleProvider } from "./hooks/useLocale";
 import { ThemeProvider } from "./hooks/useTheme";
 import { basePath } from "./lib/basePath";
+
+// Admin 路由延迟加载 — 避免 admin 代码进入公共 bundle。
+const Login = lazy(() => import("./pages/admin/Login"));
+const AdminLayout = lazy(() => import("./pages/admin/Layout"));
+const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
+const SectionEditor = lazy(() => import("./pages/admin/SectionEditor"));
+const SiteSettings = lazy(() => import("./pages/admin/SiteSettings"));
+const FileManager = lazy(() => import("./pages/admin/FileManager"));
+const Guide = lazy(() => import("./pages/admin/Guide"));
+const PageManager = lazy(() => import("./pages/admin/PageManager"));
+
+function AdminFallback() {
+  return (
+    <div className="flex items-center justify-center min-h-screen text-sm" style={{ color: "var(--color-text-muted)" }}>
+      加载中…
+    </div>
+  );
+}
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem("token");
@@ -40,14 +51,24 @@ export default function App() {
             </Route>
 
             {/* Admin auth */}
-            <Route path="/admin/login" element={<Login />} />
+            {/* Admin auth */}
+            <Route
+              path="/admin/login"
+              element={
+                <Suspense fallback={<AdminFallback />}>
+                  <Login />
+                </Suspense>
+              }
+            />
 
             {/* Admin protected */}
             <Route
               path="/admin"
               element={
                 <ProtectedRoute>
-                  <AdminLayout />
+                  <Suspense fallback={<AdminFallback />}>
+                    <AdminLayout />
+                  </Suspense>
                 </ProtectedRoute>
               }
             >
