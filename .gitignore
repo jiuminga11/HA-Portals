@@ -22,8 +22,9 @@ frontend/dist/
 .DS_Store
 Thumbs.db
 
-# Sisyphus
+# Agent tooling (Sisyphus / OhMyOpenCode)
 .sisyphus/
+.omo/
 
 # Docs (contain internal design docs with PII)
 docs/
