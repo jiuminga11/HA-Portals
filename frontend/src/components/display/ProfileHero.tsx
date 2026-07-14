@@ -97,7 +97,7 @@ export default function ProfileHero({ content }: Props) {
         {subline && (
           <p
             className="mt-3"
-            style={{ color: "var(--ink-4)", fontSize: "15px", letterSpacing: "0.5px" }}
+            style={{ color: "var(--ink-3)", fontSize: "16px", letterSpacing: "0.5px" }}
           >
             {subline}
           </p>

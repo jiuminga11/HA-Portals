@@ -19,7 +19,7 @@ export default function MetricCards({ content }: Props) {
 
   return (
     <div
-      className="flex flex-col sm:flex-row sm:flex-wrap"
+      className="flex flex-col sm:flex-row sm:flex-wrap sm:gap-x-12"
       style={{
         borderTop: "1px solid var(--hairline)",
         borderBottom: "1px solid var(--hairline)",
@@ -33,7 +33,7 @@ export default function MetricCards({ content }: Props) {
           <div
             key={idx}
             className="flex-1 min-w-0 text-left sm:text-center"
-            style={{ paddingTop: "40px", paddingBottom: "40px", paddingLeft: "8px", paddingRight: "8px" }}
+            style={{ paddingTop: "40px", paddingBottom: "40px" }}
           >
             <div
               className="font-mono tabular-nums"
@@ -42,8 +42,8 @@ export default function MetricCards({ content }: Props) {
               {card.value}
             </div>
             <div
-              className="mt-2 truncate"
-              style={{ color: "var(--ink-4)", fontSize: "13px" }}
+              className="mt-2 line-clamp-2 sm:mx-auto"
+              style={{ color: "var(--ink-4)", fontSize: "13px", lineHeight: 1.5, maxWidth: "22ch" }}
             >
               {line}
             </div>

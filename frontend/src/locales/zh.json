@@ -3,5 +3,5 @@
   "common": { "readMore": "阅读更多", "back": "返回", "downloadCV": "下载简历", "contact": "联系方式", "language": "语言", "theme": "主题", "loading": "加载中...", "error": "加载失败" },
   "home": { "viewResearch": "查看研究", "viewProjects": "查看项目" },
   "footer": { "builtWith": "基于 FastAPI + React 构建", "copyright": "© 2026 Hu Xing", "email": "huxing@example.com" },
-  "section": { "noData": "暂无数据", "present": "至今" }
+  "section": { "noData": "暂无数据", "present": "至今", "viewFullTimeline": "查看完整经历" }
 }

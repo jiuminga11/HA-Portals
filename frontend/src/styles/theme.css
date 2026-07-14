@@ -182,37 +182,38 @@
 .prose-dark h2,
 .prose-dark h3,
 .prose-dark h4 {
-  color: #0F172A;
+  color: var(--ink);
 }
 .prose-dark a {
-  color: var(--color-primary);
+  color: var(--accent);
 }
 .prose-dark strong {
-  color: #0F172A;
+  color: var(--ink);
 }
 .prose-dark blockquote {
-  border-left-color: var(--color-primary);
-  color: var(--text-muted);
+  border-left-color: var(--hairline);
+  color: var(--ink-3);
 }
 .prose-dark code {
-  background: rgba(var(--color-primary-rgb), 0.08);
-  color: var(--color-primary);
+  background: var(--hover-bg);
+  color: var(--ink-2);
   border-radius: 4px;
   padding: 0.1em 0.4em;
 }
 .prose-dark pre {
-  background: #F1F5F9;
-  border: 1px solid var(--border-glass);
+  background: var(--hover-bg);
+  border: 1px solid var(--hairline);
 }
 .prose-dark hr {
-  border-color: var(--border-glass);
+  border-color: var(--hairline);
 }
 .prose-dark table thead tr {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-gradient));
+  background: var(--table-header-bg);
+  color: var(--table-header-ink);
 }
 .prose-dark table td,
 .prose-dark table th {
-  border-color: var(--border-glass);
+  border-color: var(--hairline);
 }
 
 /* ─── Social Link Hover (C-6 fix: pure CSS, no inline JS) ─────── */

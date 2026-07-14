@@ -12,9 +12,10 @@ import ProfileHero from "./ProfileHero";
 
 interface Props {
   section: Section;
+  slug?: string;
 }
 
-function renderContent(section: Section) {
+function renderContent(section: Section, slug?: string) {
   switch (section.type) {
     case "rich_text":
       return <RichTextBlock content={section.content} />;
@@ -29,7 +30,7 @@ function renderContent(section: Section) {
     case "metric_cards":
       return <MetricCards content={section.content} />;
     case "timeline":
-      return <Timeline content={section.content} />;
+      return <Timeline content={section.content} isHome={slug === "home"} />;
     case "profile_hero":
       return <ProfileHero content={section.content} />;
     default:
@@ -37,7 +38,7 @@ function renderContent(section: Section) {
   }
 }
 
-export default function SectionRenderer({ section }: Props) {
+export default function SectionRenderer({ section, slug }: Props) {
   const sectionRef = useRef<HTMLElement>(null);
   const { localized } = useLocale();
   useEffect(() => {
@@ -61,7 +62,7 @@ export default function SectionRenderer({ section }: Props) {
   if (section.type === "profile_hero") {
     return (
       <section ref={sectionRef} className="reveal" id={`section-${section.id}`} style={{ scrollMarginTop: '80px' }}>
-        {renderContent(section)}
+        {renderContent(section, slug)}
       </section>
     );
   }
@@ -83,7 +84,7 @@ export default function SectionRenderer({ section }: Props) {
           </h2>
         </div>
 
-        {renderContent(section)}
+        {renderContent(section, slug)}
       </div>
     </section>
   );

@@ -8,7 +8,7 @@ interface Props {
 export default function RichTextBlock({ content }: Props) {
   if (!content.body) {
     return (
-      <div className="text-center py-8" style={{ color: '#475569' }}>
+      <div className="text-center py-8" style={{ color: 'var(--ink-4)' }}>
         <p>暂无内容</p>
       </div>
     );
@@ -27,8 +27,7 @@ export default function RichTextBlock({ content }: Props) {
         prose-p:leading-relaxed prose-p:text-lg
         prose-li:leading-relaxed prose-li:text-lg
         prose-img:rounded-xl prose-img:shadow-lg
-        prose-table:text-lg
-        prose-thead:bg-gradient-blue-cyan"
+        prose-table:text-lg"
       style={{ color: 'var(--text-base)' }}
       dangerouslySetInnerHTML={{ __html: html }}
     />

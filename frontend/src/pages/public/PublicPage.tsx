@@ -143,7 +143,7 @@ export default function PublicPage({ slug }: Props) {
       ) : (
         <div>
           {sections.map((section) => (
-            <SectionRenderer key={section.id} section={section} />
+            <SectionRenderer key={section.id} section={section} slug={slug} />
           ))}
         </div>
       )}
