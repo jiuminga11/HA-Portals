@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import type { ProfileHeroContent } from "../../types";
 import { useLocale } from "../../hooks/useLocale";
-import { resolveMediaUrl } from "../../lib/basePath";
 
 interface Props {
   content: ProfileHeroContent;
@@ -54,32 +53,15 @@ function SocialIcon({ platform }: { platform: string }) {
   );
 }
 
-/** Extract initials from name for avatar placeholder */
-function getInitials(nameZh: string, nameEn: string): string {
-  if (nameEn) {
-    return nameEn
-      .split(' ')
-      .map((w) => w[0])
-      .filter(Boolean)
-      .slice(0, 2)
-      .join('')
-      .toUpperCase();
-  }
-  // For Chinese names, take last 1-2 characters (given name)
-  return nameZh.slice(-2);
-}
-
 export default function ProfileHero({ content }: Props) {
   const { localized } = useLocale();
   const {
-    avatar_url,
     name_zh,
     name_en,
     tagline_zh,
     tagline_en,
     mission_zh,
     mission_en,
-    tags = [],
     social_links = [],
     cta_buttons = [],
   } = content;
@@ -87,171 +69,105 @@ export default function ProfileHero({ content }: Props) {
   const name = localized(name_zh, name_en);
   const tagline = localized(tagline_zh, tagline_en);
   const mission = localized(mission_zh, mission_en);
+  const subline = [name !== name_en ? name_en : "", tagline]
+    .filter(Boolean)
+    .join("  \u00b7  ");
 
   return (
-    <div className="relative overflow-hidden px-6 py-20 sm:py-24 lg:py-32">
-      {/* Background ambient lights — theme-driven */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        aria-hidden="true"
-        style={{
-          background:
-            "radial-gradient(circle at 18% 25%, rgba(var(--color-primary-rgb), 0.14), transparent 35%), " +
-            "radial-gradient(circle at 82% 30%, rgba(var(--color-accent-rgb), 0.12), transparent 32%)",
-        }}
-      />
+    <div
+      className="px-6"
+      style={{ background: "var(--color-bg)", paddingTop: "110px", paddingBottom: "110px" }}
+    >
+      <div className="max-w-[760px] mx-auto text-left">
+        {/* Name — serif display, single line */}
+        <h1
+          className="font-display"
+          style={{
+            color: "var(--ink)",
+            fontWeight: 700,
+            fontSize: "clamp(2.75rem, 6vw, 4.25rem)",
+            lineHeight: 1.25,
+            letterSpacing: "-0.01em",
+          }}
+        >
+          {name}
+        </h1>
 
-      <div className="relative max-w-6xl mx-auto grid lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-16 items-center">
-        {/* Left column: narrative */}
-        <div className="text-left order-2 lg:order-1">
-          {/* Decorative gradient line — academic minimal */}
-          <div
-            className="mb-5 h-px w-12"
-            style={{
-              background: "linear-gradient(90deg, var(--color-primary), var(--color-accent))",
-            }}
-          />
-
-          {/* Name — serif display */}
-          <h1
-            className="font-display font-semibold tracking-tight leading-[0.95] text-5xl sm:text-6xl lg:text-7xl mb-6"
-            style={{ color: "var(--text-base)" }}
+        {/* Romanization + tagline */}
+        {subline && (
+          <p
+            className="mt-3"
+            style={{ color: "var(--ink-4)", fontSize: "15px", letterSpacing: "0.5px" }}
           >
-            {name}
-          </h1>
+            {subline}
+          </p>
+        )}
 
-          {tagline && (
-            <p
-              className="text-xl sm:text-2xl mb-6 leading-relaxed max-w-xl"
-              style={{ color: "var(--text-base)", opacity: 0.85 }}
-            >
-              {tagline}
-            </p>
-          )}
+        {/* Mission — plain body paragraph */}
+        {mission && (
+          <p
+            className="mt-8 max-w-[680px]"
+            style={{ color: "var(--ink-2)", fontSize: "20px", lineHeight: 1.7 }}
+          >
+            {mission}
+          </p>
+        )}
 
-          {mission && (
-            <blockquote
-              className="text-base sm:text-lg italic max-w-xl mb-8 leading-relaxed font-display"
-              style={{
-                color: "var(--text-muted)",
-                borderLeft: "3px solid var(--color-primary)",
-                paddingLeft: "1rem",
-              }}
-            >
-              {mission}
-            </blockquote>
-          )}
-
-          {tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-8">
-              {tags.map((tag, idx) => (
-                <span
-                  key={idx}
-                  className="text-xs font-semibold uppercase tracking-wide px-3 py-1.5 rounded-full"
-                  style={{
-                    background: "rgba(var(--color-primary-rgb), 0.10)",
-                    color: "var(--color-primary)",
-                    border: "1px solid rgba(var(--color-primary-rgb), 0.25)",
-                  }}
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {cta_buttons.length > 0 && (
-            <div className="flex flex-wrap gap-3">
-              {cta_buttons.map((btn, idx) => {
-                const label = localized(btn.label_zh, btn.label_en);
-                const isPrimary = idx === 0;
-                const isInternal = btn.url.startsWith("/") && !btn.url.startsWith("//");
-
-                const className = isPrimary
-                  ? "btn-gradient px-8 py-3 rounded-xl text-base font-semibold transition-all duration-300 motion-reduce:transition-none hover:-translate-y-0.5 motion-reduce:transform-none"
-                  : "px-8 py-3 rounded-xl text-base font-semibold transition-all duration-300 motion-reduce:transition-none hover:-translate-y-0.5 motion-reduce:transform-none";
-
-            const secondaryStyle = !isPrimary ? {
-                      background: "var(--bg-elevated)",
-                      border: "1px solid var(--card-border)",
-                      color: "var(--text-base)",
-            } : undefined;
-
-                return isInternal ? (
-                  <Link key={idx} to={btn.url} className={className} style={secondaryStyle}>
-                    {label}
-                  </Link>
-                ) : (
-                  <a key={idx} href={btn.url} target="_blank" rel="noopener noreferrer" className={className} style={secondaryStyle}>
-                    {label}
-                  </a>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Right column: identity card */}
-        <div className="flex flex-col items-center lg:items-end order-1 lg:order-2">
-          <div className="relative">
-            {/* Soft glow backdrop */}
-            <div
-              className="absolute -inset-1 rounded-full opacity-60 motion-reduce:hidden"
-              aria-hidden="true"
-              style={{
-                background: "linear-gradient(135deg, var(--color-primary), var(--color-accent))",
-                filter: "blur(12px)",
-              }}
-            />
-            {avatar_url ? (
-              <img
-                src={resolveMediaUrl(avatar_url)}
-                alt={name}
-                className="relative w-44 h-44 sm:w-48 sm:h-48 rounded-full object-cover"
-                style={{
-                  border: "4px solid var(--bg-base)",
-                  boxShadow: "0 12px 40px rgba(var(--color-primary-rgb), 0.25)",
-                }}
-              />
-            ) : (
-              <div
-                className="relative w-44 h-44 sm:w-48 sm:h-48 rounded-full flex items-center justify-center text-5xl font-display font-bold"
-                style={{
-                  background: "var(--bg-elevated)",
-                  border: "4px solid var(--bg-base)",
-                  color: "var(--color-primary)",
-                  boxShadow: "0 12px 40px rgba(var(--color-primary-rgb), 0.25)",
-                }}
-              >
-                {getInitials(name_zh, name_en)}
-              </div>
-            )}
-          </div>
-
-          {/* Social links — pure CSS hover (C-6 fix) */}
-          {social_links.length > 0 && (
-            <div className="flex flex-wrap justify-center gap-2 mt-6">
-              {social_links.map((link, idx) => (
-                <a
-                  key={idx}
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title={link.label}
-                  aria-label={link.label || link.platform}
-                  className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 motion-reduce:transition-none hover:-translate-y-0.5 motion-reduce:transform-none social-link"
-                  style={{
-                    background: "var(--bg-elevated)",
-                    border: "1px solid var(--card-border)",
-                    color: "var(--text-muted)",
-                  }}
-                >
-                  <SocialIcon platform={link.platform} />
+        {/* CTA row */}
+        {cta_buttons.length > 0 && (
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mt-10">
+            {cta_buttons.map((btn, idx) => {
+              const label = localized(btn.label_zh, btn.label_en);
+              const isInternal = btn.url.startsWith("/") && !btn.url.startsWith("//");
+              const isPrimary = idx === 0;
+              const className = isPrimary
+                ? "inline-flex items-center rounded-md text-sm font-semibold transition-opacity duration-200 motion-reduce:transition-none hover:opacity-90"
+                : "inline-flex items-center text-sm font-medium transition-opacity duration-200 motion-reduce:transition-none hover:opacity-70";
+              const style = isPrimary
+                ? { background: "var(--ink)", color: "var(--color-bg)", padding: "12px 24px" }
+                : { color: "var(--accent)" };
+              const inner = isPrimary ? (
+                label
+              ) : (
+                <>
+                  {label}
+                  <span aria-hidden="true" className="ml-1.5">→</span>
+                </>
+              );
+              return isInternal ? (
+                <Link key={idx} to={btn.url} className={className} style={style}>
+                  {inner}
+                </Link>
+              ) : (
+                <a key={idx} href={btn.url} target="_blank" rel="noopener noreferrer" className={className} style={style}>
+                  {inner}
                 </a>
-              ))}
-            </div>
-          )}
-        </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Social links — minimal icon row */}
+        {social_links.length > 0 && (
+          <div className="flex flex-wrap items-center gap-4 mt-10">
+            {social_links.map((link, idx) => (
+              <a
+                key={idx}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={link.label}
+                aria-label={link.label || link.platform}
+                className="transition-colors duration-200 motion-reduce:transition-none"
+                style={{ color: "var(--ink-4)" }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = "var(--accent)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = "var(--ink-4)"; }}
+              >
+                <SocialIcon platform={link.platform} />
+              </a>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

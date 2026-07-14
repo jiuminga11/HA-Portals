@@ -142,15 +142,8 @@ export default function PublicPage({ slug }: Props) {
         </div>
       ) : (
         <div>
-          {sections.map((section, idx) => (
-            <div
-              key={section.id}
-              style={{
-                background: idx % 2 === 0 ? "var(--bg-base)" : "var(--bg-surface)",
-              }}
-            >
-              <SectionRenderer section={section} />
-            </div>
+          {sections.map((section) => (
+            <SectionRenderer key={section.id} section={section} />
           ))}
         </div>
       )}

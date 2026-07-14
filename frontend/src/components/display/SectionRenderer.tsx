@@ -69,23 +69,15 @@ export default function SectionRenderer({ section }: Props) {
   return (
     <section
       ref={sectionRef}
-      className="reveal py-16 sm:py-20 px-4 sm:px-6"
+      className="reveal px-4 sm:px-6"
       id={`section-${section.id}`}
-      style={{ scrollMarginTop: '80px' }}
+      style={{ scrollMarginTop: '80px', paddingTop: '90px', paddingBottom: '90px' }}
     >
       <div className="max-w-6xl mx-auto">
         <div className="mb-10 max-w-3xl">
-          {/* Top accent line */}
-          <div
-            className="mb-3 h-px w-12"
-            aria-hidden="true"
-            style={{
-              background: 'linear-gradient(90deg, var(--color-primary), var(--color-accent))',
-            }}
-          />
           <h2
-            className="font-display font-semibold tracking-tight text-3xl sm:text-4xl"
-            style={{ color: 'var(--text-base)' }}
+            className="font-display"
+            style={{ color: 'var(--ink)', fontSize: '28px', fontWeight: 700, letterSpacing: '-0.01em' }}
           >
             {localized(section.title_zh, section.title_en)}
           </h2>

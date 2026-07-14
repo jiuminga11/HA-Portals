@@ -18,52 +18,38 @@ export default function MetricCards({ content }: Props) {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-      {cards.map((card, idx) => (
-        <div
-          key={idx}
-          className="relative rounded-2xl px-6 py-7 text-left transition-all duration-300 motion-reduce:transition-none group"
-          style={{
-            background: 'var(--card-bg)',
-            border: '1px solid var(--card-border)',
-          }}
-        >
-          {/* Top gradient line — expands on hover */}
+    <div
+      className="flex flex-col sm:flex-row sm:flex-wrap"
+      style={{
+        borderTop: "1px solid var(--hairline)",
+        borderBottom: "1px solid var(--hairline)",
+      }}
+    >
+      {cards.map((card, idx) => {
+        const detail = localized(card.detail_zh, card.detail_en);
+        const label = localized(card.label_zh, card.label_en);
+        const line = [label, detail].filter(Boolean).join(" \u00b7 ");
+        return (
           <div
-            className="absolute top-0 left-6 right-6 h-px transition-all duration-300 motion-reduce:transition-none group-hover:left-0 group-hover:right-0"
-            aria-hidden="true"
-            style={{
-              background: 'linear-gradient(90deg, var(--color-primary), var(--color-accent))',
-            }}
-          />
-
-          {/* Label — small, uppercase, tracked */}
-          <div
-            className="text-xs font-semibold uppercase tracking-widest mb-3"
-            style={{ color: 'var(--text-muted)' }}
+            key={idx}
+            className="flex-1 min-w-0 text-left sm:text-center"
+            style={{ paddingTop: "40px", paddingBottom: "40px", paddingLeft: "8px", paddingRight: "8px" }}
           >
-            {localized(card.label_zh, card.label_en)}
-          </div>
-
-          {/* Big value — mono + tabular */}
-          <div
-            className="font-mono font-semibold tracking-tight tabular-nums leading-none mb-4 text-5xl sm:text-6xl"
-            style={{ color: 'var(--color-primary)' }}
-          >
-            {card.value}
-          </div>
-
-          {/* Detail */}
-          {(card.detail_zh || card.detail_en) && (
             <div
-              className="text-sm leading-relaxed"
-              style={{ color: 'var(--text-muted)' }}
+              className="font-mono tabular-nums"
+              style={{ color: "var(--ink)", fontSize: "40px", fontWeight: 700, lineHeight: 1.1 }}
             >
-              {localized(card.detail_zh, card.detail_en)}
+              {card.value}
             </div>
-          )}
-        </div>
-      ))}
+            <div
+              className="mt-2 truncate"
+              style={{ color: "var(--ink-4)", fontSize: "13px" }}
+            >
+              {line}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

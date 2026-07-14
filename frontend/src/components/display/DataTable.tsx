@@ -26,13 +26,13 @@ export default function DataTable({ content }: Props) {
         <thead>
           <tr
             style={{
-              background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-gradient) 100%)',
-              borderBottom: '1px solid rgba(var(--color-primary-rgb), 0.5)',
+              background: 'var(--table-header-bg)',
+              borderBottom: '1px solid var(--hairline)',
             }}
           >
             <th
               className="px-4 py-3.5 font-semibold whitespace-nowrap w-14 text-center"
-              style={{ color: '#FFFFFF', letterSpacing: '0.03em' }}
+              style={{ color: 'var(--table-header-ink)', letterSpacing: '0.03em' }}
             >
               序号
             </th>
@@ -41,7 +41,7 @@ export default function DataTable({ content }: Props) {
                 key={col.key}
                 className="px-5 py-3.5 font-semibold whitespace-nowrap text-center"
                 style={{
-                  color: '#FFFFFF',
+                  color: 'var(--table-header-ink)',
                   letterSpacing: '0.03em',
                   ...(col.width ? { width: col.width } : {}),
                 }}

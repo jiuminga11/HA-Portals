@@ -84,27 +84,17 @@ export default function Header({ siteConfig }: Props) {
           background: scrolled ? "var(--nav-bg)" : "transparent",
           backdropFilter: scrolled ? "blur(24px) saturate(180%)" : undefined,
           WebkitBackdropFilter: scrolled ? "blur(24px) saturate(180%)" : undefined,
-          borderBottom: scrolled ? "1px solid var(--nav-border)" : "1px solid transparent",
-          boxShadow: scrolled ? "0 1px 3px rgba(0,0,0,0.06)" : undefined,
+          borderBottom: "1px solid var(--hairline-2)",
+          boxShadow: undefined,
         }}
       >
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16">
             {/* Left: site name */}
-            <Link to="/" className="flex items-center gap-3 group">
+            <Link to="/" className="flex items-center group">
               <span
-                className="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold transition-transform duration-200 motion-reduce:transition-none group-hover:-translate-y-0.5 motion-reduce:transform-none"
-                style={{
-                  background: "linear-gradient(135deg, var(--color-primary), var(--color-accent))",
-                  color: "#FFFFFF",
-                  boxShadow: "0 4px 12px rgba(var(--color-primary-rgb), 0.25)",
-                }}
-              >
-                {siteConfig?.site_title?.slice(0, 2).toUpperCase() || "HP"}
-              </span>
-              <span
-                className="hidden sm:block font-display font-semibold tracking-tight text-base"
-                style={{ color: "var(--text-base)" }}
+                className="font-display font-bold tracking-tight"
+                style={{ color: "var(--ink)", fontSize: "19px" }}
               >
                 {siteConfig?.site_title || "Hu Xing"}
               </span>
@@ -118,29 +108,27 @@ export default function Header({ siteConfig }: Props) {
                   <Link
                     key={item.slug}
                     to={item.path}
-                    className="relative px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200"
+                    className="relative px-3 py-2 text-sm font-medium transition-colors duration-200"
                     style={{
-                      color: active ? "var(--color-primary)" : "var(--text-muted)",
+                      color: active ? "var(--ink)" : "var(--ink-3)",
                     }}
                     onMouseEnter={(e) => {
                       if (!active) {
-                        e.currentTarget.style.color = "var(--text-base)";
-                        e.currentTarget.style.background = "var(--hover-bg)";
+                        e.currentTarget.style.color = "var(--ink)";
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (!active) {
-                        e.currentTarget.style.color = "var(--text-muted)";
-                        e.currentTarget.style.background = "transparent";
+                        e.currentTarget.style.color = "var(--ink-3)";
                       }
                     }}
                   >
                     {item.label}
                     {active && (
                       <span
-                        className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full"
+                        className="absolute -bottom-px left-3 right-3 h-px"
                         style={{
-                          background: "linear-gradient(90deg, var(--color-primary), var(--color-gradient))",
+                          background: "var(--ink)",
                         }}
                       />
                     )}
@@ -256,10 +244,10 @@ export default function Header({ siteConfig }: Props) {
                     to={item.path}
                     className="px-4 py-3 rounded-xl text-lg font-medium transition-all duration-200"
                     style={{
-                      color: active ? "var(--color-primary)" : "var(--text-base)",
+                      color: active ? "var(--ink)" : "var(--text-base)",
                       background: active ? "var(--hover-bg)" : "transparent",
                       borderLeft: active
-                        ? "3px solid var(--color-primary)"
+                        ? "3px solid var(--ink)"
                         : "3px solid transparent",
                     }}
                   >

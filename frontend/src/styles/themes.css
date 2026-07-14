@@ -13,13 +13,13 @@
   --color-accent: #D97706;
   --color-accent-hover: #B45309;
   --color-highlight: #059669;
-  --color-bg: #FAFAF9;
-  --color-bg-secondary: #F5F5F4;
+  --color-bg: #FFFFFF;
+  --color-bg-secondary: #FFFFFF;
   --color-bg-card: #FFFFFF;
-  --color-text: #1E293B;
-  --color-text-secondary: #64748B;
-  --color-text-muted: #64748B;
-  --color-border: #E2E8F0;
+  --color-text: #111827;
+  --color-text-secondary: #374151;
+  --color-text-muted: #6B7280;
+  --color-border: #E5E7EB;
   --color-gradient-from: #0D9488;
   --color-gradient-to: #D97706;
   --color-primary-rgb: 13, 148, 136;
@@ -40,13 +40,24 @@
   --glow-purple: rgba(5, 150, 105, 0.2);
   --border-glow: rgba(13, 148, 136, 0.25);
   --card-shadow: 0 1px 3px rgba(0,0,0,0.08);
-  --nav-bg: rgba(255,255,255,0.92);
+  --nav-bg: rgba(255,255,255,0.85);
   --footer-bg: #0F172A;
   --footer-text: #94A3B8;
   --table-header-text: #FFFFFF;
   --table-row-alt: #FAFAF9;
   --badge-bg: rgba(13,148,136,0.08);
-  --hover-bg: rgba(13,148,136,0.05);
+  --hover-bg: #F9FAFB;
+
+  /* Minimal academic tokens (方案A) — not overridden by site_config colors */
+  --ink: #111827;
+  --ink-2: #374151;
+  --ink-3: #6B7280;
+  --ink-4: #9CA3AF;
+  --hairline: #E5E7EB;
+  --hairline-2: #F3F4F6;
+  --accent: #0D9488;
+  --table-header-bg: #F9FAFB;
+  --table-header-ink: #111827;
 }
 
 /* ===== Theme A: Teal + Amber — Dark ===== */
@@ -56,13 +67,13 @@
   --color-accent: #FBBF24;
   --color-accent-hover: #F59E0B;
   --color-highlight: #34D399;
-  --color-bg: #0F172A;
-  --color-bg-secondary: #1E293B;
-  --color-bg-card: #1E293B;
-  --color-text: #F1F5F9;
-  --color-text-secondary: #CBD5E1;
-  --color-text-muted: #94A3B8;
-  --color-border: #334155;
+  --color-bg: #0B0F19;
+  --color-bg-secondary: #0B0F19;
+  --color-bg-card: #111827;
+  --color-text: #F9FAFB;
+  --color-text-secondary: #D1D5DB;
+  --color-text-muted: #9CA3AF;
+  --color-border: #1F2937;
   --color-gradient-from: #2DD4BF;
   --color-gradient-to: #FBBF24;
   --color-primary-rgb: 45, 212, 191;
@@ -83,13 +94,24 @@
   --glow-purple: rgba(52, 211, 153, 0.2);
   --border-glow: rgba(45, 212, 191, 0.25);
   --card-shadow: 0 4px 30px rgba(0,0,0,0.35);
-  --nav-bg: rgba(15,23,42,0.82);
+  --nav-bg: rgba(11,15,25,0.85);
   --footer-bg: #0F172A;
   --footer-text: #94A3B8;
   --table-header-text: #FFFFFF;
   --table-row-alt: rgba(255,255,255,0.03);
   --badge-bg: rgba(45,212,191,0.08);
-  --hover-bg: rgba(45,212,191,0.05);
+  --hover-bg: #111827;
+
+  /* Minimal academic tokens (方案A) — dark */
+  --ink: #F9FAFB;
+  --ink-2: #D1D5DB;
+  --ink-3: #9CA3AF;
+  --ink-4: #6B7280;
+  --hairline: #1F2937;
+  --hairline-2: #111827;
+  --accent: #2DD4BF;
+  --table-header-bg: #111827;
+  --table-header-ink: #F9FAFB;
 }
 
 /* ===== Theme B: Deep Indigo + Sage (认知科学) — Light ===== */
@@ -275,13 +297,13 @@
   --color-accent: #D97706;
   --color-accent-hover: #B45309;
   --color-highlight: #059669;
-  --color-bg: #FAFAF9;
-  --color-bg-secondary: #F5F5F4;
+  --color-bg: #FFFFFF;
+  --color-bg-secondary: #FFFFFF;
   --color-bg-card: #FFFFFF;
-  --color-text: #1E293B;
-  --color-text-secondary: #64748B;
-  --color-text-muted: #64748B;
-  --color-border: #E2E8F0;
+  --color-text: #111827;
+  --color-text-secondary: #374151;
+  --color-text-muted: #6B7280;
+  --color-border: #E5E7EB;
   --color-gradient-from: #0D9488;
   --color-gradient-to: #D97706;
   --color-primary-rgb: 13, 148, 136;
@@ -320,11 +342,22 @@
   --glow-purple: rgba(5, 150, 105, 0.2);
   --border-glow: rgba(13, 148, 136, 0.25);
   --card-shadow: 0 1px 3px rgba(0,0,0,0.08);
-  --nav-bg: rgba(255,255,255,0.92);
+  --nav-bg: rgba(255,255,255,0.85);
   --footer-bg: #0F172A;
   --footer-text: #94A3B8;
   --table-header-text: #FFFFFF;
   --table-row-alt: var(--color-bg);
   --badge-bg: rgba(13,148,136,0.08);
-  --hover-bg: rgba(13,148,136,0.05);
+  --hover-bg: #F9FAFB;
+
+  /* Minimal academic tokens (方案A) — default fallback */
+  --ink: #111827;
+  --ink-2: #374151;
+  --ink-3: #6B7280;
+  --ink-4: #9CA3AF;
+  --hairline: #E5E7EB;
+  --hairline-2: #F3F4F6;
+  --accent: #0D9488;
+  --table-header-bg: #F9FAFB;
+  --table-header-ink: #111827;
 }
