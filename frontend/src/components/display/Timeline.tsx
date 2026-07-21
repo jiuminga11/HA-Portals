@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import type { TimelineContent, TimelineItem } from "../../types";
 import { useLocale } from "../../hooks/useLocale";
@@ -20,7 +21,7 @@ function categoryColor(category: string): string {
   return "var(--cat-milestone)";
 }
 
-function TimelineRow({ item, isLast }: { item: TimelineItem; isLast: boolean }) {
+function TimelineRow({ item, isLast, transitionDelay }: { item: TimelineItem; isLast: boolean; transitionDelay: string }) {
   const { localized } = useLocale();
   const title = localized(item.title_zh, item.title_en);
   const subtitle = localized(item.subtitle_zh, item.subtitle_en);
@@ -28,7 +29,7 @@ function TimelineRow({ item, isLast }: { item: TimelineItem; isLast: boolean }) 
   const accent = categoryColor(item.category);
 
   return (
-    <div className="relative flex gap-4 sm:gap-6">
+    <div className="reveal-x relative flex gap-4 sm:gap-6" style={{ transitionDelay }}>
       {/* Timeline axis */}
       <div className="flex flex-col items-center shrink-0" style={{ width: "28px" }}>
         <div
@@ -87,6 +88,32 @@ function TimelineRow({ item, isLast }: { item: TimelineItem; isLast: boolean }) 
 export default function Timeline({ content, isHome = false }: Props) {
   const { t } = useLocale();
   const { items = [] } = content;
+  const listRef = useRef<HTMLDivElement>(null);
+
+  // §7.3 slide-in: one observer per Timeline (not per row), §7.1 contract.
+  // Stagger comes from per-row inline transition-delay.
+  useLayoutEffect(() => {
+    const el = listRef.current;
+    if (!el) return;
+    const showAll = () => {
+      el.querySelectorAll(".reveal-x").forEach((row) => row.classList.add("visible"));
+    };
+    if (typeof IntersectionObserver === "undefined") {
+      showAll();
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          showAll();
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   if (items.length === 0) {
     return (
@@ -102,9 +129,14 @@ export default function Timeline({ content, isHome = false }: Props) {
   const visibleItems = truncated ? items.slice(-HOME_LIMIT) : items;
 
   return (
-    <div className="w-full">
+    <div className="w-full" ref={listRef}>
       {visibleItems.map((item, idx) => (
-        <TimelineRow key={idx} item={item} isLast={idx === visibleItems.length - 1} />
+        <TimelineRow
+          key={idx}
+          item={item}
+          isLast={idx === visibleItems.length - 1}
+          transitionDelay={`${Math.min(idx * 80, 400)}ms`}
+        />
       ))}
       {truncated && (
         <div className="pl-[36px] sm:pl-[42px]">

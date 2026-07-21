@@ -15,7 +15,7 @@ export interface Page {
 // ===== Section types =====
 export type SectionType =
   | "rich_text" | "image_gallery" | "data_table" | "external_links" | "video"
-  | "metric_cards" | "timeline" | "profile_hero";
+  | "metric_cards" | "timeline" | "profile_hero" | "cta_band";
 
 // ===== Content 类型 =====
 export interface RichTextContent {
@@ -92,6 +92,12 @@ export interface TimelineContent {
   layout: "vertical" | "horizontal";
 }
 
+export interface CTAButton {
+  label_zh: string;
+  label_en: string;
+  url: string;
+}
+
 export interface SocialLink {
   platform: string;
   url: string;
@@ -107,10 +113,16 @@ export interface ProfileHeroContent {
   mission_en: string;
   tags: string[];
   social_links: SocialLink[];
-  cta_buttons: { label_zh: string; label_en: string; url: string }[];
+  cta_buttons: CTAButton[];
 }
 
-// ===== Discriminated union (8 types) =====
+export interface CtaBandContent {
+  description_zh: string;
+  description_en: string;
+  buttons: CTAButton[];
+}
+
+// ===== Discriminated union (9 types) =====
 export type Section =
   | { id: number; page_id: number; title_zh: string; title_en: string; type: "rich_text";       sort_order: number; visible: boolean; content: RichTextContent;       created_at: string | null; updated_at: string | null; }
   | { id: number; page_id: number; title_zh: string; title_en: string; type: "image_gallery";   sort_order: number; visible: boolean; content: ImageGalleryContent;   created_at: string | null; updated_at: string | null; }
@@ -119,7 +131,8 @@ export type Section =
   | { id: number; page_id: number; title_zh: string; title_en: string; type: "video";           sort_order: number; visible: boolean; content: VideoContent;          created_at: string | null; updated_at: string | null; }
   | { id: number; page_id: number; title_zh: string; title_en: string; type: "metric_cards";    sort_order: number; visible: boolean; content: MetricCardsContent;    created_at: string | null; updated_at: string | null; }
   | { id: number; page_id: number; title_zh: string; title_en: string; type: "timeline";        sort_order: number; visible: boolean; content: TimelineContent;       created_at: string | null; updated_at: string | null; }
-  | { id: number; page_id: number; title_zh: string; title_en: string; type: "profile_hero";    sort_order: number; visible: boolean; content: ProfileHeroContent;    created_at: string | null; updated_at: string | null; };
+  | { id: number; page_id: number; title_zh: string; title_en: string; type: "profile_hero";    sort_order: number; visible: boolean; content: ProfileHeroContent;    created_at: string | null; updated_at: string | null; }
+  | { id: number; page_id: number; title_zh: string; title_en: string; type: "cta_band";       sort_order: number; visible: boolean; content: CtaBandContent;       created_at: string | null; updated_at: string | null; };
 
 // ===== SiteConfig =====
 export interface SiteConfig {

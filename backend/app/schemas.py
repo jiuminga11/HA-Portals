@@ -218,7 +218,7 @@ class SectionCreate(BaseModel):
     page_id: int
     title_zh: str
     title_en: str = ""
-    type: Literal["rich_text", "image_gallery", "data_table", "external_links", "video", "metric_cards", "timeline", "profile_hero"]
+    type: Literal["rich_text", "image_gallery", "data_table", "external_links", "video", "metric_cards", "timeline", "profile_hero", "cta_band"]
     visible: bool = True
     content: dict | None = None
 

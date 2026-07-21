@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useLocale } from "../../hooks/useLocale";
+import HXMark from "../common/HXMark";
 
 export default function Footer() {
   const { t } = useLocale();
@@ -9,6 +10,11 @@ export default function Footer() {
       style={{ borderTop: "1px solid var(--hairline-2)" }}
     >
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-10">
+        <HXMark
+          variant="divider"
+          className="block mx-auto mb-6 opacity-40"
+          style={{ width: 120, height: 12 }}
+        />
         <div
           className="flex flex-col sm:flex-row items-center justify-between gap-3"
           style={{ color: "var(--ink-4)", fontSize: "15px" }}

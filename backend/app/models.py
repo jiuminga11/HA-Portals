@@ -77,7 +77,7 @@ class Section(Base):
     __tablename__ = "section"
     __table_args__ = (
         CheckConstraint(
-            "type IN ('rich_text', 'image_gallery', 'data_table', 'external_links', 'video', 'metric_cards', 'timeline', 'profile_hero')",
+            "type IN ('rich_text', 'image_gallery', 'data_table', 'external_links', 'video', 'metric_cards', 'timeline', 'profile_hero', 'cta_band')",
             name="ck_section_type",
         ),
         Index("idx_section_sort", "page_id", "visible", "sort_order"),

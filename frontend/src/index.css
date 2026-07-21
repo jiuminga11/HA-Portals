@@ -169,6 +169,6 @@ body {
 /* ─── Reduced Motion (§7.4 定稿写法) ─────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
-  .reveal { opacity: 1 !important; transform: none !important; }
+  .reveal, .reveal-x { opacity: 1 !important; transform: none !important; }
   html { scroll-behavior: auto; }
 }

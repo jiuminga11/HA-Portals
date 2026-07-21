@@ -173,6 +173,15 @@ class ProfileHeroContent(BaseModel):
     cta_buttons: list[CTAButton] = []
 
 
+# ===== cta_band =====
+
+
+class CtaBandContent(BaseModel):
+    description_zh: str = ""
+    description_en: str = ""
+    buttons: list[CTAButton] = []   # 复用 profile_hero 的 CTAButton 结构
+
+
 # ===== 类型分发 =====
 
 CONTENT_SCHEMA_MAP: dict[str, type[BaseModel]] = {
@@ -184,6 +193,7 @@ CONTENT_SCHEMA_MAP: dict[str, type[BaseModel]] = {
     "metric_cards": MetricCardsContent,
     "timeline": TimelineContent,
     "profile_hero": ProfileHeroContent,
+    "cta_band": CtaBandContent,
 }
 
 DEFAULT_CONTENT_MAP: dict[str, dict] = {
@@ -195,6 +205,7 @@ DEFAULT_CONTENT_MAP: dict[str, dict] = {
     "metric_cards": {"cards": []},
     "timeline": {"items": [], "layout": "vertical"},
     "profile_hero": {"avatar_url": "", "name_zh": "", "name_en": "", "tagline_zh": "", "tagline_en": "", "tags": [], "social_links": [], "cta_buttons": []},
+    "cta_band": {"description_zh": "", "description_en": "", "buttons": []},
 }
 
 

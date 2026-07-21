@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import type { ProfileHeroContent } from "../../types";
 import { useLocale } from "../../hooks/useLocale";
+import HXMark from "../common/HXMark";
 
 interface Props {
   content: ProfileHeroContent;
@@ -63,91 +64,6 @@ function getInitials(name: string): string {
   return trimmed.slice(0, 2);
 }
 
-/** Large abstract SVG: neural-network / code-node constellation */
-function TechVisual() {
-  return (
-    <div className="relative w-full aspect-square max-w-[640px] mx-auto lg:mx-0 lg:ml-auto">
-      <svg
-        className="w-full h-full"
-        viewBox="0 0 400 400"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        aria-hidden="true"
-      >
-        <defs>
-          <linearGradient id="tech-line" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="var(--color-primary)" stopOpacity="0.55" />
-            <stop offset="100%" stopColor="var(--color-accent)" stopOpacity="0.25" />
-          </linearGradient>
-          <linearGradient id="tech-node" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="var(--color-primary)" />
-            <stop offset="100%" stopColor="var(--color-accent)" />
-          </linearGradient>
-          <radialGradient id="tech-glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="var(--color-primary)" stopOpacity="0.22" />
-            <stop offset="100%" stopColor="var(--color-primary)" stopOpacity="0" />
-          </radialGradient>
-        </defs>
-
-        {/* Soft background glow */}
-        <circle cx="200" cy="200" r="160" fill="url(#tech-glow)" />
-
-        {/* Connection lines */}
-        <g stroke="url(#tech-line)" strokeWidth="1.2" opacity="0.7">
-          <line x1="80" y1="120" x2="160" y2="170" />
-          <line x1="160" y1="170" x2="260" y2="130" />
-          <line x1="260" y1="130" x2="320" y2="200" />
-          <line x1="320" y1="200" x2="260" y2="290" />
-          <line x1="260" y1="290" x2="160" y2="250" />
-          <line x1="160" y1="250" x2="80" y2="120" />
-          <line x1="160" y1="170" x2="160" y2="250" />
-          <line x1="260" y1="130" x2="260" y2="290" />
-          <line x1="80" y1="120" x2="200" y2="80" />
-          <line x1="200" y1="80" x2="320" y2="200" />
-          <line x1="200" y1="80" x2="260" y2="130" />
-          <line x1="200" y1="80" x2="160" y2="170" />
-          <line x1="80" y1="120" x2="120" y2="300" />
-          <line x1="120" y1="300" x2="260" y2="290" />
-          <line x1="120" y1="300" x2="160" y2="250" />
-        </g>
-
-        {/* Grid rings */}
-        <g stroke="var(--color-primary)" strokeWidth="0.8" strokeOpacity="0.18">
-          <circle cx="200" cy="200" r="60" />
-          <circle cx="200" cy="200" r="110" />
-          <circle cx="200" cy="200" r="155" />
-        </g>
-
-        {/* Nodes */}
-        <g fill="var(--color-bg-card)" stroke="url(#tech-node)" strokeWidth="2">
-          <circle cx="80" cy="120" r="8" />
-          <circle cx="200" cy="80" r="10" />
-          <circle cx="320" cy="200" r="9" />
-          <circle cx="260" cy="130" r="7" />
-          <circle cx="160" cy="170" r="7" />
-          <circle cx="160" cy="250" r="8" />
-          <circle cx="260" cy="290" r="7" />
-          <circle cx="120" cy="300" r="6" />
-        </g>
-
-        {/* Inner node cores */}
-        <g fill="url(#tech-node)">
-          <circle cx="200" cy="200" r="14" />
-          <circle cx="200" cy="200" r="6" fill="var(--color-bg-card)" />
-        </g>
-
-        {/* Floating accent dots */}
-        <g fill="var(--color-accent)" fillOpacity="0.65">
-          <circle cx="140" cy="110" r="3" />
-          <circle cx="290" cy="100" r="2.5" />
-          <circle cx="340" cy="260" r="3" />
-          <circle cx="100" cy="340" r="2.5" />
-          <circle cx="240" cy="340" r="2" />
-        </g>
-      </svg>
-    </div>
-  );
-}
 
 export default function ProfileHero({ content }: Props) {
   const { localized } = useLocale();
@@ -341,9 +257,9 @@ export default function ProfileHero({ content }: Props) {
             )}
           </div>
 
-          {/* Right: abstract tech visual */}
+          {/* Right: HX-Wave Mark (§3 单一标识系统 — replaces neural constellation) */}
           <div className="order-1 lg:order-2 flex items-center justify-center">
-            <TechVisual />
+            <HXMark variant="mark" animated style={{ width: "min(420px, 80%)", height: "auto" }} />
           </div>
         </div>
       </div>

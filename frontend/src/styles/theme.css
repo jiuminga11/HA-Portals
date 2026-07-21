@@ -31,6 +31,28 @@
   transform: none;
 }
 
+/* ─── Timeline row slide-in (§7.3: staggered, transition-delay from inline style) ─── */
+.reveal-x {
+  opacity: 0;
+  transform: translateX(24px);
+  transition: opacity .5s ease, transform .5s ease;
+}
+.reveal-x.visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* ─── HX mark one-time draw-in (§3.3: 2s ease-out, plays once via class swap) ─── */
+.hx-draw-pending .hx-stroke {
+  stroke-dasharray: var(--hx-len);
+  stroke-dashoffset: var(--hx-len);
+}
+.hx-drawn .hx-stroke {
+  stroke-dasharray: var(--hx-len);
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 2s ease-out;
+}
+
 /* ─── Core Theme Utilities ──────────────────────────────────────── */
 
 .bg-primary        { background-color: var(--color-primary); }

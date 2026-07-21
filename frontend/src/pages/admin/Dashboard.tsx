@@ -14,6 +14,7 @@ const TYPE_LABELS: Record<SectionType, string> = {
   metric_cards: "指标卡片",
   timeline: "时间线",
   profile_hero: "个人头图",
+  cta_band: "行动号召",
 };
 
 const TYPE_COLORS: Record<SectionType, string> = {
@@ -25,6 +26,7 @@ const TYPE_COLORS: Record<SectionType, string> = {
   metric_cards: "bg-amber-50 text-amber-700 border border-amber-200",
   timeline: "bg-teal-50 text-teal-700 border border-teal-200",
   profile_hero: "bg-indigo-50 text-indigo-700 border border-indigo-200",
+  cta_band: "bg-rose-50 text-rose-700 border border-rose-200",
 };
 
 const SECTION_TYPES: SectionType[] = [
@@ -36,6 +38,7 @@ const SECTION_TYPES: SectionType[] = [
   "metric_cards",
   "timeline",
   "profile_hero",
+  "cta_band",
 ];
 
 export default function Dashboard() {
@@ -344,6 +347,7 @@ export default function Dashboard() {
                     {type === "metric_cards" && "适合数据指标展示"}
                     {type === "timeline" && "适合时间轴、经历展示"}
                     {type === "profile_hero" && "适合个人简介头图"}
+                    {type === "cta_band" && "适合行动号召、转化引导"}
                   </span>
                 </button>
               ))}

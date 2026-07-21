@@ -32,3 +32,6 @@ docs/
 
 # Playwright screenshots
 .playwright-mcp/
+
+# SQLite backup files
+backend/data/*.bak*

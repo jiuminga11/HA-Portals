@@ -9,6 +9,8 @@ import VideoPlayer from "./VideoPlayer";
 import MetricCards from "./MetricCards";
 import Timeline from "./Timeline";
 import ProfileHero from "./ProfileHero";
+import CtaBand from "./CtaBand";
+import HXMark from "../common/HXMark";
 
 interface Props {
   section: Section;
@@ -29,6 +31,7 @@ const TREATMENT_MAP: Record<Section["type"], Treatment> = {
   video: "card",
   external_links: "card",
   profile_hero: "card", // unreachable — hero returns early
+  cta_band: "band",
 };
 
 function renderContent(section: Section, slug?: string) {
@@ -49,6 +52,8 @@ function renderContent(section: Section, slug?: string) {
       return <Timeline content={section.content} isHome={slug === "home"} />;
     case "profile_hero":
       return <ProfileHero content={section.content} />;
+    case "cta_band":
+      return <CtaBand content={section.content} />;
     default:
       return null;
   }
@@ -104,10 +109,7 @@ export default function SectionRenderer({ section, slug, compact = false }: Prop
       >
         {localized(section.title_zh, section.title_en)}
       </h2>
-      <div
-        className="mt-3 h-1 w-20 rounded-full"
-        style={{ background: 'linear-gradient(90deg, var(--color-primary), var(--color-gradient))' }}
-      />
+      <HXMark variant="divider" className="mt-3 block" style={{ width: 120, height: 12 }} />
     </div>
   );
 

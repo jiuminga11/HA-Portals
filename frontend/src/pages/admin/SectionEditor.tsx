@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
-import type { SectionType, Page, RichTextContent, ImageGalleryContent, DataTableContent, ExternalLinksContent, VideoContent, MetricCardsContent, TimelineContent, ProfileHeroContent } from "../../types";
+import type { SectionType, Page, RichTextContent, ImageGalleryContent, DataTableContent, ExternalLinksContent, VideoContent, MetricCardsContent, TimelineContent, ProfileHeroContent, CtaBandContent } from "../../types";
 import { getSections, createSection, updateSection } from "../../api/sections";
 import { getAdminPages } from "../../api/admin-pages";
 import RichTextEditor from "../../components/editor/RichTextEditor";
@@ -11,8 +11,9 @@ import VideoEditor from "../../components/editor/VideoEditor";
 import MetricCardsEditor from "../../components/editor/MetricCardsEditor";
 import TimelineEditor from "../../components/editor/TimelineEditor";
 import ProfileHeroEditor from "../../components/editor/ProfileHeroEditor";
+import CtaBandEditor from "../../components/editor/CtaBandEditor";
 
-type ContentTypes = RichTextContent | ImageGalleryContent | DataTableContent | ExternalLinksContent | VideoContent | MetricCardsContent | TimelineContent | ProfileHeroContent;
+type ContentTypes = RichTextContent | ImageGalleryContent | DataTableContent | ExternalLinksContent | VideoContent | MetricCardsContent | TimelineContent | ProfileHeroContent | CtaBandContent;
 
 const DEFAULT_CONTENT: Record<SectionType, ContentTypes> = {
   rich_text: { body: "" },
@@ -23,6 +24,7 @@ const DEFAULT_CONTENT: Record<SectionType, ContentTypes> = {
   metric_cards: { cards: [] },
   timeline: { items: [], layout: "vertical" },
   profile_hero: { avatar_url: "", name_zh: "", name_en: "", tagline_zh: "", tagline_en: "", mission_zh: "", mission_en: "", tags: [], social_links: [], cta_buttons: [] },
+  cta_band: { description_zh: "", description_en: "", buttons: [] },
 };
 
 const TYPE_LABELS: Record<SectionType, string> = {
@@ -34,6 +36,7 @@ const TYPE_LABELS: Record<SectionType, string> = {
   metric_cards: "指标卡片",
   timeline: "时间线",
   profile_hero: "个人头图",
+  cta_band: "行动号召",
 };
 
 export default function SectionEditor() {
@@ -177,6 +180,13 @@ export default function SectionEditor() {
         return (
           <ProfileHeroEditor
             content={content as ProfileHeroContent}
+            onChange={(c) => setContent(c)}
+          />
+        );
+      case "cta_band":
+        return (
+          <CtaBandEditor
+            content={content as CtaBandContent}
             onChange={(c) => setContent(c)}
           />
         );
