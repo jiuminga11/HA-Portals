@@ -11,7 +11,7 @@ export default function MetricCards({ content }: Props) {
 
   if (cards.length === 0) {
     return (
-      <div className="text-center py-8" style={{ color: 'var(--text-muted)' }}>
+      <div className="text-center py-8" style={{ color: "var(--text-muted)" }}>
         <p>{t.section.noData}</p>
       </div>
     );
@@ -19,34 +19,43 @@ export default function MetricCards({ content }: Props) {
 
   return (
     <div
-      className="flex flex-col sm:flex-row sm:flex-wrap sm:gap-x-12"
-      style={{
-        borderTop: "1px solid var(--hairline)",
-        borderBottom: "1px solid var(--hairline)",
-      }}
+      className="grid gap-5"
+      style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}
     >
       {cards.map((card, idx) => {
         const detail = localized(card.detail_zh, card.detail_en);
         const label = localized(card.label_zh, card.label_en);
-        const line = [label, detail].filter(Boolean).join(" \u00b7 ");
         return (
           <div
             key={idx}
-            className="flex-1 min-w-0 text-left sm:text-center"
-            style={{ paddingTop: "40px", paddingBottom: "40px" }}
+            className="glass-card rounded-2xl p-6 lg:p-8 text-left"
           >
+            {label && (
+              <div
+                className="text-lg font-medium mb-2"
+                style={{ color: "var(--ink-3)" }}
+              >
+                {label}
+              </div>
+            )}
             <div
-              className="font-mono tabular-nums"
-              style={{ color: "var(--ink)", fontSize: "40px", fontWeight: 700, lineHeight: 1.1 }}
+              className="font-mono tabular-nums text-gradient"
+              style={{
+                fontSize: "56px",
+                fontWeight: 700,
+                lineHeight: 1.1,
+              }}
             >
               {card.value}
             </div>
-            <div
-              className="mt-2 line-clamp-2 sm:mx-auto"
-              style={{ color: "var(--ink-4)", fontSize: "13px", lineHeight: 1.5, maxWidth: "22ch" }}
-            >
-              {line}
-            </div>
+            {detail && (
+              <div
+                className="mt-3 text-lg"
+                style={{ color: "var(--ink-4)", lineHeight: 1.6 }}
+              >
+                {detail}
+              </div>
+            )}
           </div>
         );
       })}

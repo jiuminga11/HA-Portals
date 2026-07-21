@@ -155,6 +155,17 @@
   --table-row-alt: #F5F5F4;
   --badge-bg: rgba(49,46,129,0.08);
   --hover-bg: rgba(49,46,129,0.05);
+
+  /* Minimal academic tokens (方案A) */
+  --ink: #1C1917;
+  --ink-2: #44403C;
+  --ink-3: #78716C;
+  --ink-4: #A8A29E;
+  --hairline: #D6D3D1;
+  --hairline-2: #E7E5E4;
+  --accent: #312E81;
+  --table-header-bg: #F5F5F4;
+  --table-header-ink: #1C1917;
 }
 
 /* ===== Theme B: Deep Indigo + Sage — Dark ===== */
@@ -198,6 +209,17 @@
   --table-row-alt: rgba(255,255,255,0.03);
   --badge-bg: rgba(129,140,248,0.08);
   --hover-bg: rgba(129,140,248,0.05);
+
+  /* Minimal academic tokens (方案A) — dark */
+  --ink: #E0E7FF;
+  --ink-2: #A5B4FC;
+  --ink-3: #818CF8;
+  --ink-4: #6366F1;
+  --hairline: #4338CA;
+  --hairline-2: #312E81;
+  --accent: #818CF8;
+  --table-header-bg: #312E81;
+  --table-header-ink: #E0E7FF;
 }
 
 /* ===== Theme C: Forest + Terracotta (跨界创新) — Light ===== */
@@ -241,6 +263,17 @@
   --table-row-alt: #FFFBEB;
   --badge-bg: rgba(6,95,70,0.08);
   --hover-bg: rgba(6,95,70,0.05);
+
+  /* Minimal academic tokens (方案A) */
+  --ink: #1C1917;
+  --ink-2: #44403C;
+  --ink-3: #78716C;
+  --ink-4: #A8A29E;
+  --hairline: #D6D3D1;
+  --hairline-2: #E7E5E4;
+  --accent: #065F46;
+  --table-header-bg: #FEF3C7;
+  --table-header-ink: #1C1917;
 }
 
 /* ===== Theme C: Forest + Terracotta — Dark ===== */
@@ -284,6 +317,233 @@
   --table-row-alt: rgba(255,255,255,0.03);
   --badge-bg: rgba(110,231,183,0.08);
   --hover-bg: rgba(110,231,183,0.05);
+
+  /* Minimal academic tokens (方案A) — dark */
+  --ink: #FEF3C7;
+  --ink-2: #D6D3D1;
+  --ink-3: #A8A29E;
+  --ink-4: #78716C;
+  --hairline: #44403C;
+  --hairline-2: #292524;
+  --accent: #6EE7B7;
+  --table-header-bg: #292524;
+  --table-header-ink: #FEF3C7;
+}
+
+/* ===== Theme D: Cyber Purple (赛博朋克) — Light ===== */
+[data-theme="cyber-purple"] {
+  --color-primary: #8B5CF6;
+  --color-primary-hover: #7C3AED;
+  --color-accent: #06B6D4;
+  --color-accent-hover: #0891B2;
+  --color-highlight: #DB2777;
+  --color-bg: #FAFAFF;
+  --color-bg-secondary: #F5F3FF;
+  --color-bg-card: #FFFFFF;
+  --color-text: #1E1B2E;
+  --color-text-secondary: #4C4763;
+  --color-text-muted: #6E6890;
+  --color-border: #DDD6FE;
+  --color-gradient-from: #8B5CF6;
+  --color-gradient-to: #06B6D4;
+  --color-primary-rgb: 139, 92, 246;
+  --color-accent-rgb: 6, 182, 212;
+  --color-highlight-rgb: 219, 39, 119;
+
+  /* Timeline category colors */
+  --cat-education: #2563EB;
+  --cat-career: var(--color-primary);
+  --cat-research: #7C3AED;
+  --cat-award: #DB2777;
+  --cat-publication: var(--color-accent);
+  --cat-milestone: #F59E0B;
+
+  /* Component tokens */
+  --glow-primary: rgba(139, 92, 246, 0.25);
+  --glow-cyan: rgba(6, 182, 212, 0.2);
+  --glow-purple: rgba(219, 39, 119, 0.2);
+  --border-glow: rgba(139, 92, 246, 0.25);
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  --nav-bg: rgba(250,250,255,0.9);
+  --footer-bg: #0F172A;
+  --footer-text: #94A3B8;
+  --table-header-text: #FFFFFF;
+  --table-row-alt: #F5F3FF;
+  --badge-bg: rgba(139,92,246,0.08);
+  --hover-bg: rgba(139,92,246,0.06);
+
+  /* Minimal academic tokens (方案A) */
+  --ink: #1E1B2E;
+  --ink-2: #4C4763;
+  --ink-3: #6E6890;
+  --ink-4: #9B94B8;
+  --hairline: #DDD6FE;
+  --hairline-2: #EDE9FE;
+  --accent: #8B5CF6;
+  --table-header-bg: #F5F3FF;
+  --table-header-ink: #1E1B2E;
+}
+
+/* ===== Theme D: Cyber Purple — Dark (霓虹夜色) ===== */
+[data-theme="cyber-purple"].dark {
+  --color-primary: #A78BFA;
+  --color-primary-hover: #8B5CF6;
+  --color-accent: #22D3EE;
+  --color-accent-hover: #06B6D4;
+  --color-highlight: #F472B6;
+  --color-bg: #0B0817;
+  --color-bg-secondary: #131022;
+  --color-bg-card: #171330;
+  --color-text: #EDE9FE;
+  --color-text-secondary: #C4B5FD;
+  --color-text-muted: #8B85B0;
+  --color-border: #2E2653;
+  --color-gradient-from: #A78BFA;
+  --color-gradient-to: #22D3EE;
+  --color-primary-rgb: 167, 139, 250;
+  --color-accent-rgb: 34, 211, 238;
+  --color-highlight-rgb: 244, 114, 182;
+
+  /* Timeline category colors */
+  --cat-education: #60A5FA;
+  --cat-career: var(--color-primary);
+  --cat-research: #C4B5FD;
+  --cat-award: #F472B6;
+  --cat-publication: var(--color-accent);
+  --cat-milestone: #FBBF24;
+
+  /* Component tokens — dark */
+  --glow-primary: rgba(167, 139, 250, 0.25);
+  --glow-cyan: rgba(34, 211, 238, 0.2);
+  --glow-purple: rgba(244, 114, 182, 0.2);
+  --border-glow: rgba(167, 139, 250, 0.25);
+  --card-shadow: 0 4px 30px rgba(0,0,0,0.35);
+  --nav-bg: rgba(11,8,23,0.85);
+  --footer-bg: #0F172A;
+  --footer-text: #94A3B8;
+  --table-header-text: #FFFFFF;
+  --table-row-alt: rgba(255,255,255,0.03);
+  --badge-bg: rgba(167,139,250,0.08);
+  --hover-bg: #171330;
+
+  /* Minimal academic tokens (方案A) — dark */
+  --ink: #EDE9FE;
+  --ink-2: #C4B5FD;
+  --ink-3: #8B85B0;
+  --ink-4: #6B6390;
+  --hairline: #2E2653;
+  --hairline-2: #1A1533;
+  --accent: #A78BFA;
+  --table-header-bg: #171330;
+  --table-header-ink: #EDE9FE;
+}
+
+/* ===== Theme E: Ink Blue + Gold (学术正式) — Light ===== */
+[data-theme="ink-blue-gold"] {
+  --color-primary: #2F5FBF;
+  --color-primary-hover: #1E3A8A;
+  --color-accent: #D97706;
+  --color-accent-hover: #B45309;
+  --color-highlight: #9F1239;
+  --color-bg: #F8F7F4;
+  --color-bg-secondary: #FFFFFF;
+  --color-bg-card: #FFFFFF;
+  --color-text: #1C1917;
+  --color-text-secondary: #44403C;
+  --color-text-muted: #78716C;
+  --color-border: #E7E5E4;
+  --color-gradient-from: #2F5FBF;
+  --color-gradient-to: #D97706;
+  --color-primary-rgb: 47, 95, 191;
+  --color-accent-rgb: 217, 119, 6;
+  --color-highlight-rgb: 159, 18, 57;
+
+  /* Timeline category colors */
+  --cat-education: #1E40AF;
+  --cat-career: var(--color-primary);
+  --cat-research: #5B21B6;
+  --cat-award: var(--color-accent);
+  --cat-publication: var(--color-highlight);
+  --cat-milestone: #A16207;
+
+  /* Component tokens */
+  --glow-primary: rgba(47, 95, 191, 0.25);
+  --glow-cyan: rgba(217, 119, 6, 0.2);
+  --glow-purple: rgba(159, 18, 57, 0.2);
+  --border-glow: rgba(47, 95, 191, 0.25);
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  --nav-bg: rgba(248,247,244,0.92);
+  --footer-bg: #0F172A;
+  --footer-text: #94A3B8;
+  --table-header-text: #FFFFFF;
+  --table-row-alt: #F5F5F4;
+  --badge-bg: rgba(47,95,191,0.08);
+  --hover-bg: rgba(47,95,191,0.05);
+
+  /* Minimal academic tokens (方案A) */
+  --ink: #1C1917;
+  --ink-2: #44403C;
+  --ink-3: #78716C;
+  --ink-4: #A8A29E;
+  --hairline: #E7E5E4;
+  --hairline-2: #F5F5F4;
+  --accent: #2F5FBF;
+  --table-header-bg: #F5F5F4;
+  --table-header-ink: #1C1917;
+}
+
+/* ===== Theme E: Ink Blue + Gold — Dark (深夜藏青) ===== */
+[data-theme="ink-blue-gold"].dark {
+  --color-primary: #93C5FD;
+  --color-primary-hover: #60A5FA;
+  --color-accent: #FBBF24;
+  --color-accent-hover: #F59E0B;
+  --color-highlight: #FB7185;
+  --color-bg: #0A1128;
+  --color-bg-secondary: #0F1B3D;
+  --color-bg-card: #12224A;
+  --color-text: #E8EDF9;
+  --color-text-secondary: #B6C4E2;
+  --color-text-muted: #7C8DB5;
+  --color-border: #22335F;
+  --color-gradient-from: #93C5FD;
+  --color-gradient-to: #FBBF24;
+  --color-primary-rgb: 147, 197, 253;
+  --color-accent-rgb: 251, 191, 36;
+  --color-highlight-rgb: 251, 113, 133;
+
+  /* Timeline category colors */
+  --cat-education: #93C5FD;
+  --cat-career: var(--color-primary);
+  --cat-research: #C4B5FD;
+  --cat-award: var(--color-accent);
+  --cat-publication: var(--color-highlight);
+  --cat-milestone: #FBBF24;
+
+  /* Component tokens — dark */
+  --glow-primary: rgba(147, 197, 253, 0.25);
+  --glow-cyan: rgba(251, 191, 36, 0.2);
+  --glow-purple: rgba(251, 113, 133, 0.2);
+  --border-glow: rgba(147, 197, 253, 0.25);
+  --card-shadow: 0 4px 30px rgba(0,0,0,0.35);
+  --nav-bg: rgba(10,17,40,0.85);
+  --footer-bg: #0F172A;
+  --footer-text: #94A3B8;
+  --table-header-text: #FFFFFF;
+  --table-row-alt: rgba(255,255,255,0.03);
+  --badge-bg: rgba(147,197,253,0.08);
+  --hover-bg: #12224A;
+
+  /* Minimal academic tokens (方案A) — dark */
+  --ink: #E8EDF9;
+  --ink-2: #B6C4E2;
+  --ink-3: #7C8DB5;
+  --ink-4: #5A6C96;
+  --hairline: #22335F;
+  --hairline-2: #16224A;
+  --accent: #93C5FD;
+  --table-header-bg: #12224A;
+  --table-header-ink: #E8EDF9;
 }
 
 /* ===== Default fallback (teal-amber light) =====

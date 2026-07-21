@@ -1,4 +1,5 @@
 import type { DataTableContent } from "../../types";
+import { useLocale } from "../../hooks/useLocale";
 
 interface Props {
   content: DataTableContent;
@@ -6,21 +7,17 @@ interface Props {
 
 export default function DataTable({ content }: Props) {
   const { columns = [], rows = [] } = content;
+  const { t } = useLocale();
 
   if (columns.length === 0) {
     return (
-      <div className="text-center py-8" style={{ color: 'var(--text-muted)' }}>暂无数据</div>
+      <div className="text-center py-8" style={{ color: 'var(--text-muted)' }}>{t.section.noData}</div>
     );
   }
 
   return (
     <div
-      className="overflow-x-auto"
-      style={{
-        borderRadius: '12px',
-        border: '1px solid var(--card-border)',
-        boxShadow: 'var(--card-shadow)',
-      }}
+      className="overflow-x-auto glass-card rounded-2xl"
     >
       <table className="w-full text-lg">
         <thead>
@@ -34,7 +31,7 @@ export default function DataTable({ content }: Props) {
               className="px-4 py-3.5 font-semibold whitespace-nowrap w-14 text-center"
               style={{ color: 'var(--table-header-ink)', letterSpacing: '0.03em' }}
             >
-              序号
+              {t.dataTable.index}
             </th>
             {columns.map((col) => (
               <th
@@ -59,7 +56,7 @@ export default function DataTable({ content }: Props) {
                 className="text-center py-8"
                 style={{ color: 'var(--text-muted)' }}
               >
-                暂无数据
+                {t.section.noData}
               </td>
             </tr>
           ) : (

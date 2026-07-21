@@ -2,6 +2,17 @@
   "nav": { "home": "Home", "about": "About", "research": "Research", "projects": "Projects", "honors": "Honors", "cv": "CV", "blog": "Blog", "admin": "Admin" },
   "common": { "readMore": "Read More", "back": "Back", "downloadCV": "Download CV", "contact": "Contact", "language": "Language", "theme": "Theme", "loading": "Loading...", "error": "Failed to load" },
   "home": { "viewResearch": "View Research", "viewProjects": "View Projects" },
-  "footer": { "builtWith": "Built with FastAPI + React", "copyright": "© 2026 Hu Xing", "email": "huxing@example.com" },
-  "section": { "noData": "No data", "present": "Present", "viewFullTimeline": "View full timeline" }
+  "footer": { "builtWith": "Built with FastAPI + React", "copyright": "© 2026 Hu Xing", "email": "jiuminga1@qq.com" },
+  "section": {
+    "noData": "No data",
+    "noContent": "No content",
+    "noImages": "No images",
+    "noVideos": "No videos",
+    "imageAlt": "Image",
+    "videoNotSupported": "Your browser does not support video playback",
+    "present": "Present",
+    "viewFullTimeline": "View full timeline"
+  },
+  "pagination": { "prev": "Previous", "next": "Next" },
+  "dataTable": { "index": "No." }
 }

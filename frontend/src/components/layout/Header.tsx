@@ -88,13 +88,13 @@ export default function Header({ siteConfig }: Props) {
           boxShadow: undefined,
         }}
       >
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-10">
           <div className="flex items-center justify-between h-16">
             {/* Left: site name */}
             <Link to="/" className="flex items-center group">
               <span
                 className="font-display font-bold tracking-tight"
-                style={{ color: "var(--ink)", fontSize: "19px" }}
+                style={{ color: "var(--ink)", fontSize: "20px" }}
               >
                 {siteConfig?.site_title || "Hu Xing"}
               </span>
@@ -108,7 +108,7 @@ export default function Header({ siteConfig }: Props) {
                   <Link
                     key={item.slug}
                     to={item.path}
-                    className="relative px-3 py-2 text-sm font-medium transition-colors duration-200"
+                    className="relative px-3 py-2 text-base font-medium transition-colors duration-200"
                     style={{
                       color: active ? "var(--ink)" : "var(--ink-3)",
                     }}

@@ -1,15 +1,18 @@
 import type { RichTextContent } from "../../types";
 import { basePath } from "../../lib/basePath";
+import { useLocale } from "../../hooks/useLocale";
 
 interface Props {
   content: RichTextContent;
 }
 
 export default function RichTextBlock({ content }: Props) {
+  const { t } = useLocale();
+
   if (!content.body) {
     return (
       <div className="text-center py-8" style={{ color: 'var(--ink-4)' }}>
-        <p>暂无内容</p>
+        <p>{t.section.noContent}</p>
       </div>
     );
   }
@@ -20,16 +23,18 @@ export default function RichTextBlock({ content }: Props) {
     : content.body;
 
   return (
-    <div
-      className="prose prose-xl max-w-none prose-dark
-        prose-headings:font-display
-        prose-h1:text-4xl prose-h2:text-3xl prose-h3:text-2xl
-        prose-p:leading-relaxed prose-p:text-lg
-        prose-li:leading-relaxed prose-li:text-lg
-        prose-img:rounded-xl prose-img:shadow-lg
-        prose-table:text-lg"
-      style={{ color: 'var(--text-base)' }}
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
+    <div className="glass-card rounded-2xl p-6 sm:p-8 md:p-10">
+      <div
+        className="prose prose-xl max-w-none prose-dark tech-prose
+          prose-headings:font-display
+          prose-h1:text-4xl prose-h2:text-2xl prose-h3:text-xl
+          prose-p:text-lg
+          prose-li:my-1 prose-li:leading-relaxed prose-li:text-lg
+          prose-img:rounded-xl prose-img:shadow-lg
+          prose-table:text-lg"
+        style={{ color: 'var(--text-base)' }}
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+    </div>
   );
 }

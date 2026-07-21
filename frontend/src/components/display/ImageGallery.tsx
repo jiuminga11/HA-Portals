@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import type { ImageGalleryContent } from "../../types";
 import { resolveMediaUrl } from "../../lib/basePath";
+import { useLocale } from "../../hooks/useLocale";
 
 interface Props {
   content: ImageGalleryContent;
@@ -8,6 +9,7 @@ interface Props {
 
 export default function ImageGallery({ content }: Props) {
   const { columns = 4, page_size = 8, items = [] } = content;
+  const { t } = useLocale();
   const [currentPage, setCurrentPage] = useState(0);
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -52,7 +54,7 @@ export default function ImageGallery({ content }: Props) {
         <svg className="w-12 h-12 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
-        <p>暂无图片</p>
+        <p>{t.section.noImages}</p>
       </div>
     );
   }
@@ -72,23 +74,17 @@ export default function ImageGallery({ content }: Props) {
         {pageItems.map((item, idx) => (
           <div
             key={idx}
-            className="group relative overflow-hidden cursor-pointer"
-            style={{
-              borderRadius: '12px',
-              background: 'var(--card-bg)',
-              border: '1px solid var(--card-border)',
-              transition: 'all 0.3s ease',
-            }}
+            className="group relative overflow-hidden cursor-pointer glass-card rounded-xl"
             onClick={() => openPreview(idx)}
             onMouseEnter={(e) => {
               const el = e.currentTarget as HTMLDivElement;
               el.style.borderColor = 'var(--border-glow)';
-              el.style.boxShadow = '0 4px 20px var(--glow-primary), 0 8px 30px rgba(0,0,0,0.08)';
+              el.style.boxShadow = '0 4px 20px var(--glow-primary), 0 8px 30px rgba(0,0,0,0.12)';
               el.style.transform = 'translateY(-3px)';
             }}
             onMouseLeave={(e) => {
               const el = e.currentTarget as HTMLDivElement;
-              el.style.borderColor = 'var(--card-border)';
+              el.style.borderColor = '';
               el.style.boxShadow = '';
               el.style.transform = '';
             }}
@@ -96,7 +92,7 @@ export default function ImageGallery({ content }: Props) {
             <div className="aspect-square overflow-hidden">
               <img
                 src={resolveMediaUrl(item.url)}
-                alt={item.caption || "图片"}
+                alt={item.caption || t.section.imageAlt}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 loading="lazy"
               />
@@ -105,26 +101,26 @@ export default function ImageGallery({ content }: Props) {
               <div
                 className="absolute bottom-0 left-0 right-0 p-3"
                 style={{
-                  background: 'linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 100%)',
+                  background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)',
                 }}
               >
-                <p className="text-base truncate" style={{ color: '#E2E8F0' }}>{item.caption}</p>
+                <p className="text-base truncate" style={{ color: 'var(--ink)' }}>{item.caption}</p>
               </div>
             )}
             {/* Hover overlay */}
             <div
               className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-              style={{ background: 'rgba(59,130,246,0.08)' }}
+              style={{ background: 'rgba(var(--color-primary-rgb), 0.08)' }}
             >
               <div
                 className="w-10 h-10 rounded-full flex items-center justify-center"
                 style={{
-                  background: 'rgba(59,130,246,0.2)',
-                  border: '1px solid rgba(59,130,246,0.4)',
+                  background: 'rgba(var(--color-primary-rgb), 0.18)',
+                  border: '1px solid rgba(var(--color-primary-rgb), 0.35)',
                   backdropFilter: 'blur(8px)',
                 }}
               >
-                <svg className="w-5 h-5" fill="none" stroke="#60A5FA" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" style={{ color: 'var(--color-primary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
                 </svg>
               </div>
@@ -146,7 +142,7 @@ export default function ImageGallery({ content }: Props) {
               color: 'var(--color-primary)',
             }}
           >
-            上一页
+            {t.pagination.prev}
           </button>
           {Array.from({ length: totalPages }, (_, i) => (
             <button
@@ -177,7 +173,7 @@ export default function ImageGallery({ content }: Props) {
               color: 'var(--color-primary)',
             }}
           >
-            下一页
+            {t.pagination.next}
           </button>
         </div>
       )}
@@ -188,7 +184,7 @@ export default function ImageGallery({ content }: Props) {
         className="fixed inset-0 w-full h-full max-w-full max-h-full p-0 m-0"
         style={{
           border: "none",
-          background: 'rgba(8,14,28,0.96)',
+          background: 'color-mix(in srgb, var(--color-bg) 96%, transparent)',
           backdropFilter: 'blur(20px)',
         }}
         onClick={(e) => {
@@ -201,17 +197,17 @@ export default function ImageGallery({ content }: Props) {
               onClick={closePreview}
               className="absolute top-4 right-4 z-10 rounded-full w-10 h-10 flex items-center justify-center transition-all duration-200"
               style={{
-                background: 'rgba(255,255,255,0.08)',
-                border: '1px solid rgba(255,255,255,0.12)',
-                color: '#94A3B8',
+                background: 'rgba(var(--color-primary-rgb), 0.10)',
+                border: '1px solid rgba(var(--color-primary-rgb), 0.20)',
+                color: 'var(--text-muted)',
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(59,130,246,0.2)';
-                (e.currentTarget as HTMLButtonElement).style.color = '#60A5FA';
+                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(var(--color-primary-rgb), 0.22)';
+                (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-primary)';
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.08)';
-                (e.currentTarget as HTMLButtonElement).style.color = '#94A3B8';
+                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(var(--color-primary-rgb), 0.10)';
+                (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)';
               }}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -224,9 +220,9 @@ export default function ImageGallery({ content }: Props) {
                 onClick={prevImage}
                 className="absolute left-4 z-10 rounded-full w-12 h-12 flex items-center justify-center transition-all duration-200"
                 style={{
-                  background: 'rgba(59,130,246,0.15)',
-                  border: '1px solid rgba(59,130,246,0.3)',
-                  color: '#93C5FD',
+                  background: 'rgba(var(--color-primary-rgb), 0.15)',
+                  border: '1px solid rgba(var(--color-primary-rgb), 0.30)',
+                  color: 'var(--color-primary)',
                 }}
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -240,9 +236,9 @@ export default function ImageGallery({ content }: Props) {
                 onClick={nextImage}
                 className="absolute right-4 z-10 rounded-full w-12 h-12 flex items-center justify-center transition-all duration-200"
                 style={{
-                  background: 'rgba(59,130,246,0.15)',
-                  border: '1px solid rgba(59,130,246,0.3)',
-                  color: '#93C5FD',
+                  background: 'rgba(var(--color-primary-rgb), 0.15)',
+                  border: '1px solid rgba(var(--color-primary-rgb), 0.30)',
+                  color: 'var(--color-primary)',
                 }}
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -253,11 +249,11 @@ export default function ImageGallery({ content }: Props) {
 
             <img
               src={resolveMediaUrl(items[previewIndex].url)}
-              alt={items[previewIndex].caption || "图片"}
+              alt={items[previewIndex].caption || t.section.imageAlt}
               className="max-w-[90vw] max-h-[85vh] object-contain"
               style={{
                 borderRadius: '12px',
-                boxShadow: '0 0 60px rgba(59,130,246,0.15), 0 30px 60px rgba(0,0,0,0.5)',
+                boxShadow: '0 0 60px rgba(var(--color-primary-rgb), 0.15), 0 30px 60px rgba(0,0,0,0.5)',
               }}
             />
 
@@ -265,10 +261,11 @@ export default function ImageGallery({ content }: Props) {
               <div
                 className="absolute bottom-8 left-1/2 -translate-x-1/2 px-5 py-2 rounded-full text-lg"
                 style={{
-                  background: 'rgba(15,23,42,0.85)',
-                  border: '1px solid rgba(59,130,246,0.2)',
-                  color: '#94A3B8',
+                  background: 'var(--card-bg)',
+                  border: '1px solid var(--card-border)',
+                  color: 'var(--text-muted)',
                   backdropFilter: 'blur(12px)',
+                  boxShadow: 'var(--card-shadow)',
                 }}
               >
                 {items[previewIndex].caption}
@@ -277,7 +274,7 @@ export default function ImageGallery({ content }: Props) {
 
             <div
               className="absolute bottom-16 left-1/2 -translate-x-1/2 text-base"
-            style={{ color: 'var(--text-faint)' }}
+              style={{ color: 'var(--text-faint)' }}
             >
               {previewIndex + 1} / {items.length}
             </div>

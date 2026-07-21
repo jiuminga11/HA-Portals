@@ -26,8 +26,8 @@
 /* ─── Scroll Reveal ─────────────────────────────────────────────── */
 
 .reveal {
-  opacity: 0;
-  transform: translateY(32px);
+  opacity: 1;
+  transform: translateY(0);
   transition: opacity 0.75s ease, transform 0.75s ease;
 }
 .reveal.visible {
@@ -54,6 +54,8 @@
 .hover\:border-primary:hover { border-color: var(--color-primary); }
 .hover\:bg-primary:hover     { background-color: var(--color-primary); }
 
+.hover-bg:hover { background-color: var(--hover-bg); }
+.bg-gradient-primary { background: linear-gradient(135deg, var(--color-primary), var(--color-gradient)); }
 /* Focus ring */
 .focus\:ring-primary:focus { ring-color: var(--color-primary); }
 
@@ -152,6 +154,14 @@
   border-radius: 2px;
 }
 
+.section-standard {
+  padding-top: 90px;
+  padding-bottom: 90px;
+}
+.hero-section + .section-standard {
+  padding-top: 48px;
+}
+
 /* ─── Animated Background Orbs ─────────────────────────────────── */
 
 .bg-orb {
@@ -218,9 +228,91 @@
 
 /* ─── Social Link Hover (C-6 fix: pure CSS, no inline JS) ─────── */
 
+.social-link {
+  color: var(--color-primary);
+  border: 1px solid transparent;
+}
 .social-link:hover {
-  background: rgba(var(--color-primary-rgb), 0.10) !important;
-  border-color: rgba(var(--color-primary-rgb), 0.40) !important;
-  color: var(--color-primary) !important;
+  background: var(--hover-bg);
+  border-color: rgba(var(--color-primary-rgb), 0.40);
+  color: var(--accent);
   box-shadow: 0 0 12px rgba(var(--color-primary-rgb), 0.25);
+}
+
+
+/* ─── Tech Dark Theme Utilities (方案 A) ─────────────────────────── */
+
+.glass-card {
+  background: linear-gradient(135deg, rgba(var(--color-primary-rgb), 0.06) 0%, rgba(var(--color-bg-card), 0.72) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(var(--color-primary-rgb), 0.15);
+  box-shadow: 0 0 0 1px rgba(var(--color-primary-rgb), 0.05) inset, 0 8px 32px rgba(0, 0, 0, 0.32), 0 0 20px rgba(var(--color-primary-rgb), 0.08);
+  transition: all 0.3s ease;
+}
+.glass-card:hover {
+  border-color: rgba(var(--color-primary-rgb), 0.28);
+  box-shadow: 0 0 0 1px rgba(var(--color-primary-rgb), 0.08) inset, 0 12px 40px rgba(0, 0, 0, 0.38), 0 0 28px rgba(var(--color-primary-rgb), 0.14);
+  transform: translateY(-2px);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-gradient) 50%, var(--color-accent) 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: text-shimmer 5s linear infinite;
+}
+
+.glow-text {
+  text-shadow: 0 0 18px rgba(var(--color-primary-rgb), 0.35), 0 0 36px rgba(var(--color-primary-rgb), 0.15);
+}
+
+/* Tech prose dark enhancements */
+.tech-prose h1,
+.tech-prose h2,
+.tech-prose h3 {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-gradient) 50%, var(--color-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.tech-prose pre {
+  background: var(--color-bg-card) !important;
+  border: 1px solid var(--card-border) !important;
+  box-shadow: var(--card-shadow);
+}
+.tech-prose blockquote {
+  border-left: 3px solid var(--color-primary);
+  background: rgba(var(--color-primary-rgb), 0.04);
+  border-radius: 0 8px 8px 0;
+}
+
+/* Subtle animated tech background — grid + slow drifting glow */
+.tech-bg {
+  position: relative;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(var(--color-primary-rgb), 0.12) 0%, transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(var(--color-accent-rgb), 0.10) 0%, transparent 42%),
+    linear-gradient(rgba(var(--color-primary-rgb), 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--color-primary-rgb), 0.05) 1px, transparent 1px);
+  background-size: 200% 200%, 200% 200%, 40px 40px, 40px 40px;
+  animation: tech-bg-drift 18s ease-in-out infinite;
+}
+.tech-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(var(--color-primary-rgb), 0.06) 0%, transparent 60%);
+  animation: tech-bg-pulse 8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes tech-bg-drift {
+  0%, 100% { background-position: 0% 0%, 100% 100%, 0 0, 0 0; }
+  50% { background-position: 100% 100%, 0% 0%, 0 0, 0 0; }
+}
+@keyframes tech-bg-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
 }

@@ -48,10 +48,10 @@ export default function PublicPage({ slug }: Props) {
   if (loading) {
     return (
       <div
-        className="min-h-[60vh] flex items-center justify-center"
-        style={{ background: "var(--bg-base)" }}
+        className="min-h-[60vh] flex items-center justify-center tech-bg"
+        style={{ background: "var(--color-bg)" }}
       >
-        <div className="text-center">
+        <div className="text-center glass-card rounded-2xl px-10 py-12">
           <div className="relative w-12 h-12 mx-auto mb-4">
             <div
               className="absolute inset-0 rounded-full border-2 animate-spin"
@@ -78,21 +78,21 @@ export default function PublicPage({ slug }: Props) {
   if (error || !page) {
     return (
       <div
-        className="min-h-[60vh] flex items-center justify-center"
-        style={{ background: "var(--bg-base)" }}
+        className="min-h-[60vh] flex items-center justify-center tech-bg"
+        style={{ background: "var(--color-bg)" }}
       >
-        <div className="text-center">
+        <div className="text-center glass-card rounded-2xl px-10 py-12">
           <div
             className="w-16 h-16 mb-4 mx-auto rounded-2xl flex items-center justify-center"
             style={{
-              background: "rgba(239, 68, 68, 0.08)",
-              border: "1px solid rgba(239, 68, 68, 0.15)",
+              background: "rgba(var(--color-highlight-rgb), 0.08)",
+              border: "1px solid rgba(var(--color-highlight-rgb), 0.15)",
             }}
           >
             <svg
               className="w-8 h-8"
               fill="none"
-              stroke="#EF4444"
+              style={{ color: "var(--color-highlight)" }}
               viewBox="0 0 24 24"
               strokeWidth={1.5}
             >
@@ -112,18 +112,14 @@ export default function PublicPage({ slug }: Props) {
   }
 
   return (
-    <div style={{ background: "var(--bg-base)" }}>
+    <div className="tech-bg" style={{ background: "var(--color-bg)" }}>
       {sections.length === 0 ? (
         <div
           className="flex flex-col items-center justify-center py-32"
           style={{ color: "var(--text-muted)" }}
         >
           <div
-            className="w-20 h-20 mb-6 rounded-2xl flex items-center justify-center"
-            style={{
-              background: "rgba(59,130,246,0.08)",
-              border: "1px solid rgba(59,130,246,0.15)",
-            }}
+            className="w-20 h-20 mb-6 rounded-2xl flex items-center justify-center glass-card"
           >
             <svg
               className="w-10 h-10 opacity-40"

@@ -24,6 +24,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.3s, color 0.3s;
+  font-size: 19px;
 }
 
 #root {
@@ -47,20 +48,28 @@ body {
   border-radius: 0.5rem;
 }
 
+.prose p {
+  line-height: 1.75;
+}
+
+.prose p + p {
+  margin-top: 1.25em;
+}
+
 /* ─── Scrollbar ─────────────────────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #F1F5F9;
+  background: var(--color-bg-secondary);
 }
 ::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
+  background: var(--hairline);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
+  background: var(--color-primary);
 }
 
 /* ─── Quill Editor Styles ──────────────────────────────────────── */

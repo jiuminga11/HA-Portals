@@ -29,3 +29,6 @@ Thumbs.db
 
 # Docs (contain internal design docs with PII)
 docs/
+
+# Playwright screenshots
+.playwright-mcp/

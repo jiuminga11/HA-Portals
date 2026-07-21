@@ -61,7 +61,7 @@ export default function SectionRenderer({ section, slug }: Props) {
   // ProfileHero has its own full-width layout — skip the standard title wrapper
   if (section.type === "profile_hero") {
     return (
-      <section ref={sectionRef} className="reveal" id={`section-${section.id}`} style={{ scrollMarginTop: '80px' }}>
+      <section ref={sectionRef} className="reveal hero-section" id={`section-${section.id}`} style={{ scrollMarginTop: '80px' }}>
         {renderContent(section, slug)}
       </section>
     );
@@ -70,21 +70,27 @@ export default function SectionRenderer({ section, slug }: Props) {
   return (
     <section
       ref={sectionRef}
-      className="reveal px-4 sm:px-6"
+      className="reveal px-4 sm:px-6 lg:px-8 xl:px-10 section-standard"
       id={`section-${section.id}`}
-      style={{ scrollMarginTop: '80px', paddingTop: '90px', paddingBottom: '90px' }}
+      style={{ scrollMarginTop: '80px' }}
     >
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-10 max-w-3xl">
-          <h2
-            className="font-display"
-            style={{ color: 'var(--ink)', fontSize: '28px', fontWeight: 700, letterSpacing: '-0.01em' }}
-          >
-            {localized(section.title_zh, section.title_en)}
-          </h2>
-        </div>
+      <div className="w-full">
+        <div className="glass-card rounded-2xl p-6 sm:p-8 lg:p-10 xl:p-12">
+          <div className="mb-8 max-w-4xl">
+            <h2
+              className="font-display text-gradient"
+              style={{ fontSize: 'clamp(36px, 5vw, 56px)', fontWeight: 700, letterSpacing: '-0.02em' }}
+            >
+              {localized(section.title_zh, section.title_en)}
+            </h2>
+            <div
+              className="mt-3 h-1 w-20 rounded-full"
+              style={{ background: 'linear-gradient(90deg, var(--color-primary), var(--color-gradient))' }}
+            />
+          </div>
 
-        {renderContent(section, slug)}
+          {renderContent(section, slug)}
+        </div>
       </div>
     </section>
   );

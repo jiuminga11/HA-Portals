@@ -152,4 +152,107 @@ export const THEME_PRESETS: ThemePreset[] = [
       '--hover-bg':        'rgba(6,95,70,0.05)',
     },
   },
+  {
+    id: 'cyber-purple',
+    name: '赛博紫',
+    description: '赛博朋克，紫青霓虹',
+    mode: 'light',
+    colors: {
+      // Primary palette
+      '--color-primary':   '#8B5CF6',
+      '--color-gradient':  '#06B6D4',
+      '--color-accent':    '#06B6D4',
+
+      // Background layers
+      '--bg-base':         '#FAFAFF',
+      '--bg-surface':      '#FFFFFF',
+      '--bg-elevated':     '#F5F3FF',
+      '--bg-card':         '#FFFFFF',
+
+      // Hero gradient
+      '--bg-hero-start':   '#8B5CF6',
+      '--bg-hero-end':     '#06B6D4',
+
+      // Glow
+      '--glow-primary':    'rgba(139, 92, 246, 0.25)',
+      '--glow-cyan':       'rgba(6, 182, 212, 0.2)',
+      '--glow-purple':     'rgba(219, 39, 119, 0.2)',
+
+      // Borders
+      '--border-glass':    '#DDD6FE',
+      '--border-glow':     'rgba(139, 92, 246, 0.25)',
+
+      // Text
+      '--text-base':       '#1E1B2E',
+      '--text-muted':      '#4C4763',
+      '--text-faint':      '#6E6890',
+
+      // Component tokens
+      '--card-bg':         '#FFFFFF',
+      '--card-border':     '#DDD6FE',
+      '--card-shadow':     '0 1px 3px rgba(0,0,0,0.08)',
+      '--input-bg':        '#FFFFFF',
+      '--input-border':    '#DDD6FE',
+      '--nav-bg':          'rgba(250,250,255,0.9)',
+      '--nav-border':      '#DDD6FE',
+      '--footer-bg':       '#0F172A',
+      '--footer-text':     '#94A3B8',
+      '--table-header-text': '#FFFFFF',
+      '--table-row-alt':   '#F5F3FF',
+      '--badge-bg':        'rgba(139,92,246,0.08)',
+      '--hover-bg':        'rgba(139,92,246,0.06)',
+    },
+  },
+
+  {
+    id: 'ink-blue-gold',
+    name: '墨蓝金',
+    description: '学术正式，藏青配金',
+    mode: 'light',
+    colors: {
+      // Primary palette
+      '--color-primary':   '#2F5FBF',
+      '--color-gradient':  '#D97706',
+      '--color-accent':    '#D97706',
+
+      // Background layers
+      '--bg-base':         '#F8F7F4',
+      '--bg-surface':      '#FFFFFF',
+      '--bg-elevated':     '#F5F5F4',
+      '--bg-card':         '#FFFFFF',
+
+      // Hero gradient
+      '--bg-hero-start':   '#2F5FBF',
+      '--bg-hero-end':     '#D97706',
+
+      // Glow
+      '--glow-primary':    'rgba(47, 95, 191, 0.25)',
+      '--glow-cyan':       'rgba(217, 119, 6, 0.2)',
+      '--glow-purple':     'rgba(159, 18, 57, 0.2)',
+
+      // Borders
+      '--border-glass':    '#E7E5E4',
+      '--border-glow':     'rgba(47, 95, 191, 0.25)',
+
+      // Text
+      '--text-base':       '#1C1917',
+      '--text-muted':      '#44403C',
+      '--text-faint':      '#78716C',
+
+      // Component tokens
+      '--card-bg':         '#FFFFFF',
+      '--card-border':     '#E7E5E4',
+      '--card-shadow':     '0 1px 3px rgba(0,0,0,0.08)',
+      '--input-bg':        '#FFFFFF',
+      '--input-border':    '#E7E5E4',
+      '--nav-bg':          'rgba(248,247,244,0.92)',
+      '--nav-border':      '#E7E5E4',
+      '--footer-bg':       '#0F172A',
+      '--footer-text':     '#94A3B8',
+      '--table-header-text': '#FFFFFF',
+      '--table-row-alt':   '#F5F5F4',
+      '--badge-bg':        'rgba(47,95,191,0.08)',
+      '--hover-bg':        'rgba(47,95,191,0.05)',
+    },
+  },
 ];

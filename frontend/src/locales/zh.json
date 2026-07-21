@@ -2,6 +2,17 @@
   "nav": { "home": "首页", "about": "关于", "research": "研究", "projects": "项目", "honors": "荣誉", "cv": "简历", "blog": "博客", "admin": "管理" },
   "common": { "readMore": "阅读更多", "back": "返回", "downloadCV": "下载简历", "contact": "联系方式", "language": "语言", "theme": "主题", "loading": "加载中...", "error": "加载失败" },
   "home": { "viewResearch": "查看研究", "viewProjects": "查看项目" },
-  "footer": { "builtWith": "基于 FastAPI + React 构建", "copyright": "© 2026 Hu Xing", "email": "huxing@example.com" },
-  "section": { "noData": "暂无数据", "present": "至今", "viewFullTimeline": "查看完整经历" }
+  "footer": { "builtWith": "基于 FastAPI + React 构建", "copyright": "© 2026 Hu Xing", "email": "jiuminga1@qq.com" },
+  "section": {
+    "noData": "暂无数据",
+    "noContent": "暂无内容",
+    "noImages": "暂无图片",
+    "noVideos": "暂无视频",
+    "imageAlt": "图片",
+    "videoNotSupported": "您的浏览器不支持视频播放",
+    "present": "至今",
+    "viewFullTimeline": "查看完整经历"
+  },
+  "pagination": { "prev": "上一页", "next": "下一页" },
+  "dataTable": { "index": "序号" }
 }
