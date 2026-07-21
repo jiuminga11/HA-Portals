@@ -1,5 +1,5 @@
 /* ===================================================================
- * Theme Color Presets — 3 palettes × 2 modes (light/dark)
+ * Theme Color Presets — 5 palettes × 2 modes (light/dark)
  *
  * Active preset driven by `data-theme` attribute on <html>.
  * Dark mode driven by `.dark` class on <html> (from useTheme hook).
@@ -58,6 +58,12 @@
   --accent: #0D9488;
   --table-header-bg: #F9FAFB;
   --table-header-ink: #111827;
+
+  /* Semantic section tokens (§4.5) */
+  --section-band-bg: rgba(var(--color-primary-rgb), 0.05);
+  --section-band-border: var(--hairline);
+  --timeline-item-bg: var(--color-bg-card);
+  --timeline-item-border: var(--hairline);
 }
 
 /* ===== Theme A: Teal + Amber — Dark ===== */
@@ -112,6 +118,12 @@
   --accent: #2DD4BF;
   --table-header-bg: #111827;
   --table-header-ink: #F9FAFB;
+
+  /* Semantic section tokens (§4.5) */
+  --section-band-bg: rgba(var(--color-primary-rgb), 0.07);
+  --section-band-border: var(--hairline);
+  --timeline-item-bg: var(--color-bg-card);
+  --timeline-item-border: var(--hairline);
 }
 
 /* ===== Theme B: Deep Indigo + Sage (认知科学) — Light ===== */
@@ -166,6 +178,12 @@
   --accent: #312E81;
   --table-header-bg: #F5F5F4;
   --table-header-ink: #1C1917;
+
+  /* Semantic section tokens (§4.5) */
+  --section-band-bg: rgba(var(--color-primary-rgb), 0.05);
+  --section-band-border: var(--hairline);
+  --timeline-item-bg: var(--color-bg-card);
+  --timeline-item-border: var(--hairline);
 }
 
 /* ===== Theme B: Deep Indigo + Sage — Dark ===== */
@@ -220,6 +238,12 @@
   --accent: #818CF8;
   --table-header-bg: #312E81;
   --table-header-ink: #E0E7FF;
+
+  /* Semantic section tokens (§4.5) */
+  --section-band-bg: rgba(var(--color-primary-rgb), 0.07);
+  --section-band-border: var(--hairline);
+  --timeline-item-bg: var(--color-bg-card);
+  --timeline-item-border: var(--hairline);
 }
 
 /* ===== Theme C: Forest + Terracotta (跨界创新) — Light ===== */
@@ -274,6 +298,12 @@
   --accent: #065F46;
   --table-header-bg: #FEF3C7;
   --table-header-ink: #1C1917;
+
+  /* Semantic section tokens (§4.5) */
+  --section-band-bg: rgba(var(--color-primary-rgb), 0.05);
+  --section-band-border: var(--hairline);
+  --timeline-item-bg: var(--color-bg-card);
+  --timeline-item-border: var(--hairline);
 }
 
 /* ===== Theme C: Forest + Terracotta — Dark ===== */
@@ -328,6 +358,12 @@
   --accent: #6EE7B7;
   --table-header-bg: #292524;
   --table-header-ink: #FEF3C7;
+
+  /* Semantic section tokens (§4.5) */
+  --section-band-bg: rgba(var(--color-primary-rgb), 0.07);
+  --section-band-border: var(--hairline);
+  --timeline-item-bg: var(--color-bg-card);
+  --timeline-item-border: var(--hairline);
 }
 
 /* ===== Theme D: Cyber Purple (赛博朋克) — Light ===== */
@@ -382,6 +418,12 @@
   --accent: #8B5CF6;
   --table-header-bg: #F5F3FF;
   --table-header-ink: #1E1B2E;
+
+  /* Semantic section tokens (§4.5) */
+  --section-band-bg: rgba(var(--color-primary-rgb), 0.05);
+  --section-band-border: var(--hairline);
+  --timeline-item-bg: var(--color-bg-card);
+  --timeline-item-border: var(--hairline);
 }
 
 /* ===== Theme D: Cyber Purple — Dark (霓虹夜色) ===== */
@@ -436,6 +478,12 @@
   --accent: #A78BFA;
   --table-header-bg: #171330;
   --table-header-ink: #EDE9FE;
+
+  /* Semantic section tokens (§4.5) */
+  --section-band-bg: rgba(var(--color-primary-rgb), 0.07);
+  --section-band-border: var(--hairline);
+  --timeline-item-bg: var(--color-bg-card);
+  --timeline-item-border: var(--hairline);
 }
 
 /* ===== Theme E: Ink Blue + Gold (学术正式) — Light ===== */
@@ -490,6 +538,12 @@
   --accent: #2F5FBF;
   --table-header-bg: #F5F5F4;
   --table-header-ink: #1C1917;
+
+  /* Semantic section tokens (§4.5) */
+  --section-band-bg: rgba(var(--color-primary-rgb), 0.05);
+  --section-band-border: var(--hairline);
+  --timeline-item-bg: var(--color-bg-card);
+  --timeline-item-border: var(--hairline);
 }
 
 /* ===== Theme E: Ink Blue + Gold — Dark (深夜藏青) ===== */
@@ -544,6 +598,12 @@
   --accent: #93C5FD;
   --table-header-bg: #12224A;
   --table-header-ink: #E8EDF9;
+
+  /* Semantic section tokens (§4.5) */
+  --section-band-bg: rgba(var(--color-primary-rgb), 0.07);
+  --section-band-border: var(--hairline);
+  --timeline-item-bg: var(--color-bg-card);
+  --timeline-item-border: var(--hairline);
 }
 
 /* ===== Default fallback (teal-amber light) =====
@@ -620,4 +680,11 @@
   --accent: #0D9488;
   --table-header-bg: #F9FAFB;
   --table-header-ink: #111827;
+
+  /* Semantic section tokens (§4.5) — teal-amber light values */
+  --section-band-bg: rgba(var(--color-primary-rgb), 0.05);
+  --section-band-border: var(--hairline);
+  --timeline-item-bg: var(--color-bg-card);
+  --timeline-item-border: var(--hairline);
+  --editorial-measure: 68ch;
 }

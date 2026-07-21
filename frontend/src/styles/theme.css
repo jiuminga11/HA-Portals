@@ -18,21 +18,17 @@
   66%       { transform: translate(-25px, 15px) scale(0.92); opacity: 0.4; }
 }
 
-@keyframes text-shimmer {
-  0%   { background-position: -200% center; }
-  100% { background-position: 200% center; }
-}
 
-/* ─── Scroll Reveal ─────────────────────────────────────────────── */
+/* ─── Scroll Reveal (§7.1 contract: hidden initial state, JS adds .reveal pre-paint) ─── */
 
 .reveal {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 0.75s ease, transform 0.75s ease;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity .6s ease, transform .6s ease;
 }
 .reveal.visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: none;
 }
 
 /* ─── Core Theme Utilities ──────────────────────────────────────── */
@@ -58,6 +54,18 @@
 .bg-gradient-primary { background: linear-gradient(135deg, var(--color-primary), var(--color-gradient)); }
 /* Focus ring */
 .focus\:ring-primary:focus { ring-color: var(--color-primary); }
+
+/* ─── Accessible focus-visible ring (§9) ─────────────────────── */
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(var(--color-primary-rgb), 0.25);
+}
+:focus:not(:focus-visible) {
+  outline: none;
+  box-shadow: none;
+}
 
 /* ─── Glassmorphism ─────────────────────────────────────────────── */
 
@@ -112,7 +120,6 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: text-shimmer 5s linear infinite;
 }
 
 /* ─── Button Styles ─────────────────────────────────────────────── */
@@ -154,13 +161,6 @@
   border-radius: 2px;
 }
 
-.section-standard {
-  padding-top: 90px;
-  padding-bottom: 90px;
-}
-.hero-section + .section-standard {
-  padding-top: 48px;
-}
 
 /* ─── Animated Background Orbs ─────────────────────────────────── */
 
@@ -170,9 +170,9 @@
   filter: blur(72px);
   pointer-events: none;
 }
-.bg-orb-1 { animation: float-orb 10s ease-in-out infinite; }
-.bg-orb-2 { animation: float-orb 14s ease-in-out infinite reverse; }
-.bg-orb-3 { animation: float-orb 18s ease-in-out infinite 4s; }
+.bg-orb-1 { animation: float-orb 30s ease-in-out infinite; }
+.bg-orb-2 { animation: float-orb 30s ease-in-out infinite reverse; }
+.bg-orb-3 { animation: float-orb 30s ease-in-out infinite 4s; }
 
 /* ─── Grid/Dot Pattern Overlay ──────────────────────────────────── */
 
@@ -250,7 +250,7 @@
   box-shadow: 0 0 0 1px rgba(var(--color-primary-rgb), 0.05) inset, 0 8px 32px rgba(0, 0, 0, 0.32), 0 0 20px rgba(var(--color-primary-rgb), 0.08);
   transition: all 0.3s ease;
 }
-.glass-card:hover {
+.glass-card:is(a, button, [role="button"], .cursor-pointer):hover {
   border-color: rgba(var(--color-primary-rgb), 0.28);
   box-shadow: 0 0 0 1px rgba(var(--color-primary-rgb), 0.08) inset, 0 12px 40px rgba(0, 0, 0, 0.38), 0 0 28px rgba(var(--color-primary-rgb), 0.14);
   transform: translateY(-2px);
@@ -262,7 +262,6 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: text-shimmer 5s linear infinite;
 }
 
 .glow-text {
@@ -289,7 +288,7 @@
   border-radius: 0 8px 8px 0;
 }
 
-/* Subtle animated tech background — grid + slow drifting glow */
+/* Static tech background — grid + subtle glow (§7.2: drift/pulse removed) */
 .tech-bg {
   position: relative;
   background-image:
@@ -298,21 +297,64 @@
     linear-gradient(rgba(var(--color-primary-rgb), 0.05) 1px, transparent 1px),
     linear-gradient(90deg, rgba(var(--color-primary-rgb), 0.05) 1px, transparent 1px);
   background-size: 200% 200%, 200% 200%, 40px 40px, 40px 40px;
-  animation: tech-bg-drift 18s ease-in-out infinite;
 }
 .tech-bg::before {
   content: "";
   position: absolute;
   inset: 0;
   background: radial-gradient(circle at 50% 50%, rgba(var(--color-primary-rgb), 0.06) 0%, transparent 60%);
-  animation: tech-bg-pulse 8s ease-in-out infinite;
+  opacity: 0.5;
   pointer-events: none;
 }
-@keyframes tech-bg-drift {
-  0%, 100% { background-position: 0% 0%, 100% 100%, 0 0, 0 0; }
-  50% { background-position: 100% 100%, 0% 0%, 0 0, 0 0; }
+
+
+/* ─── Phase 1 §4/§5/§8: Layout rhythm system ───────────────────── */
+
+/* §4.6 Timeline event item — lightweight surface, no hover lift */
+.timeline-item {
+  background: var(--timeline-item-bg);
+  border: 1px solid var(--timeline-item-border);
+  border-radius: 0.75rem;
 }
-@keyframes tech-bg-pulse {
-  0%, 100% { opacity: 0.4; transform: scale(1); }
-  50% { opacity: 0.7; transform: scale(1.05); }
+
+/* §4.4 editorial double-layer container */
+/* .section-frame exposes the responsive gutter as a token so the wide-element
+   escape algorithm can subtract it. Matches px-4 sm:px-6 lg:px-8 xl:px-10. */
+.section-frame { --section-gutter: 1rem; }
+@media (min-width: 640px) { .section-frame { --section-gutter: 1.5rem; } }
+@media (min-width: 1024px) { .section-frame { --section-gutter: 2rem; } }
+@media (min-width: 1280px) { .section-frame { --section-gutter: 2.5rem; } }
+
+.editorial-body {
+  max-width: var(--editorial-measure, 68ch);
+  margin-inline: auto;
+  hanging-punctuation: first allow-end;
+}
+.editorial-body img { max-width: 100% !important; height: auto !important; }
+.editorial-body pre { overflow-x: auto; max-width: 100%; }
+/* Quill tables self-scroll, never stretch the page */
+.editorial-body table { display: block; overflow-x: auto; }
+@media (min-width: 768px) {
+  .editorial-body :is(table, figure) {
+    width: min(calc(100vw - 2 * var(--section-gutter, 2.5rem)), 1000px);
+    max-width: none;
+    margin-left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+/* §5 CJK typography */
+.editorial-body .prose p, .tech-prose p { line-height: 1.85; }
+
+/* §5 serif language split — en headings serif, zh stays sans */
+html[lang="en"] .editorial-body :is(h1, h2, h3) {
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+/* §8 blur degradation: kill backdrop-filter below 768px */
+@media (max-width: 767px) {
+  .glass-card {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 }

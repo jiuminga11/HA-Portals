@@ -50,7 +50,7 @@ function TimelineRow({ item, isLast }: { item: TimelineItem; isLast: boolean }) 
 
       {/* Card */}
       <div className="flex-1 pb-8">
-        <div className="glass-card rounded-xl p-5 sm:p-6 lg:p-7">
+        <div className="timeline-item p-5 sm:p-6 lg:p-7">
           <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-5">
             <div
               className="font-mono tabular-nums shrink-0 text-lg"

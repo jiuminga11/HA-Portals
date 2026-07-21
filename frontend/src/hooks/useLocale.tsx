@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 import zh from "../locales/zh.json";
 import en from "../locales/en.json";
 
@@ -27,6 +27,13 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     setLocaleState(newLocale);
     localStorage.setItem("locale", newLocale);
   }, []);
+
+  useEffect(() => {
+    document.documentElement.lang = locale === "en" ? "en" : "zh-CN";
+  }, [locale]);
+  useEffect(() => {
+    document.documentElement.lang = locale === "en" ? "en" : "zh-CN";
+  }, [locale]);
 
   const localized = useCallback((zhText: string, enText: string) => {
     if (locale === "en" && enText) return enText;

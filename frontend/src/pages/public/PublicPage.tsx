@@ -138,8 +138,13 @@ export default function PublicPage({ slug }: Props) {
         </div>
       ) : (
         <div>
-          {sections.map((section) => (
-            <SectionRenderer key={section.id} section={section} slug={slug} />
+          {sections.map((section, idx) => (
+            <SectionRenderer
+              key={section.id}
+              section={section}
+              slug={slug}
+              compact={idx > 0 && sections[idx - 1].type === section.type}
+            />
           ))}
         </div>
       )}

@@ -28,7 +28,7 @@ export default function MetricCards({ content }: Props) {
         return (
           <div
             key={idx}
-            className="glass-card rounded-2xl p-6 lg:p-8 text-left"
+            className="text-left"
           >
             {label && (
               <div

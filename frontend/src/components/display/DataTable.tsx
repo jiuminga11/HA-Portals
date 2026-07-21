@@ -17,7 +17,8 @@ export default function DataTable({ content }: Props) {
 
   return (
     <div
-      className="overflow-x-auto glass-card rounded-2xl"
+      className="overflow-x-auto"
+      style={{ border: '1px solid var(--color-border)', borderRadius: '1rem' }}
     >
       <table className="w-full text-lg">
         <thead>

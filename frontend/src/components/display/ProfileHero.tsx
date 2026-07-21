@@ -185,7 +185,7 @@ export default function ProfileHero({ content }: Props) {
           height: "520px",
           top: "-180px",
           right: "-120px",
-          background: "radial-gradient(circle, rgba(var(--color-primary-rgb), 0.18) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(var(--color-primary-rgb), 0.09) 0%, transparent 70%)",
         }}
       />
       <div
@@ -195,7 +195,7 @@ export default function ProfileHero({ content }: Props) {
           height: "380px",
           bottom: "-100px",
           left: "-100px",
-          background: "radial-gradient(circle, rgba(var(--color-accent-rgb), 0.12) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(var(--color-accent-rgb), 0.06) 0%, transparent 70%)",
         }}
       />
 

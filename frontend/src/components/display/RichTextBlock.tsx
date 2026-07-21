@@ -23,9 +23,9 @@ export default function RichTextBlock({ content }: Props) {
     : content.body;
 
   return (
-    <div className="glass-card rounded-2xl p-6 sm:p-8 md:p-10">
+    <div>
       <div
-        className="prose prose-xl max-w-none prose-dark tech-prose
+        className="prose prose-xl prose-dark tech-prose
           prose-headings:font-display
           prose-h1:text-4xl prose-h2:text-2xl prose-h3:text-xl
           prose-p:text-lg
