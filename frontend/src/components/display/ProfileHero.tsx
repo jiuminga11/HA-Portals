@@ -54,21 +54,12 @@ function SocialIcon({ platform }: { platform: string }) {
   );
 }
 
-function getInitials(name: string): string {
-  const trimmed = name.trim();
-  if (!trimmed) return "";
-  const parts = trimmed.split(/\s+/);
-  if (parts.length > 1 && /[a-zA-Z]/.test(parts[0][0])) {
-    return (parts[0][0] + parts[1][0]).toUpperCase();
-  }
-  return trimmed.slice(0, 2);
-}
-
 
 export default function ProfileHero({ content }: Props) {
   const { localized } = useLocale();
   const {
     avatar_url,
+    avatar_position = "50% 50%",
     name_zh,
     name_en,
     tagline_zh,
@@ -86,7 +77,6 @@ export default function ProfileHero({ content }: Props) {
   const subline = [name !== name_en ? name_en : "", tagline]
     .filter(Boolean)
     .join("  \u00b7  ");
-  const initials = getInitials(name);
 
   return (
     <div
@@ -119,31 +109,25 @@ export default function ProfileHero({ content }: Props) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left: text content */}
           <div className="order-2 lg:order-1 text-left">
-            {/* Avatar */}
-            <div
-              className="w-[96px] h-[96px] lg:w-[112px] lg:h-[112px] rounded-full p-[3px] mb-8 bg-gradient-primary"
-              style={{ boxShadow: "0 12px 40px rgba(var(--color-primary-rgb), 0.22)" }}
-            >
+            {/* Avatar — only shown when a photo is uploaded; initials fallback removed (duplicated the name) */}
+            {avatar_url && (
               <div
-                className="w-full h-full rounded-full overflow-hidden flex items-center justify-center"
-                style={{ background: "var(--color-bg-card)" }}
+                className="w-[96px] h-[96px] lg:w-[112px] lg:h-[112px] rounded-full p-[3px] mb-8 bg-gradient-primary"
+                style={{ boxShadow: "0 12px 40px rgba(var(--color-primary-rgb), 0.22)" }}
               >
-                {avatar_url ? (
+                <div
+                  className="w-full h-full rounded-full overflow-hidden flex items-center justify-center"
+                  style={{ background: "var(--color-bg-card)" }}
+                >
                   <img
                     src={avatar_url}
                     alt={name}
                     className="w-full h-full object-cover"
+                    style={{ objectPosition: avatar_position }}
                   />
-                ) : (
-                  <span
-                    className="font-display font-bold text-gradient"
-                    style={{ fontSize: "2.5rem", letterSpacing: "-0.02em" }}
-                  >
-                    {initials || "?"}
-                  </span>
-                )}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Name */}
             <h1

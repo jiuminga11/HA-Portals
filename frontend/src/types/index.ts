@@ -105,6 +105,8 @@ export interface SocialLink {
 }
 export interface ProfileHeroContent {
   avatar_url: string;
+  /** CSS object-position for the circular avatar crop, e.g. "50% 20%". */
+  avatar_position?: string;
   name_zh: string;
   name_en: string;
   tagline_zh: string;
