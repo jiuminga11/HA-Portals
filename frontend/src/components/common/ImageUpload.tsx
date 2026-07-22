@@ -1,14 +1,19 @@
 import { useRef, useState } from "react";
 import { uploadFile } from "../../api/upload";
+import { resolveMediaUrl } from "../../lib/basePath";
 
 interface Props {
-  value: string | null;
-  onChange: (url: string | null) => void;
-  label?: string;
+value: string | null;
+onChange: (url: string | null) => void;
+label?: string;
   placeholder?: string;
+/** Preview as center-cropped circle (e.g. avatar) instead of rectangular contain. */
+  circular?: boolean;
+  /** Suppress the built-in preview (when an external adjuster renders its own). */
+  hidePreview?: boolean;
 }
 
-export default function ImageUpload({ value, onChange, label = "上传图片", placeholder }: Props) {
+export default function ImageUpload({ value, onChange, label = "上传图片", placeholder, circular = false, hidePreview = false }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -89,16 +94,29 @@ export default function ImageUpload({ value, onChange, label = "上传图片", p
         </div>
       )}
 
-      {value ? (
+      {value && !hidePreview ? (
         <div className="relative inline-block">
-          <img
-            src={value}
+          {circular ? (
+            <div className="w-24 h-24 rounded-full overflow-hidden border border-slate-200 bg-slate-50">
+<img
+src={resolveMediaUrl(value)}
             alt={placeholder || "预览"}
-            className="h-24 w-auto object-contain rounded-lg border border-slate-200 bg-slate-50"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ) : (
+            <img
+              src={resolveMediaUrl(value)}
+              alt={placeholder || "预览"}
+className="h-24 w-auto object-contain rounded-lg border border-slate-200 bg-slate-50"
           />
-        </div>
+          )}
+          {circular && (
+            <p className="mt-1 text-xs text-slate-400">前台显示为圆形裁切效果</p>
+          )}
+</div>
       ) : (
-        placeholder && (
+        !value && placeholder && (
           <p className="text-xs text-slate-400">{placeholder}</p>
         )
       )}

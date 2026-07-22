@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { ProfileHeroContent, SocialLink } from "../../types";
-import { resolveMediaUrl } from "../../lib/basePath";
+import ImageUpload from "../common/ImageUpload";
+import AvatarCropEditor from "../common/AvatarCropEditor";
 
 interface Props {
   content: ProfileHeroContent;
@@ -86,23 +87,33 @@ export default function ProfileHeroEditor({ content, onChange }: Props) {
       <fieldset className="space-y-3">
         <legend className="text-sm font-semibold text-slate-700 mb-2">基本信息</legend>
 
-        <div>
-          <label className="text-xs text-slate-500 mb-1 block">头像 URL</label>
-          <input
-            type="text"
-            value={content.avatar_url}
-            onChange={(e) => update({ avatar_url: e.target.value })}
-            placeholder="https://... 或 /uploads/avatar.jpg"
-            className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 ring-primary"
-          />
+<div>
+<label className="text-xs text-slate-500 mb-1 block">头像</label>
+<ImageUpload
+value={content.avatar_url || null}
+onChange={(url) => update({ avatar_url: url ?? "" })}
+label="上传头像"
+placeholder="支持 JPG/PNG/GIF/WebP，上传后自动填充路径"
+            circular
+            hidePreview
+/>
           {content.avatar_url && (
-            <img
-              src={resolveMediaUrl(content.avatar_url)}
-              alt="头像预览"
-              className="mt-2 h-16 w-16 object-cover rounded-full border border-slate-200"
-            />
+            <div className="mt-3">
+              <AvatarCropEditor
+                src={content.avatar_url}
+                position={content.avatar_position ?? "50% 50%"}
+                onChange={(pos) => update({ avatar_position: pos })}
+              />
+            </div>
           )}
-        </div>
+<input
+type="text"
+value={content.avatar_url}
+onChange={(e) => update({ avatar_url: e.target.value })}
+placeholder="或粘贴外部图片 URL（https://...）"
+className="mt-2 w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 ring-primary"
+/>
+</div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
