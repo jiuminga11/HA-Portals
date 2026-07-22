@@ -162,6 +162,8 @@ class CTAButton(BaseModel):
 
 class ProfileHeroContent(BaseModel):
     avatar_url: str = ""
+    # CSS object-position for the circular avatar crop, e.g. "50% 20%".
+    avatar_position: str = "50% 50%"
     name_zh: str = ""
     name_en: str = ""
     tagline_zh: str = ""
@@ -204,7 +206,7 @@ DEFAULT_CONTENT_MAP: dict[str, dict] = {
     "video": {"items": []},
     "metric_cards": {"cards": []},
     "timeline": {"items": [], "layout": "vertical"},
-    "profile_hero": {"avatar_url": "", "name_zh": "", "name_en": "", "tagline_zh": "", "tagline_en": "", "tags": [], "social_links": [], "cta_buttons": []},
+    "profile_hero": {"avatar_url": "", "avatar_position": "50% 50%", "name_zh": "", "name_en": "", "tagline_zh": "", "tagline_en": "", "tags": [], "social_links": [], "cta_buttons": []},
     "cta_band": {"description_zh": "", "description_en": "", "buttons": []},
 }
 
