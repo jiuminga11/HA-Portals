@@ -1,9 +1,10 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import type { Section, SectionType, Page } from "../../types";
 import { getSections, deleteSection, reorderSections, updateSection } from "../../api/sections";
 import { getAdminPages } from "../../api/admin-pages";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
+import { useLocale } from "../../hooks/useLocale";
 
 const TYPE_LABELS: Record<SectionType, string> = {
   rich_text: "富文本",
@@ -42,6 +43,9 @@ const SECTION_TYPES: SectionType[] = [
 ];
 
 export default function Dashboard() {
+  const { t } = useLocale();
+  const mutationLock = useRef(false);
+  const [mutating, setMutating] = useState(false);
   const [sections, setSections] = useState<Section[]>([]);
   const [pages, setPages] = useState<Page[]>([]);
   const [loading, setLoading] = useState(true);
@@ -76,9 +80,21 @@ export default function Dashboard() {
     load();
   }, [load]);
 
-  const filteredSections = selectedPageId
+  const filteredSections = (selectedPageId
     ? sections.filter((s) => s.page_id === selectedPageId)
-    : sections;
+    : [...sections]).sort((a, b) => a.page_id - b.page_id || a.sort_order - b.sort_order || a.id - b.id);
+
+  const beginMutation = () => {
+    if (mutationLock.current) return false;
+    mutationLock.current = true;
+    setMutating(true);
+    setError(null);
+    return true;
+  };
+  const endMutation = () => {
+    mutationLock.current = false;
+    setMutating(false);
+  };
 
   const handlePageFilter = (pageId: string) => {
     if (pageId === "all") {
@@ -89,43 +105,59 @@ export default function Dashboard() {
   };
 
   const handleDelete = async () => {
-    if (deleteId === null) return;
+    const deleted = sections.find((s) => s.id === deleteId);
+    if (!deleted || !beginMutation()) return;
     try {
-      await deleteSection(deleteId);
-      setSections((prev) => prev.filter((s) => s.id !== deleteId));
+      await deleteSection(deleted.id);
+      setSections((prev) => {
+        const remaining = prev.filter((s) => s.id !== deleted.id);
+        const pageSections = remaining.filter((s) => s.page_id === deleted.page_id)
+          .sort((a, b) => a.sort_order - b.sort_order || a.id - b.id);
+        const ranks = new Map(pageSections.map((s, index) => [s.id, index]));
+        return remaining.map((s) => s.page_id === deleted.page_id ? { ...s, sort_order: ranks.get(s.id)! } : s);
+      });
       setDeleteId(null);
     } catch {
-      setError("删除失败");
+      setDeleteId(null);
+      setError(t.admin.deleteFailed);
+    } finally {
+      endMutation();
     }
   };
 
   const handleMove = async (idx: number, dir: -1 | 1) => {
+    if (!selectedPageId || !pageMap.has(selectedPageId)) return;
     const newSections = [...filteredSections];
     const target = idx + dir;
     if (target < 0 || target >= newSections.length) return;
+    if (!beginMutation()) return;
     [newSections[idx], newSections[target]] = [newSections[target], newSections[idx]];
 
-    // Update local state — replace the moved items in the full sections array
-    const updatedAll = sections.map((s) => {
-      const found = newSections.find((ns) => ns.id === s.id);
-      return found ?? s;
-    });
-    setSections(updatedAll);
+    const previousSections = sections;
+    const reordered = newSections.map((s, sort_order) => ({ ...s, sort_order }));
+    let pageIndex = 0;
+    setSections(sections.map((s) => s.page_id === selectedPageId ? reordered[pageIndex++] : s));
 
     const orders = newSections.map((s, i) => ({ id: s.id, sort_order: i }));
     try {
       await reorderSections(orders);
     } catch {
-      load(); // revert on error
+      setSections(previousSections);
+      setError(t.admin.reorderFailed);
+    } finally {
+      endMutation();
     }
   };
 
   const handleToggleVisible = async (section: Section) => {
+    if (!beginMutation()) return;
     try {
       const updated = await updateSection(section.id, { visible: !section.visible });
       setSections((prev) => prev.map((s) => (s.id === section.id ? updated : s)));
     } catch {
-      setError("更新失败");
+      setError(t.admin.updateFailed);
+    } finally {
+      endMutation();
     }
   };
 
@@ -166,6 +198,7 @@ export default function Dashboard() {
           </Link>
           <button
             onClick={() => setShowNewModal(true)}
+            disabled={mutating}
             className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity shadow-sm"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -181,6 +214,7 @@ export default function Dashboard() {
         <div className="mb-4 flex items-center gap-2">
           <label className="text-sm text-slate-500">页面筛选：</label>
           <select
+            disabled={mutating}
             value={selectedPageId ? String(selectedPageId) : "all"}
             onChange={(e) => handlePageFilter(e.target.value)}
             className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white"
@@ -205,10 +239,12 @@ export default function Dashboard() {
       )}
 
       {error && (
-        <div className="mb-4 bg-red-50 text-red-600 text-sm px-4 py-3 rounded-xl border border-red-200">
+        <div role="alert" className="mb-4 bg-red-50 text-red-600 text-sm px-4 py-3 rounded-xl border border-red-200">
           {error}
         </div>
       )}
+
+      {mutating && <p role="status" className="mb-4 text-sm text-slate-500">{t.admin.updating}</p>}
 
       {filteredSections.length === 0 ? (
         <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
@@ -229,7 +265,8 @@ export default function Dashboard() {
               <div className="flex flex-col gap-0.5 shrink-0">
                 <button
                   onClick={() => handleMove(idx, -1)}
-                  disabled={!selectedPageId || idx === 0}
+                  aria-label={t.admin.moveUp}
+                  disabled={mutating || !selectedPageId || !pageMap.has(selectedPageId) || idx === 0}
                   className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-400 hover:bg-slate-100 disabled:opacity-30 transition-colors"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -238,7 +275,8 @@ export default function Dashboard() {
                 </button>
                 <button
                   onClick={() => handleMove(idx, 1)}
-                  disabled={!selectedPageId || idx === filteredSections.length - 1}
+                  aria-label={t.admin.moveDown}
+                  disabled={mutating || !selectedPageId || !pageMap.has(selectedPageId) || idx === filteredSections.length - 1}
                   className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-400 hover:bg-slate-100 disabled:opacity-30 transition-colors"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -272,6 +310,7 @@ export default function Dashboard() {
                 {/* Visibility toggle */}
                 <button
                   onClick={() => handleToggleVisible(section)}
+                  disabled={mutating}
                   title={section.visible ? "点击隐藏" : "点击显示"}
                   className={`w-9 h-5 rounded-full transition-colors relative ${
                     section.visible ? "bg-primary" : "bg-slate-300"
@@ -286,7 +325,9 @@ export default function Dashboard() {
 
                 {/* Edit */}
                 <button
-                  onClick={() => navigate(`/admin/sections/${section.id}`)}
+                  onClick={() => navigate(`/admin/sections/${section.id}${selectedPageId ? `?page_id=${selectedPageId}` : ""}`)}
+                  disabled={mutating}
+                  aria-label={t.admin.edit}
                   className="p-2 text-slate-500 hover:text-primary hover:bg-blue-500/10 rounded-lg transition-colors"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -297,6 +338,8 @@ export default function Dashboard() {
                 {/* Delete */}
                 <button
                   onClick={() => setDeleteId(section.id)}
+                  disabled={mutating}
+                  aria-label={t.admin.delete}
                   className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -314,10 +357,10 @@ export default function Dashboard() {
         open={deleteId !== null}
         title="删除区块"
         message={`确定删除「${sections.find((s) => s.id === deleteId)?.title_zh}」区块？此操作不可撤销。`}
-        confirmText="删除"
+        confirmText={mutating ? t.admin.updating : t.admin.delete}
         danger
         onConfirm={handleDelete}
-        onCancel={() => setDeleteId(null)}
+        onCancel={() => { if (!mutationLock.current) setDeleteId(null); }}
       />
 
       {/* New section modal */}

@@ -141,6 +141,8 @@ class PageCreate(BaseModel):
     @classmethod
     def validate_slug(cls, v: str) -> str:
         v = v.strip().lower()
+        if v == "en":
+            raise ValueError("slug en 为语言路由保留字")
         if not v:
             raise ValueError("slug 不能为空")
         if not re.match(r"^[a-z0-9][a-z0-9-]*$", v):
@@ -170,6 +172,8 @@ class PageUpdate(BaseModel):
         if v is None:
             return v
         v = v.strip().lower()
+        if v == "en":
+            raise ValueError("slug en 为语言路由保留字")
         if not v:
             raise ValueError("slug 不能为空")
         if not re.match(r"^[a-z0-9][a-z0-9-]*$", v):

@@ -27,7 +27,6 @@ def _normalize_page_sort_order(db: Session) -> None:
     for idx, page in enumerate(pages):
         if page.sort_order != idx:
             page.sort_order = idx
-    db.commit()
 
 
 # ---------- Public ----------
@@ -125,6 +124,8 @@ def create_page(
     _admin: bool = Depends(get_current_admin),
 ) -> PageResponse:
     """新建页面（需鉴权）。"""
+    if body.slug == "home" and not body.visible:
+        raise HTTPException(status_code=400, detail="首页不可隐藏")
     # 检查 slug 唯一性
     existing = db.query(Page).filter(Page.slug == body.slug).first()
     if existing:
@@ -147,10 +148,9 @@ def create_page(
         sort_order=next_order,
     )
     db.add(page)
-    db.commit()
-    db.refresh(page)
-
+    db.flush()
     _normalize_page_sort_order(db)
+    db.commit()
     db.refresh(page)
     return PageResponse.model_validate(page)
 
@@ -188,8 +188,9 @@ def reorder_pages(
         if p.id in order_map:
             p.sort_order = order_map[p.id]
 
-    db.commit()
+    db.flush()
     _normalize_page_sort_order(db)
+    db.commit()
 
     all_pages = db.query(Page).order_by(Page.sort_order).all()
     return [PageResponse.model_validate(p) for p in all_pages]
@@ -211,6 +212,17 @@ def update_page(
         )
 
     update_data = body.model_dump(exclude_unset=True)
+    if (
+        page.slug != "home"
+        and update_data.get("slug") == "home"
+        and update_data.get("visible", page.visible) is False
+    ):
+        raise HTTPException(status_code=400, detail="首页不可隐藏")
+    if page.slug == "home":
+        if "slug" in update_data and update_data["slug"] != "home":
+            raise HTTPException(status_code=400, detail="首页 slug 不可修改")
+        if update_data.get("visible") is False:
+            raise HTTPException(status_code=400, detail="首页不可隐藏")
 
     if "slug" in update_data:
         if update_data["slug"] is None:
@@ -278,9 +290,13 @@ def delete_page(
             detail="页面不存在",
         )
 
+    if page.slug == "home":
+        raise HTTPException(status_code=400, detail="首页不可删除")
+
     # 删除该页面下所有 sections
     db.query(Section).filter(Section.page_id == page_id).delete()
     db.delete(page)
-    db.commit()
+    db.flush()
     _normalize_page_sort_order(db)
+    db.commit()
     return {"detail": "deleted"}

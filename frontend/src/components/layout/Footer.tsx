@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
 import { useLocale } from "../../hooks/useLocale";
 import HXMark from "../common/HXMark";
+import type { SiteConfig } from "../../types";
 
-export default function Footer() {
+export default function Footer({ siteConfig }: { siteConfig: SiteConfig | null }) {
   const { t } = useLocale();
   return (
     <footer
@@ -20,14 +21,7 @@ export default function Footer() {
           style={{ color: "var(--ink-4)", fontSize: "15px" }}
         >
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-            <span>{t.footer.copyright}</span>
-            <a
-              href={`mailto:${t.footer.email}`}
-              className="transition-opacity duration-200 motion-reduce:transition-none hover:opacity-70"
-              style={{ color: "var(--accent)" }}
-            >
-              {t.footer.email}
-            </a>
+            {siteConfig?.footer_text && <span className="whitespace-pre-wrap [overflow-wrap:anywhere]">{siteConfig.footer_text}</span>}
           </div>
 
           <div className="flex items-center gap-4">
@@ -38,7 +32,7 @@ export default function Footer() {
                 className="transition-opacity duration-200 motion-reduce:transition-none hover:opacity-70"
                 style={{ color: "var(--ink-4)" }}
               >
-                Admin
+                {t.nav.admin}
               </Link>
             ) : null}
           </div>

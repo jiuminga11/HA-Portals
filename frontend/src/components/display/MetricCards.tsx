@@ -1,5 +1,6 @@
 import type { MetricCardsContent } from "../../types";
 import { useLocale } from "../../hooks/useLocale";
+import { contentLang } from "../../lib/displayContent";
 
 interface Props {
   content: MetricCardsContent;
@@ -19,8 +20,7 @@ export default function MetricCards({ content }: Props) {
 
   return (
     <div
-      className="grid gap-5"
-      style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}
+      className="grid gap-5 metric-cards"
     >
       {cards.map((card, idx) => {
         const detail = localized(card.detail_zh, card.detail_en);
@@ -28,10 +28,11 @@ export default function MetricCards({ content }: Props) {
         return (
           <div
             key={idx}
-            className="text-left"
+            className="text-left min-w-0 [overflow-wrap:anywhere]"
           >
             {label && (
               <div
+                lang={contentLang(label)}
                 className="text-lg font-medium mb-2"
                 style={{ color: "var(--ink-3)" }}
               >
@@ -50,6 +51,7 @@ export default function MetricCards({ content }: Props) {
             </div>
             {detail && (
               <div
+                lang={contentLang(detail)}
                 className="mt-3 text-lg"
                 style={{ color: "var(--ink-4)", lineHeight: 1.6 }}
               >

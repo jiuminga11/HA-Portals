@@ -2,8 +2,10 @@ import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useLocale } from "../../hooks/useLocale";
 import { useTheme } from "../../hooks/useTheme";
+import { localePath } from "../../lib/localePath";
 import { getPages } from "../../api/pages";
 import type { Page, SiteConfig } from "../../types";
+import { resolveMediaUrl } from "../../lib/basePath";
 
 interface Props {
   siteConfig: SiteConfig | null;
@@ -13,7 +15,8 @@ export default function Header({ siteConfig }: Props) {
   const { locale, setLocale, t, localized } = useLocale();
   const { resolvedTheme, setTheme } = useTheme();
   const location = useLocation();
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileOpenPath, setMobileOpenPath] = useState<string | null>(null);
+  const mobileOpen = mobileOpenPath === location.pathname;
   const [scrolled, setScrolled] = useState(false);
   const [pages, setPages] = useState<Page[]>([]);
 
@@ -29,16 +32,11 @@ export default function Header({ siteConfig }: Props) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Close mobile menu on route change
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [location.pathname]);
-
   // Close mobile menu on escape
   useEffect(() => {
     if (!mobileOpen) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMobileOpen(false);
+      if (e.key === "Escape") setMobileOpenPath(null);
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
@@ -67,13 +65,12 @@ export default function Header({ siteConfig }: Props) {
   // Build nav items from pages: home → "/", others → "/{slug}"
   const navItems = pages.map((page) => ({
     slug: page.slug,
-    path: page.slug === "home" ? "/" : `/${page.slug}`,
+    path: localePath(page.slug === "home" ? "/" : `/${page.slug}`, locale),
     label: localized(page.title_zh, page.title_en),
   }));
 
   const isActive = (path: string) => {
-    if (path === "/") return location.pathname === "/";
-    return location.pathname === path;
+    return location.pathname.replace(/\/$/, "") === path.replace(/\/$/, "");
   };
 
   return (
@@ -91,12 +88,13 @@ export default function Header({ siteConfig }: Props) {
         <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-10">
           <div className="flex items-center justify-between h-16">
             {/* Left: site name */}
-            <Link to="/" className="flex items-center group">
+            <Link to={localePath("/", locale)} className="flex min-w-0 items-center gap-2 group" onClick={() => setMobileOpenPath(null)}>
+              {siteConfig?.logo_url && <img src={resolveMediaUrl(siteConfig.logo_url)} alt="" className="h-9 w-9 shrink-0 object-contain" />}
               <span
-                className="font-display font-bold tracking-tight"
+                className="font-display font-bold tracking-tight min-w-0 [overflow-wrap:anywhere]"
                 style={{ color: "var(--ink)", fontSize: "20px" }}
               >
-                {siteConfig?.site_title || "Hu Xing"}
+                {siteConfig?.site_title || t.nav.home}
               </span>
             </Link>
 
@@ -108,6 +106,7 @@ export default function Header({ siteConfig }: Props) {
                   <Link
                     key={item.slug}
                     to={item.path}
+                    onClick={() => setMobileOpenPath(null)}
                     className="relative px-3 py-2 text-base font-medium transition-colors duration-200"
                     style={{
                       color: active ? "var(--ink)" : "var(--ink-3)",
@@ -158,7 +157,7 @@ export default function Header({ siteConfig }: Props) {
                 }}
                 title={t.common.language}
               >
-                {locale === "zh" ? "EN" : "中"}
+                {t.common.switchLanguage}
               </button>
 
               {/* Theme toggle */}
@@ -199,8 +198,10 @@ export default function Header({ siteConfig }: Props) {
               <button
                 className="md:hidden p-2 rounded-lg transition-all duration-200"
                 style={{ color: "var(--text-muted)" }}
-                onClick={() => setMobileOpen(!mobileOpen)}
-                aria-label="Toggle menu"
+                onClick={() => setMobileOpenPath(mobileOpen ? null : location.pathname)}
+                aria-label={t.common.toggleMenu}
+                aria-expanded={mobileOpen}
+                aria-controls="mobile-navigation"
               >
                 {mobileOpen ? (
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -227,7 +228,7 @@ export default function Header({ siteConfig }: Props) {
           <div
             className="absolute inset-0"
             style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}
-            onClick={() => setMobileOpen(false)}
+            onClick={() => setMobileOpenPath(null)}
           />
 
           {/* Menu panel */}
@@ -235,13 +236,14 @@ export default function Header({ siteConfig }: Props) {
             className="absolute top-16 left-0 right-0 bottom-0 overflow-y-auto"
             style={{ background: "var(--bg-base)" }}
           >
-            <nav className="flex flex-col px-6 py-8 gap-2">
+            <nav id="mobile-navigation" className="flex flex-col px-6 py-8 gap-2">
               {navItems.map((item) => {
                 const active = isActive(item.path);
                 return (
                   <Link
                     key={item.slug}
                     to={item.path}
+                    onClick={() => setMobileOpenPath(null)}
                     className="px-4 py-3 rounded-xl text-lg font-medium transition-all duration-200"
                     style={{
                       color: active ? "var(--ink)" : "var(--text-base)",

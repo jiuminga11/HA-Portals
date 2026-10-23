@@ -4,17 +4,17 @@ import Header from "./Header";
 import Footer from "./Footer";
 import { getSiteConfig } from "../../api/siteConfig";
 import type { SiteConfig } from "../../types";
+import { useTheme } from "../../hooks/useTheme";
 
 function applyTheme(config: SiteConfig) {
   const root = document.documentElement;
-  // Clear any inline style overrides from admin preview
-  root.style.cssText = "";
   // Set data-theme attribute — CSS handles all color variables (see themes.css)
   root.setAttribute("data-theme", config.theme_preset || "teal-amber");
   // Individual color overrides from config (fine-tuning)
-  if (config.primary_color) root.style.setProperty("--color-primary", config.primary_color);
-  if (config.gradient_color) root.style.setProperty("--color-gradient", config.gradient_color);
-  if (config.accent_color) root.style.setProperty("--color-accent", config.accent_color);
+  for (const [key, value] of [["--color-primary", config.primary_color], ["--color-gradient", config.gradient_color], ["--color-accent", config.accent_color]]) {
+    if (value) root.style.setProperty(key, value);
+    else root.style.removeProperty(key);
+  }
   // Font size scaling
   const fontSizeMap: Record<string, string> = {
     standard: "16px",
@@ -26,6 +26,7 @@ function applyTheme(config: SiteConfig) {
 
 export default function PublicLayout() {
   const [siteConfig, setSiteConfig] = useState<SiteConfig | null>(null);
+  const { setTheme } = useTheme();
 
   // Fetch site config: apply theme + share with children
   useEffect(() => {
@@ -35,6 +36,15 @@ export default function PublicLayout() {
         if (!cancelled) {
           setSiteConfig(config);
           applyTheme(config);
+          // A site default is not a user preference. Keep the preference absent
+          // so a future site-default change can still apply on the next visit.
+          if (!localStorage.getItem("theme") && ["light", "dark", "system"].includes(config.default_theme)) {
+            const theme = config.default_theme;
+            if (theme === "light" || theme === "dark" || theme === "system") {
+              setTheme(theme);
+              localStorage.removeItem("theme");
+            }
+          }
         }
       })
       .catch((err) => {
@@ -43,15 +53,15 @@ export default function PublicLayout() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [setTheme]);
 
   return (
     <div className="flex flex-col min-h-screen" style={{ background: "var(--color-bg)" }}>
       <Header siteConfig={siteConfig} />
       <main className="flex-1 pt-16">
-        <Outlet />
+        <Outlet context={{ siteConfig }} />
       </main>
-      <Footer />
+      <Footer siteConfig={siteConfig} />
     </div>
   );
 }

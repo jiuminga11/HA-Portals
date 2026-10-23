@@ -610,7 +610,7 @@
  * Applied when no data-theme is set. Also defines backward-compatible
  * aliases so existing components using old variable names still work.
  */
-:root {
+:where(:root) {
   /* Primary theme variables */
   --color-primary: #0D9488;
   --color-primary-hover: #0F766E;
@@ -688,3 +688,28 @@
   --timeline-item-border: var(--hairline);
   --editorial-measure: 68ch;
 }
+
+/* Reading tokens are intentionally independent of configurable brand colors.
+   Decorative accents keep each palette; text uses stable, legible shades. */
+:root, html[data-theme] {
+  --reading-accent: #0f665e;
+  --reading-muted: #475569;
+  --ink-3: var(--reading-muted);
+  --ink-4: var(--reading-muted);
+  --text-faint: var(--reading-muted);
+}
+html[data-theme="deep-indigo"] { --reading-accent: #373080; --reading-muted: #57534e; }
+html[data-theme="forest-terracotta"] { --reading-accent: #065f46; --reading-muted: #57534e; }
+html[data-theme="cyber-purple"] { --reading-accent: #6036b4; }
+html[data-theme="ink-blue-gold"] { --reading-accent: #28509e; }
+html[data-theme].dark {
+  --reading-accent: #99f6e4;
+  --reading-muted: #cbd5e1;
+  --ink-3: var(--reading-muted);
+  --ink-4: var(--reading-muted);
+  --text-faint: var(--reading-muted);
+}
+html[data-theme="deep-indigo"].dark { --reading-accent: #c7d2fe; --reading-muted: #c7d2fe; }
+html[data-theme="forest-terracotta"].dark { --reading-accent: #a7f3d0; --reading-muted: #d6d3d1; }
+html[data-theme="cyber-purple"].dark { --reading-accent: #ddd6fe; }
+html[data-theme="ink-blue-gold"].dark { --reading-accent: #bfdbfe; }

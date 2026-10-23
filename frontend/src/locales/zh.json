@@ -1,8 +1,8 @@
 {
   "nav": { "home": "首页", "about": "关于", "research": "研究", "projects": "项目", "honors": "荣誉", "cv": "简历", "blog": "博客", "admin": "管理" },
-  "common": { "readMore": "阅读更多", "back": "返回", "downloadCV": "下载简历", "contact": "联系方式", "language": "语言", "theme": "主题", "loading": "加载中...", "error": "加载失败" },
+  "common": { "readMore": "阅读更多", "back": "返回", "viewCV": "查看简历", "contact": "联系方式", "language": "语言", "theme": "主题", "loading": "加载中...", "error": "加载失败", "toggleMenu": "切换导航菜单", "switchLanguage": "EN" },
   "home": { "viewResearch": "查看研究", "viewProjects": "查看项目" },
-  "footer": { "builtWith": "基于 FastAPI + React 构建", "copyright": "© 2026 Hu Xing", "email": "jiuminga1@qq.com" },
+  "footer": { "builtWith": "基于 FastAPI + React 构建" },
   "section": {
     "noData": "暂无数据",
     "noContent": "暂无内容",
@@ -14,5 +14,48 @@
     "viewFullTimeline": "查看完整经历"
   },
   "pagination": { "prev": "上一页", "next": "下一页" },
-  "dataTable": { "index": "序号" }
+  "dataTable": { "index": "序号", "scrollHint": "表格较宽时，可左右滚动查看全部字段；键盘用户可聚焦表格后使用方向键。", "scrollLabel": "完整数据表格，可左右滚动" },
+  "publicPage": {
+    "onThisPage": "本页内容", "originalContent": "以下内容按原文展示，未提供独立译文。",
+    "notFoundTitle": "页面不存在", "notFound": "此页面不存在或暂未公开，请通过站点导航访问其他页面。",
+    "errorTitle": "暂时无法加载", "networkError": "未能加载页面，请检查网络连接后重试。",
+    "retry": "重新加载", "empty": "此页面暂无公开内容。", "timeout": "请求超时，请检查网络连接后重试。", "returnHome": "返回首页"
+  },
+  "files": {
+    "description": "管理已上传的图片、视频和 PDF 文档。", "pdf": "PDF 文档", "document": "文档", "viewDocument": "查看文档", "copyLink": "复制链接", "copied": "已复制", "copyFailed": "未能复制链接，请通过查看文档的链接手动复制地址。"
+  },
+  "authRecovery": {
+    "expiredTitle": "登录已失效，当前输入仍保留", "expired": "输入保留在当前标签页，请勿刷新或关闭。请在新标签页重新登录，完成后回到这里手动保存；系统不会自动重试刚才的修改。", "signIn": "在新标签页重新登录", "restoredTitle": "登录已恢复", "restored": "现在可以再次保存。请检查当前输入并手动提交，系统没有自动重放之前的操作。"
+  },
+  "settings": {
+    "title": "站点设置", "intro": "配置站点标识、首页介绍、页脚、外观与搜索分享信息。所有修改均需明确保存。",
+    "identity": "站点标识与首页", "appearance": "外观", "preset": "配色预设", "preview": "局部外观预览", "previewText": "站点标题预览",
+    "previewHint": "选择预设、字号和颜色只更新本页预览，不会保存其他输入，也不会影响公开页面。点击保存后生效。",
+    "imageHint": "选择已获授权的站点图片；留空不显示。", "colorHint": "例如 #0D9488",
+    "fontSize": "公开页面字号", "standard": "标准 · 16px", "large": "大号 · 18px", "extraLarge": "特大 · 20px",
+    "defaultTheme": "访客默认明暗模式", "light": "亮色", "dark": "暗色", "system": "跟随系统", "defaultThemeHint": "仅当访客尚未选择明暗模式时使用；不会覆盖访客已保存的偏好。",
+    "localeHint": "语言由 URL 决定：/ 为中文，/en/ 为英文。下列遗留 default_locale 值仅保留兼容，不覆盖网址语言：",
+    "seo": "搜索与分享回退信息", "seoHint": "页面标题及描述优先使用页面管理中的内容；缺失时使用这里的站点回退值。分享图使用已配置图片，留空不输出。",
+    "loadedError": "配置加载失败，无法保存。请重新加载，避免用默认值覆盖站点配置。", "saveError": "保存失败，输入仍保留，请检查后重试。", "saved": "设置已保存。公开页面下次加载时使用新配置。", "unsaved": "有未保存的修改",
+    "presetNames": { "teal-amber": "青蓝琥珀", "deep-indigo": "靛蓝鼠尾", "forest-terracotta": "森林赤陶", "cyber-purple": "赛博紫", "ink-blue-gold": "墨蓝金" },
+    "labels": { "site_title": "站点名称", "project_title": "首页站点副标题", "footer_text": "页脚文字", "logo_url": "导航标识图片", "banner_url": "首页横幅图片", "primary_color": "主色", "gradient_color": "渐变色", "accent_color": "强调色", "seo_default_title_zh": "中文默认页面标题", "seo_default_title_en": "英文默认页面标题", "seo_default_description_zh": "中文默认页面描述", "seo_default_description_en": "英文默认页面描述", "seo_og_image": "默认分享图片" },
+    "hints": { "site_title": "显示在顶部导航；页面和 SEO 标题都缺失时也作为浏览器标题回退。", "project_title": "显示为首页站点介绍，并用于横幅替代文本；不替换 CMS 中的个人姓名。", "footer_text": "原样显示在每页底部，留空不显示，不自动添加个人信息。", "logo_url": "显示在顶部导航的站点名称旁，留空仅显示名称。", "banner_url": "仅在首页显示已配置的图片；留空不显示横幅。" }
+  },
+  "pages": {
+    "title": "页面管理", "intro": "管理页面结构、导航和页面搜索描述。", "create": "新建页面", "edit": "编辑页面", "sections": "个区块", "hidden": "已隐藏", "hide": "隐藏", "show": "显示", "empty": "暂无页面。",
+    "homeProtection": "首页是站点入口，不能隐藏或删除；可以编辑标题与描述。", "newHint": "按当前设计，新页面保存后即公开，请确认标题与描述可公开。编辑已有隐藏页面不会自动公开。", "slugHint": "路径创建后不可修改；描述用于搜索与分享信息。", "slug": "页面路径（slug）",
+    "discard": "有未保存的修改，确定放弃并关闭？", "confirmDelete": "确定删除「{title}」及其全部区块？此操作不可撤销。",
+    "loadError": "页面加载失败，当前不能创建或保存，请重试。", "saveError": "保存失败，当前输入仍保留。", "deleteError": "删除失败，请重试。", "updateError": "更新失败，请重试。", "reorderError": "排序失败，已恢复原顺序。", "required": "请填写路径和中文标题。",
+    "fields": { "title_zh": "中文标题", "title_en": "英文标题", "meta_description_zh": "中文页面描述", "meta_description_en": "英文页面描述" }
+  },
+  "admin": {
+    "contentManagement": "内容管理", "newSection": "新建区块", "editSection": "编辑区块",
+    "page": "所属页面", "choosePage": "请选择所属页面", "pageUnavailable": "所属页面不可用，请选择有效页面；已有区块请返回列表检查。",
+    "titleZh": "中文标题（必填）", "titleEn": "英文标题（可选）", "titleRequired": "请填写中文标题",
+    "loadFailed": "加载失败，请返回列表后重试。为避免错误写入，当前无法保存。", "sectionMissing": "区块不存在，请返回内容管理。",
+    "saved": "保存成功", "saveFailed": "保存失败，请检查内容后重试", "save": "保存", "saving": "保存中…", "cancel": "取消",
+    "reorderFailed": "排序失败，已恢复原顺序，请重试。", "deleteFailed": "删除失败，请重试。", "updateFailed": "更新失败，请重试。",
+    "moveUp": "上移", "moveDown": "下移", "edit": "编辑", "delete": "删除", "updating": "正在更新，请稍候…",
+    "types": { "rich_text": "富文本", "image_gallery": "图片展示", "data_table": "数据表格", "external_links": "外链", "video": "视频", "metric_cards": "指标卡片", "timeline": "时间线", "profile_hero": "个人头图", "cta_band": "行动号召" }
+  }
 }

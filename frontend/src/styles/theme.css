@@ -369,7 +369,7 @@
 .editorial-body .prose p, .tech-prose p { line-height: 1.85; }
 
 /* §5 serif language split — en headings serif, zh stays sans */
-html[lang="en"] .editorial-body :is(h1, h2, h3) {
+.editorial-body :is(h1, h2, h3):lang(en) {
   font-family: Georgia, "Times New Roman", serif;
 }
 
@@ -380,3 +380,43 @@ html[lang="en"] .editorial-body :is(h1, h2, h3) {
     -webkit-backdrop-filter: none;
   }
 }
+
+/* Reading surfaces: preserve palette accents without gradient text endpoints
+   becoming low-contrast. These tokens do not change the CMS content. */
+.public-page, .public-state, .profile-hero { background-color: var(--color-bg); color: var(--text-base); }
+.reading-muted { color: var(--reading-muted); }
+.page-heading { color: var(--ink); }
+.text-gradient, .tech-prose :is(h1, h2, h3, h4) {
+  background: none;
+  color: var(--ink) !important;
+  -webkit-text-fill-color: currentColor;
+}
+.tech-prose :is(h1, h2, h3, h4) * { color: inherit !important; }
+.tech-prose.prose a, .tech-prose.prose a:hover, .section-nav a { color: var(--reading-accent); }
+.original-notice { color: var(--reading-muted); border-left: 2px solid var(--reading-accent); padding-left: 0.75rem; }
+.section-nav, .data-record, .data-table-scroll { background: var(--color-bg-card); border: 1px solid var(--hairline); }
+.public-action { background: var(--reading-accent); color: var(--color-bg); }
+.data-table-scroll table { min-width: 42rem; }
+.data-table-scroll th { color: var(--table-header-ink); background: var(--table-header-bg); }
+.data-table-scroll td { min-width: 9rem; border-top: 1px solid var(--hairline); }
+.data-table-scroll td:first-child { min-width: 3rem; }
+.data-table-scroll tr:nth-child(even) { background: var(--table-row-alt); }
+.metric-cards { grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
+
+/* Admin forms retain the existing light-panel design; previews are locally scoped. */
+:root {
+  --admin-panel: #fff;
+  --admin-ink: #1e293b;
+  --admin-border: #cbd5e1;
+  --admin-note: #f1f5f9;
+}
+.admin-settings-card { padding: 1.5rem; border: 1px solid var(--admin-border); border-radius: 1rem; background: var(--admin-panel); color: var(--admin-ink); }
+.admin-form-input { display: block; width: 100%; min-width: 0; margin-top: .5rem; padding: .65rem .8rem; border: 1px solid var(--admin-border); border-radius: .65rem; background: var(--admin-panel); color: var(--admin-ink); font-weight: 400; }
+.admin-form-message { padding: 1rem; border: 1px solid var(--admin-border); border-radius: .75rem; background: var(--admin-note); color: var(--admin-ink); overflow-wrap: anywhere; }
+.admin-icon-button { padding: .5rem .75rem; border: 1px solid var(--admin-border); border-radius: .5rem; background: var(--admin-panel); color: var(--admin-ink); }
+.admin-icon-button:disabled { opacity: .45; cursor: not-allowed; }
+.admin-page-dialog { max-height: calc(100dvh - 2rem); overflow-y: auto; border: 1px solid var(--admin-border); background: var(--admin-panel); color: var(--admin-ink); }
+.admin-page-dialog::backdrop { background: rgb(0 0 0 / .5); }
+.settings-preview { background: var(--bg-base); color: var(--text-base); border: 1px solid var(--card-border); }
+.settings-preview-swatch { background: linear-gradient(135deg, var(--color-primary), var(--color-gradient), var(--color-accent)); }
+.auth-recovery-notice { background: var(--bg-surface); color: var(--ink); border-color: var(--hairline); }

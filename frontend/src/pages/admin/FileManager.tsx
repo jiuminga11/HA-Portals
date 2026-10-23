@@ -3,6 +3,7 @@ import type { FileResponse } from "../../types";
 import { getFiles, deleteFile, uploadFile } from "../../api/upload";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { resolveMediaUrl } from "../../lib/basePath";
+import { useLocale } from "../../hooks/useLocale";
 
 type FileFilter = "all" | "image" | "video";
 
@@ -23,6 +24,7 @@ function formatDate(dateStr: string): string {
 }
 
 export default function FileManager() {
+  const { t } = useLocale();
   const [files, setFiles] = useState<FileResponse[]>([]);
   const [filter, setFilter] = useState<FileFilter>("all");
   const [loading, setLoading] = useState(true);
@@ -68,11 +70,12 @@ export default function FileManager() {
 
   const handleCopyUrl = async (url: string) => {
     try {
-      await navigator.clipboard.writeText(url);
-      setCopiedUrl(url);
+      const absoluteUrl = new URL(resolveMediaUrl(url), window.location.origin).href;
+      await navigator.clipboard.writeText(absoluteUrl);
+      setCopiedUrl(absoluteUrl);
       setTimeout(() => setCopiedUrl(null), 2000);
     } catch {
-      // Fallback
+      setError(t.files.copyFailed);
     }
   };
 
@@ -97,6 +100,7 @@ export default function FileManager() {
 
   const isImage = (mime: string) => mime.startsWith("image/");
   const isVideo = (mime: string) => mime.startsWith("video/");
+  const documentUrl = (url: string) => new URL(resolveMediaUrl(url), window.location.origin).href;
 
   return (
     <div className="max-w-5xl">
@@ -104,7 +108,7 @@ export default function FileManager() {
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
           <h1 className="text-xl font-bold text-slate-800">文件管理</h1>
-          <p className="text-sm text-slate-500 mt-0.5">管理已上传的图片和视频文件</p>
+          <p className="text-sm text-slate-500 mt-0.5">{t.files.description}</p>
         </div>
         <div className="flex items-center gap-3">
           <label className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity shadow-sm cursor-pointer">
@@ -126,7 +130,7 @@ export default function FileManager() {
             )}
             <input
               type="file"
-              accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm"
+              accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,application/pdf"
               className="hidden"
               onChange={handleUpload}
               disabled={uploading}
@@ -193,10 +197,11 @@ export default function FileManager() {
                     <span className="text-xs">视频</span>
                   </div>
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-slate-400">
+                  <div className="w-full h-full flex flex-col gap-2 items-center justify-center text-slate-500">
                     <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
+                    <span className="text-xs">{file.mime_type === "application/pdf" ? t.files.pdf : t.files.document}</span>
                   </div>
                 )}
 
@@ -207,7 +212,7 @@ export default function FileManager() {
                     title="复制 URL"
                     className="w-9 h-9 bg-white/90 rounded-lg flex items-center justify-center text-slate-700 hover:bg-white transition-colors"
                   >
-                    {copiedUrl === file.file_url ? (
+                    {copiedUrl === documentUrl(file.file_url) ? (
                       <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
@@ -237,6 +242,12 @@ export default function FileManager() {
                 <p className="text-xs text-slate-500 mt-0.5">
                   {formatBytes(file.file_size)} · {formatDate(file.created_at)}
                 </p>
+                {!isImage(file.mime_type) && !isVideo(file.mime_type) && <div className="flex flex-wrap gap-x-3 gap-y-2 mt-3 text-xs">
+                  <a href={resolveMediaUrl(file.file_url)} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 text-slate-700">{t.files.viewDocument}</a>
+                  <button onClick={() => handleCopyUrl(documentUrl(file.file_url))} className="underline underline-offset-2 text-slate-700">
+                    {copiedUrl === documentUrl(file.file_url) ? t.files.copied : t.files.copyLink}
+                  </button>
+                </div>}
               </div>
             </div>
           ))}

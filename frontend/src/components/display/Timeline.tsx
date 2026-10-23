@@ -2,6 +2,8 @@ import { useLayoutEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import type { TimelineContent, TimelineItem } from "../../types";
 import { useLocale } from "../../hooks/useLocale";
+import { contentLang } from "../../lib/displayContent";
+import { localePath } from "../../lib/localePath";
 
 interface Props {
   content: TimelineContent;
@@ -64,16 +66,16 @@ function TimelineRow({ item, isLast, transitionDelay }: { item: TimelineItem; is
             </div>
             <div className="flex-1">
               <div className="font-medium" style={{ fontSize: "20px", color: "var(--ink)" }}>
-                {title}
+                <span lang={contentLang(title)}>{title}</span>
                 {subtitle && (
-                  <span style={{ color: "var(--ink-3)", fontWeight: 400 }}>
+                  <span lang={contentLang(subtitle)} style={{ color: "var(--ink-3)", fontWeight: 400 }}>
                     {" \u00b7 "}
                     {subtitle}
                   </span>
                 )}
               </div>
               {description && (
-                <p className="mt-2 text-lg" style={{ color: "var(--ink-4)", lineHeight: 1.7 }}>
+                <p lang={contentLang(description)} className="mt-2 text-lg" style={{ color: "var(--ink-4)", lineHeight: 1.7 }}>
                   {description}
                 </p>
               )}
@@ -86,7 +88,7 @@ function TimelineRow({ item, isLast, transitionDelay }: { item: TimelineItem; is
 }
 
 export default function Timeline({ content, isHome = false }: Props) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const { items = [] } = content;
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -141,7 +143,7 @@ export default function Timeline({ content, isHome = false }: Props) {
       {truncated && (
         <div className="pl-[36px] sm:pl-[42px]">
           <Link
-            to="/about"
+            to={localePath("/about", locale)}
             className="inline-flex items-center text-lg font-medium transition-opacity duration-200 motion-reduce:transition-none hover:opacity-70"
             style={{ color: "var(--accent)" }}
           >

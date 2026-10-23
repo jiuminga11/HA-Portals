@@ -1,12 +1,14 @@
 import type { ExternalLinksContent } from "../../types";
 import { useLocale } from "../../hooks/useLocale";
+import { contentLang } from "../../lib/displayContent";
+import { resolveContentLink } from "../../lib/localePath";
 
 interface Props {
   content: ExternalLinksContent;
 }
 
 export default function ExternalLinks({ content }: Props) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const { items = [] } = content;
 
   if (items.length === 0) {
@@ -25,7 +27,7 @@ export default function ExternalLinks({ content }: Props) {
       {items.map((item, idx) => (
         <a
           key={idx}
-          href={item.url}
+          href={resolveContentLink(item.url, locale)}
           target="_blank"
           rel="noopener noreferrer"
           className="group block glass-card rounded-xl px-5 py-4 transition-all duration-200"
@@ -42,12 +44,12 @@ export default function ExternalLinks({ content }: Props) {
           }}
         >
           <div className="flex items-baseline justify-between gap-4">
-            <div className="min-w-0">
-              <div className="font-medium" style={{ fontSize: "16px", lineHeight: 1.5, color: "var(--ink)" }}>
+            <div className="min-w-0 [overflow-wrap:anywhere]">
+              <div lang={contentLang(item.title)} className="font-medium" style={{ fontSize: "16px", lineHeight: 1.5, color: "var(--ink)" }}>
                 {item.title}
               </div>
               {(item.source || item.date) && (
-                <div className="mt-1" style={{ color: "var(--ink-4)", fontSize: "13px" }}>
+                <div lang={contentLang(item.source || "")} className="mt-1" style={{ color: "var(--ink-4)", fontSize: "13px" }}>
                   {[item.source, item.date].filter(Boolean).join("  \u00b7  ")}
                 </div>
               )}

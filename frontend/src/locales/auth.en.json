@@ -1,0 +1,15 @@
+{
+  "title": "Administration",
+  "username": "Username",
+  "usernamePlaceholder": "admin",
+  "password": "Password",
+  "passwordPlaceholder": "Enter your password",
+  "submit": "Sign in",
+  "submitting": "Signing in...",
+  "timeout": "Sign-in timed out. Check your connection or server status and try again.",
+  "network": "Cannot connect to the server. Check your connection and try again.",
+  "invalidCredentials": "Incorrect username or password.",
+  "failed": "Sign-in failed. Please try again later.",
+  "restored": "Signed in. Return to your original editing tab, review your unsaved changes, then click Save again. You may close this tab.",
+  "unsavedChanges": "You have unsaved changes. Leave and discard them? Changes cannot be recovered after refreshing or closing this tab."
+}

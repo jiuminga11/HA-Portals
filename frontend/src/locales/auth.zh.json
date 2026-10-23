@@ -1,0 +1,15 @@
+{
+  "title": "管理后台",
+  "username": "用户名",
+  "usernamePlaceholder": "admin",
+  "password": "密码",
+  "passwordPlaceholder": "请输入密码",
+  "submit": "登 录",
+  "submitting": "登录中...",
+  "timeout": "登录超时，请检查网络连接或服务器状态后重试。",
+  "network": "无法连接服务器，请检查网络后重试。",
+  "invalidCredentials": "用户名或密码错误。",
+  "failed": "登录失败，请稍后重试。",
+  "restored": "登录成功。请返回原编辑标签页，检查未保存内容后再次点击保存。本标签页可以关闭。",
+  "unsavedChanges": "有尚未保存的更改，确定离开并丢弃这些更改吗？刷新或关闭后无法恢复。"
+}

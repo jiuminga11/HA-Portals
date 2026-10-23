@@ -56,7 +56,6 @@ def _normalize_sort_order(db: Session, page_id: int) -> None:
     for idx, section in enumerate(sections):
         if section.sort_order != idx:
             section.sort_order = idx
-    db.commit()
 
 
 def _validate_and_sanitize(section_type: str, content: dict) -> dict:
@@ -140,10 +139,9 @@ def create_section(
         content=json.dumps(validated_content, ensure_ascii=False),
     )
     db.add(section)
-    db.commit()
-    db.refresh(section)
-
+    db.flush()
     _normalize_sort_order(db, body.page_id)
+    db.commit()
     db.refresh(section)
     return _section_to_response(section)
 
@@ -155,18 +153,22 @@ def reorder_sections(
     _admin: bool = Depends(get_current_admin),
 ) -> list[SectionResponse]:
     """批量更新区块排序（需鉴权）。接收完整的 id+sort_order 映射。"""
-    # 校验：检查重复 ID
+    # 全部校验完成后才修改 ORM 对象，非法请求不得写入。
+    if not body.orders:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="orders 不可为空",
+        )
     ids = [item.id for item in body.orders]
     if len(ids) != len(set(ids)):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="orders 中存在重复 ID",
         )
-    # 校验：sort_order 不可为负
-    if any(item.sort_order < 0 for item in body.orders):
+    if {item.sort_order for item in body.orders} != set(range(len(ids))):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="sort_order 不可为负",
+            detail="sort_order 必须为不重复的连续整数 0..n-1",
         )
     order_map = {item.id: item.sort_order for item in body.orders}
     db_sections = db.query(Section).filter(Section.id.in_(order_map.keys())).all()
@@ -177,17 +179,27 @@ def reorder_sections(
             detail="部分 section ID 不存在",
         )
 
-    # 收集涉及的 page_ids 用于后续归一化
-    affected_page_ids: set[int] = set()
-    for s in db_sections:
-        if s.id in order_map:
-            s.sort_order = order_map[s.id]
-            affected_page_ids.add(s.page_id)
+    page_ids = {s.page_id for s in db_sections}
+    if len(page_ids) != 1:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="orders 必须属于同一页面",
+        )
+    page_id = next(iter(page_ids))
+    page_section_ids = {
+        row.id for row in db.query(Section.id).filter(Section.page_id == page_id).all()
+    }
+    if set(ids) != page_section_ids:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="orders 必须包含该页面的全部区块（含隐藏区块）",
+        )
 
+    for section in db_sections:
+        section.sort_order = order_map[section.id]
+    db.flush()
+    _normalize_sort_order(db, page_id)
     db.commit()
-
-    for pid in affected_page_ids:
-        _normalize_sort_order(db, pid)
 
     all_sections = db.query(Section).order_by(Section.sort_order).all()
     return [_section_to_response(s) for s in all_sections]
@@ -257,6 +269,7 @@ def delete_section(
 
     page_id = section.page_id
     db.delete(section)
-    db.commit()
+    db.flush()
     _normalize_sort_order(db, page_id)
+    db.commit()
     return {"detail": "deleted"}

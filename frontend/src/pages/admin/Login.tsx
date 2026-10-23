@@ -1,7 +1,12 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import axios from "axios";
 import { login } from "../../api/auth";
 import { getSiteConfig } from "../../api/siteConfig";
+import { useLocale } from "../../hooks/useLocale";
+import { expireAuthSession, isTokenValid, safeReturnTo, setAuthToken } from "../../lib/authSession";
+import zh from "../../locales/auth.zh.json";
+import en from "../../locales/auth.en.json";
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -9,45 +14,84 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const [siteTitle, setSiteTitle] = useState("");
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const reauth = searchParams.get("reauth") === "1";
+  const logout = searchParams.get("logout") === "1";
+  const returnTo = safeReturnTo(searchParams.get("returnTo"));
+  const { locale } = useLocale();
+  const text = locale === "en" ? en : zh;
+  const [success, setSuccess] = useState(() => !logout && reauth && isTokenValid(localStorage.getItem("token")));
+  const attempt = useRef(0);
+  const controller = useRef<AbortController | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cancelPendingLogin = useCallback(() => {
+    attempt.current++;
+    controller.current?.abort();
+    if (timer.current !== null) clearTimeout(timer.current);
+  }, []);
 
   useEffect(() => {
-    if (localStorage.getItem("token")) {
-      navigate("/admin", { replace: true });
+    if (logout) {
+      expireAuthSession(localStorage.getItem("token"));
+      // Consume the command so refresh cannot log out a later successful login.
+      const nextParams = new URLSearchParams(searchParams);
+      nextParams.delete("logout");
+      const query = nextParams.toString();
+      navigate(`/admin/login${query ? `?${query}` : ""}`, { replace: true });
+      return;
     }
-    getSiteConfig().then((c) => setSiteTitle(c.site_title || "")).catch((err) => console.warn("[HA-PORTALS] Failed to load site config:", err.message));
-  }, [navigate]);
+    if (!reauth && isTokenValid(localStorage.getItem("token"))) {
+      navigate(returnTo, { replace: true });
+    }
+    let mounted = true;
+    getSiteConfig().then((c) => { if (mounted) setSiteTitle(c.site_title || ""); }).catch((err) => console.warn("[HA-PORTALS] Failed to load site config:", err.message));
+    return () => {
+      mounted = false;
+      cancelPendingLogin();
+    };
+  }, [navigate, reauth, logout, returnTo, searchParams, cancelPendingLogin]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim() || !password) return;
+    controller.current?.abort();
+    if (timer.current !== null) clearTimeout(timer.current);
+    const attemptId = ++attempt.current;
+    const request = new AbortController();
+    controller.current = request;
     setLoading(true);
     setError(null);
+    setSuccess(false);
 
     // 10 秒超时保护，避免用户无限等待
-    const timeoutId = setTimeout(() => {
+    timer.current = setTimeout(() => {
+      if (attempt.current !== attemptId) return;
+      attempt.current++;
+      request.abort();
       setLoading(false);
-      setError("登录超时，请检查网络连接或服务器状态");
+      setError(text.timeout);
     }, 10000);
 
     try {
-      const res = await login(username.trim(), password);
-      clearTimeout(timeoutId);
-      localStorage.setItem("token", res.access_token);
-      navigate("/admin", { replace: true });
+      const res = await login(username.trim(), password, request.signal);
+      if (attempt.current !== attemptId || request.signal.aborted) return;
+      setAuthToken(res.access_token);
+      setPassword("");
+      if (reauth) setSuccess(true);
+      else navigate(returnTo, { replace: true });
     } catch (err: unknown) {
-      clearTimeout(timeoutId);
-      const axiosErr = err as { response?: { data?: { detail?: string } }; code?: string; message?: string };
-      let msg: string;
-      if (axiosErr.response?.data?.detail) {
-        msg = axiosErr.response.data.detail;
-      } else if (axiosErr.code === "ECONNABORTED" || axiosErr.code === "ERR_NETWORK") {
-        msg = "无法连接服务器，请检查网络";
-      } else {
-        msg = "用户名或密码错误";
-      }
-      setError(msg);
+      if (attempt.current !== attemptId || request.signal.aborted) return;
+      setError(axios.isAxiosError(err)
+        ? err.response?.status === 401 ? text.invalidCredentials
+          : err.code === "ECONNABORTED" ? text.timeout
+          : err.code === "ERR_NETWORK" ? text.network : text.failed
+        : text.failed);
     } finally {
-      setLoading(false);
+      if (attempt.current === attemptId) {
+        if (timer.current !== null) clearTimeout(timer.current);
+        controller.current = null;
+        setLoading(false);
+      }
     }
   };
 
@@ -120,21 +164,22 @@ export default function Login() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
-          <h1 className="text-xl font-bold" style={{ color: '#F1F5F9' }}>管理后台</h1>
+          <h1 className="text-xl font-bold" style={{ color: '#F1F5F9' }}>{text.title}</h1>
           {siteTitle && <p className="text-sm mt-1" style={{ color: '#64748B' }}>{siteTitle}</p>}
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="px-8 py-8 space-y-5">
           <div>
-            <label className="block text-sm font-medium mb-1.5" style={{ color: '#94A3B8' }}>
-              用户名
+            <label htmlFor="login-username" className="block text-sm font-medium mb-1.5" style={{ color: '#94A3B8' }}>
+              {text.username}
             </label>
             <input
               type="text"
+              id="login-username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="admin"
+              placeholder={text.usernamePlaceholder}
               autoComplete="username"
               required
               className="w-full px-4 py-3 text-sm focus:outline-none transition-all duration-200"
@@ -156,14 +201,15 @@ export default function Login() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1.5" style={{ color: '#94A3B8' }}>
-              密码
+            <label htmlFor="login-password" className="block text-sm font-medium mb-1.5" style={{ color: '#94A3B8' }}>
+              {text.password}
             </label>
             <input
               type="password"
+              id="login-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="请输入密码"
+              placeholder={text.passwordPlaceholder}
               autoComplete="current-password"
               required
               className="w-full px-4 py-3 text-sm focus:outline-none transition-all duration-200"
@@ -184,8 +230,9 @@ export default function Login() {
             />
           </div>
 
-          {error && (
+          {(error || success) && (
             <div
+              role={error ? "alert" : "status"}
               className="text-sm px-4 py-3"
               style={{
                 background: 'rgba(239,68,68,0.1)',
@@ -194,7 +241,7 @@ export default function Login() {
                 color: '#FCA5A5',
               }}
             >
-              {error}
+              {error || text.restored}
             </div>
           )}
 
@@ -226,10 +273,10 @@ export default function Login() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
-                登录中...
+                {text.submitting}
               </>
             ) : (
-              "登 录"
+              text.submit
             )}
           </button>
         </form>

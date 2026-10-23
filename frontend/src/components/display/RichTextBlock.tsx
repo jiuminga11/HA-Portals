@@ -1,13 +1,14 @@
 import type { RichTextContent } from "../../types";
-import { basePath } from "../../lib/basePath";
 import { useLocale } from "../../hooks/useLocale";
+import { prepareRichText } from "../../lib/displayContent";
 
 interface Props {
   content: RichTextContent;
+  headingTitles?: string[];
 }
 
-export default function RichTextBlock({ content }: Props) {
-  const { t } = useLocale();
+export default function RichTextBlock({ content, headingTitles = [] }: Props) {
+  const { t, locale } = useLocale();
 
   if (!content.body) {
     return (
@@ -17,15 +18,12 @@ export default function RichTextBlock({ content }: Props) {
     );
   }
 
-  // Prefix root-relative /uploads/ paths in embedded HTML with basePath
-  const html = basePath
-    ? content.body.replace(/(src|href)="(\/uploads\/)/g, `$1="${basePath}$2`)
-    : content.body;
+  const html = prepareRichText(content.body, headingTitles, locale);
 
   return (
-    <div>
+    <div className="min-w-0 max-w-full">
       <div
-        className="prose prose-xl prose-dark tech-prose
+        className="prose prose-xl prose-dark tech-prose min-w-0 max-w-full [overflow-wrap:anywhere] [&_a]:whitespace-normal [&_a]:[overflow-wrap:anywhere]
           prose-headings:font-display
           prose-h1:text-4xl prose-h2:text-2xl prose-h3:text-xl
           prose-p:text-lg

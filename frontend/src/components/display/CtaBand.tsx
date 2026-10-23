@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
 import type { CtaBandContent } from "../../types";
 import { useLocale } from "../../hooks/useLocale";
+import { stripBasePath } from "../../lib/basePath";
+import { isDisplayPageLink } from "../../lib/displayContent";
+import { localePath, resolveContentLink } from "../../lib/localePath";
 
 interface Props {
   content: CtaBandContent;
@@ -9,7 +12,7 @@ interface Props {
 /** §6 cta_band — band-variant content: centered description + button row.
  *  The band surface/title come from SectionRenderer's band treatment. */
 export default function CtaBand({ content }: Props) {
-  const { localized, t } = useLocale();
+  const { localized, t, locale } = useLocale();
   const description = localized(content.description_zh, content.description_en);
   const buttons = content.buttons ?? [];
 
@@ -36,7 +39,7 @@ export default function CtaBand({ content }: Props) {
         <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-3 mt-8">
           {buttons.map((btn, idx) => {
             const label = localized(btn.label_zh, btn.label_en);
-            const isInternal = btn.url.startsWith("/") && !btn.url.startsWith("//");
+            const isInternal = isDisplayPageLink(btn.url);
             const isPrimary = idx === 0;
             const className = isPrimary
               ? "inline-flex items-center rounded-md text-lg font-semibold transition-all duration-200 motion-reduce:transition-none hover:-translate-y-0.5"
@@ -58,11 +61,11 @@ export default function CtaBand({ content }: Props) {
               </>
             );
             return isInternal ? (
-              <Link key={idx} to={btn.url} className={className} style={style}>
+              <Link key={idx} to={localePath(stripBasePath(btn.url), locale)} className={className} style={style}>
                 {inner}
               </Link>
             ) : (
-              <a key={idx} href={btn.url} target="_blank" rel="noopener noreferrer" className={className} style={style}>
+              <a key={idx} href={resolveContentLink(btn.url, locale)} target="_blank" rel="noopener noreferrer" className={className} style={style}>
                 {inner}
               </a>
             );

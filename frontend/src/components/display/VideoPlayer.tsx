@@ -1,6 +1,7 @@
 import type { VideoContent } from "../../types";
 import { resolveMediaUrl } from "../../lib/basePath";
 import { useLocale } from "../../hooks/useLocale";
+import { contentLang } from "../../lib/displayContent";
 
 interface Props {
   content: VideoContent;
@@ -65,7 +66,8 @@ export default function VideoPlayer({ content }: Props) {
               style={{ background: 'var(--color-accent)', boxShadow: '0 0 6px var(--color-accent)' }}
             />
             <h3
-              className="text-base font-medium truncate"
+              lang={contentLang(item.title)}
+              className="text-base font-medium min-w-0 [overflow-wrap:anywhere]"
               style={{ color: 'var(--text-base)' }}
             >
               {item.title}

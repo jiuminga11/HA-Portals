@@ -1,13 +1,14 @@
 import { Outlet, useNavigate } from "react-router-dom";
 import AdminSidebar from "../../components/layout/AdminSidebar";
 import { basePath } from "../../lib/basePath";
+import AuthRecoveryNotice from "../../components/common/AuthRecoveryNotice";
 
 export default function AdminLayout() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/admin/login", { replace: true });
+    // The destination clears auth only after the dirty-navigation blocker approves.
+    navigate("/admin/login?logout=1", { replace: true });
   };
 
   return (
@@ -89,6 +90,7 @@ export default function AdminLayout() {
           className="flex-1 overflow-y-auto p-6"
           style={{ background: 'var(--bg-base)' }}
         >
+          <AuthRecoveryNotice />
           <Outlet />
         </main>
       </div>

@@ -2,9 +2,13 @@ import { Link } from "react-router-dom";
 import type { ProfileHeroContent } from "../../types";
 import { useLocale } from "../../hooks/useLocale";
 import HXMark from "../common/HXMark";
+import { resolveMediaUrl, stripBasePath } from "../../lib/basePath";
+import { contentLang, isDisplayPageLink } from "../../lib/displayContent";
+import { localePath, resolveContentLink } from "../../lib/localePath";
 
 interface Props {
   content: ProfileHeroContent;
+  headingLevel?: "h1" | "h2";
 }
 
 /** Map platform names to simple SVG icons */
@@ -55,8 +59,8 @@ function SocialIcon({ platform }: { platform: string }) {
 }
 
 
-export default function ProfileHero({ content }: Props) {
-  const { localized } = useLocale();
+export default function ProfileHero({ content, headingLevel: Heading = "h1" }: Props) {
+  const { localized, locale } = useLocale();
   const {
     avatar_url,
     avatar_position = "50% 50%",
@@ -80,8 +84,7 @@ export default function ProfileHero({ content }: Props) {
 
   return (
     <div
-      className="relative overflow-hidden tech-bg"
-      style={{ backgroundColor: "var(--color-bg)", paddingTop: "120px", paddingBottom: "120px" }}
+      className="profile-hero relative overflow-hidden tech-bg py-12 lg:py-[120px]"
     >
       {/* Extra floating orbs for depth */}
       <div
@@ -108,7 +111,7 @@ export default function ProfileHero({ content }: Props) {
       <div className="relative w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left: text content */}
-          <div className="order-2 lg:order-1 text-left">
+          <div className="order-1 min-w-0 text-left [overflow-wrap:anywhere]">
             {/* Avatar — only shown when a photo is uploaded; initials fallback removed (duplicated the name) */}
             {avatar_url && (
               <div
@@ -120,7 +123,7 @@ export default function ProfileHero({ content }: Props) {
                   style={{ background: "var(--color-bg-card)" }}
                 >
                   <img
-                    src={avatar_url}
+                    src={resolveMediaUrl(avatar_url)}
                     alt={name}
                     className="w-full h-full object-cover"
                     style={{ objectPosition: avatar_position }}
@@ -130,7 +133,8 @@ export default function ProfileHero({ content }: Props) {
             )}
 
             {/* Name */}
-            <h1
+            <Heading
+              lang={contentLang(name)}
               className="font-display"
               style={{
                 color: "var(--ink)",
@@ -141,11 +145,12 @@ export default function ProfileHero({ content }: Props) {
               }}
             >
               {name}
-            </h1>
+            </Heading>
 
             {/* Romanization + tagline */}
             {subline && (
               <p
+                lang={contentLang(subline)}
                 className="mt-4"
                 style={{ color: "var(--ink-3)", fontSize: "20px", letterSpacing: "0.5px" }}
               >
@@ -156,6 +161,7 @@ export default function ProfileHero({ content }: Props) {
             {/* Mission */}
             {mission && (
               <p
+                lang={contentLang(mission)}
                 className="mt-8 lg:mt-10 lg:max-w-[720px]"
                 style={{ color: "var(--ink-2)", fontSize: "24px", lineHeight: 1.7 }}
               >
@@ -169,10 +175,11 @@ export default function ProfileHero({ content }: Props) {
                 {tags.map((tag, idx) => (
                   <span
                     key={idx}
-                    className="inline-flex items-center px-4 py-1.5 rounded-full text-base font-medium"
+                      lang={contentLang(tag)}
+                      className="inline-flex max-w-full items-center px-4 py-1.5 rounded-full text-base font-medium"
                     style={{
                       background: "var(--badge-bg)",
-                      color: "var(--color-primary)",
+                       color: "var(--reading-accent)",
                       border: "1px solid var(--border-glow)",
                     }}
                   >
@@ -187,14 +194,14 @@ export default function ProfileHero({ content }: Props) {
               <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mt-10">
                 {cta_buttons.map((btn, idx) => {
                   const label = localized(btn.label_zh, btn.label_en);
-                  const isInternal = btn.url.startsWith("/") && !btn.url.startsWith("//");
+                  const isInternal = isDisplayPageLink(btn.url);
                   const isPrimary = idx === 0;
                   const className = isPrimary
                     ? "inline-flex items-center rounded-md text-lg font-semibold transition-all duration-200 motion-reduce:transition-none hover:-translate-y-0.5"
                     : "inline-flex items-center rounded-md text-lg font-medium transition-all duration-200 motion-reduce:transition-none hover-bg px-3 py-2";
                   const style = isPrimary
                     ? {
-                        background: "linear-gradient(135deg, var(--color-primary), var(--color-gradient))",
+                        background: "var(--reading-accent)",
                         color: "var(--color-bg)",
                         padding: "14px 28px",
                         boxShadow: "0 8px 28px rgba(var(--color-primary-rgb), 0.28)",
@@ -209,11 +216,11 @@ export default function ProfileHero({ content }: Props) {
                     </>
                   );
                   return isInternal ? (
-                    <Link key={idx} to={btn.url} className={className} style={style}>
+                    <Link key={idx} to={localePath(stripBasePath(btn.url), locale)} className={className} style={style}>
                       {inner}
                     </Link>
                   ) : (
-                    <a key={idx} href={btn.url} target="_blank" rel="noopener noreferrer" className={className} style={style}>
+                    <a key={idx} href={resolveContentLink(btn.url, locale)} target="_blank" rel="noopener noreferrer" className={className} style={style}>
                       {inner}
                     </a>
                   );
@@ -227,7 +234,7 @@ export default function ProfileHero({ content }: Props) {
                 {social_links.map((link, idx) => (
                   <a
                     key={idx}
-                    href={link.url}
+                    href={resolveContentLink(link.url, locale)}
                     target="_blank"
                     rel="noopener noreferrer"
                     title={link.label}
@@ -242,7 +249,7 @@ export default function ProfileHero({ content }: Props) {
           </div>
 
           {/* Right: HX-Wave Mark (§3 单一标识系统 — replaces neural constellation) */}
-          <div className="order-1 lg:order-2 flex items-center justify-center">
+          <div aria-hidden="true" className="order-2 flex items-center justify-center max-w-[180px] mx-auto lg:max-w-none lg:mx-0">
             <HXMark variant="mark" animated style={{ width: "min(420px, 80%)", height: "auto" }} />
           </div>
         </div>

@@ -35,3 +35,7 @@ docs/
 
 # SQLite backup files
 backend/data/*.bak*
+
+# Local remediation evidence and isolated test data
+.remediation-runtime/
+.slim/deepwork/

@@ -11,12 +11,14 @@ import Timeline from "./Timeline";
 import ProfileHero from "./ProfileHero";
 import CtaBand from "./CtaBand";
 import HXMark from "../common/HXMark";
+import { contentLang } from "../../lib/displayContent";
 
 interface Props {
   section: Section;
   slug?: string;
   /** §4.2 run-grouping: true for run[1..n] (consecutive same-type) — compact rhythm + title. */
   compact?: boolean;
+  pageTitles?: string[];
 }
 
 /** §4.1 基础处理：type → treatment dispatch */
@@ -34,10 +36,10 @@ const TREATMENT_MAP: Record<Section["type"], Treatment> = {
   cta_band: "band",
 };
 
-function renderContent(section: Section, slug?: string) {
+function renderContent(section: Section, slug?: string, pageTitles: string[] = []) {
   switch (section.type) {
     case "rich_text":
-      return <RichTextBlock content={section.content} />;
+      return <RichTextBlock content={section.content} headingTitles={[section.title_zh, section.title_en, ...pageTitles]} />;
     case "image_gallery":
       return <ImageGallery content={section.content} />;
     case "data_table":
@@ -51,7 +53,7 @@ function renderContent(section: Section, slug?: string) {
     case "timeline":
       return <Timeline content={section.content} isHome={slug === "home"} />;
     case "profile_hero":
-      return <ProfileHero content={section.content} />;
+      return <ProfileHero content={section.content} headingLevel={slug === "home" ? "h1" : "h2"} />;
     case "cta_band":
       return <CtaBand content={section.content} />;
     default:
@@ -59,9 +61,36 @@ function renderContent(section: Section, slug?: string) {
   }
 }
 
-export default function SectionRenderer({ section, slug, compact = false }: Props) {
+/** Detect missing paired translations, not the language/script of their values. */
+function hasEnglishContentFallback(section: Section): boolean {
+  const missing = (zh: string, en: string) => Boolean(zh?.trim()) && !en?.trim();
+  switch (section.type) {
+    case "profile_hero": {
+      const content = section.content;
+      return missing(content.name_zh, content.name_en)
+        || missing(content.tagline_zh, content.tagline_en)
+        || missing(content.mission_zh, content.mission_en)
+        || (content.cta_buttons ?? []).some(button => missing(button.label_zh, button.label_en));
+    }
+    case "metric_cards":
+      return (section.content.cards ?? []).some(card =>
+        missing(card.label_zh, card.label_en) || missing(card.detail_zh, card.detail_en));
+    case "timeline":
+      return (section.content.items ?? []).some(item =>
+        missing(item.title_zh, item.title_en)
+        || missing(item.subtitle_zh, item.subtitle_en)
+        || missing(item.description_zh, item.description_en));
+    case "cta_band":
+      return missing(section.content.description_zh, section.content.description_en)
+        || (section.content.buttons ?? []).some(button => missing(button.label_zh, button.label_en));
+    default:
+      return false;
+  }
+}
+
+export default function SectionRenderer({ section, slug, compact = false, pageTitles = [] }: Props) {
   const sectionRef = useRef<HTMLElement>(null);
-  const { localized } = useLocale();
+  const { localized, locale, t } = useLocale();
   useLayoutEffect(() => {
     const el = sectionRef.current;
     if (!el) return;
@@ -83,11 +112,17 @@ export default function SectionRenderer({ section, slug, compact = false }: Prop
     return () => observer.disconnect();
   }, []);
 
+  const originalContent = ["rich_text", "image_gallery", "data_table", "external_links", "video"].includes(section.type);
+  const originalNotice = locale === "en" && (originalContent || hasEnglishContentFallback(section))
+    ? <p className="original-notice mb-5 text-sm">{t.publicPage.originalContent}</p>
+    : null;
+
   // ProfileHero has its own full-width layout — skip the standard title wrapper
   if (section.type === "profile_hero") {
     return (
       <section ref={sectionRef} className="hero-section" id={`section-${section.id}`} style={{ scrollMarginTop: '80px' }}>
-        {renderContent(section, slug)}
+        {originalNotice && <div className="px-4 sm:px-6 lg:px-8 xl:px-10 pt-6">{originalNotice}</div>}
+        {renderContent(section, slug, pageTitles)}
       </section>
     );
   }
@@ -97,9 +132,10 @@ export default function SectionRenderer({ section, slug, compact = false }: Prop
 
   // §4.3 title spec: standard clamp(2rem, 3vw, 2.5rem); compact run[1..n] → 30px, still h2
   const titleBlock = (
-    <div className="mb-8 max-w-4xl">
+    <div className={pageTitles.includes(localized(section.title_zh, section.title_en)) ? "sr-only" : "mb-8 max-w-4xl"}>
       <h2
         id={titleId}
+        lang={contentLang(localized(section.title_zh, section.title_en))}
         className="font-display text-gradient"
         style={{
           fontSize: compact ? '1.875rem' : 'clamp(2rem, 3vw, 2.5rem)',
@@ -113,7 +149,10 @@ export default function SectionRenderer({ section, slug, compact = false }: Prop
     </div>
   );
 
-  const content = renderContent(section, slug);
+  const content = <>
+    {originalNotice}
+    {renderContent(section, slug, pageTitles)}
+  </>;
 
   // Vertical rhythm: standard py-20; compact pt-4 pb-20.
   // Band halves mobile padding (§8): py-10 below sm.

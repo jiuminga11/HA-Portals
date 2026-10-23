@@ -20,7 +20,7 @@ def _is_file_referenced(file_url: str, db: Session) -> bool:
     """检查文件是否被 site_config 或 section.content 引用。"""
     config = db.query(SiteConfig).first()
     if config:
-        if config.logo_url == file_url or config.banner_url == file_url:
+        if file_url in (config.logo_url, config.banner_url, config.seo_og_image):
             return True
 
     sections = db.query(Section).all()
@@ -39,7 +39,10 @@ async def upload_file(
 ) -> UploadResponse:
     """上传文件（需鉴权）。校验类型和大小后存储到本地。"""
     # 校验 MIME 类型
-    allowed_types = settings.ALLOWED_IMAGE_TYPES + settings.ALLOWED_VIDEO_TYPES
+    allowed_types = (
+        settings.ALLOWED_IMAGE_TYPES + settings.ALLOWED_VIDEO_TYPES
+        + settings.ALLOWED_DOCUMENT_TYPES
+    )
     if file.content_type not in allowed_types:
         raise HTTPException(
             status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
@@ -55,6 +58,18 @@ async def upload_file(
             detail=f"不支持的文件扩展名: {ext}",
         )
 
+    mime_extensions = {
+        "image/jpeg": {".jpg", ".jpeg"},
+        "image/png": {".png"},
+        "image/gif": {".gif"},
+        "image/webp": {".webp"},
+        "video/mp4": {".mp4"},
+        "video/webm": {".webm"},
+        "application/pdf": {".pdf"},
+    }
+    if ext not in mime_extensions.get(file.content_type, set()):
+        raise HTTPException(status_code=415, detail="文件扩展名与 MIME 类型不匹配")
+
     # 读取文件内容并校验大小
     content = await file.read()
     if len(content) > settings.MAX_FILE_SIZE:
@@ -62,6 +77,10 @@ async def upload_file(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
             detail="文件大小超过限制",
         )
+
+    # 基本 PDF 文件头检查，不是完整解析或恶意内容扫描。
+    if file.content_type == "application/pdf" and not content.startswith(b"%PDF-"):
+        raise HTTPException(status_code=415, detail="PDF 文件头无效")
 
     # UUID 重命名
     stored_name = f"{uuid.uuid4()}{ext}"

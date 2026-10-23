@@ -1,10 +1,12 @@
-import { lazy, Suspense } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
+import { lazy, Suspense, useState } from "react";
+import { createBrowserRouter, createRoutesFromElements, RouterProvider, Outlet, Route, Navigate, useParams, useLocation } from "react-router-dom";
 import PublicLayout from "./components/layout/PublicLayout";
 import PublicPage from "./pages/public/PublicPage";
-import { LocaleProvider } from "./hooks/useLocale";
-import { ThemeProvider } from "./hooks/useTheme";
+import { LocaleProvider } from "./hooks/LocaleProvider";
+import { useLocale } from "./hooks/useLocale";
+import { ThemeProvider } from "./hooks/ThemeProvider";
 import { basePath } from "./lib/basePath";
+import { isTokenValid } from "./lib/authSession";
 
 // Admin 路由延迟加载 — 避免 admin 代码进入公共 bundle。
 const Login = lazy(() => import("./pages/admin/Login"));
@@ -17,37 +19,47 @@ const Guide = lazy(() => import("./pages/admin/Guide"));
 const PageManager = lazy(() => import("./pages/admin/PageManager"));
 
 function AdminFallback() {
+  const { t } = useLocale();
   return (
     <div className="flex items-center justify-center min-h-screen text-sm" style={{ color: "var(--color-text-muted)" }}>
-      加载中…
+      {t.common.loading}
     </div>
   );
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    return <Navigate to="/admin/login" replace />;
+  // Admission is checked on mount, not after a request expires a mounted editor.
+  const [admitted] = useState(() => isTokenValid(localStorage.getItem("token")));
+  const location = useLocation();
+  if (!admitted) {
+    const returnTo = `${location.pathname}${location.search}${location.hash}`;
+    return <Navigate to={`/admin/login?returnTo=${encodeURIComponent(returnTo)}`} replace />;
   }
   return <>{children}</>;
 }
 
 function DynamicPage() {
   const { slug } = useParams<{ slug: string }>();
-  if (!slug) return <Navigate to="/" replace />;
-  return <PublicPage slug={slug} />;
+  return <PublicPage slug={slug || ""} />;
 }
 
-export default function App() {
+function Providers() {
   return (
     <ThemeProvider>
-      <LocaleProvider>
-        <BrowserRouter basename={basePath}>
-          <Routes>
+      <LocaleProvider><Outlet /></LocaleProvider>
+    </ThemeProvider>
+  );
+}
+
+const router = createBrowserRouter(createRoutesFromElements(
+          <Route element={<Providers />}>
             {/* Public pages */}
             <Route element={<PublicLayout />}>
               <Route path="/" element={<PublicPage slug="home" />} />
               <Route path="/:slug" element={<DynamicPage />} />
+              <Route path="/en/" element={<PublicPage slug="home" />} />
+              <Route path="/en/:slug" element={<DynamicPage />} />
+              <Route path="*" element={<PublicPage slug="" />} />
             </Route>
 
             {/* Admin auth */}
@@ -81,11 +93,9 @@ export default function App() {
               <Route path="pages" element={<PageManager />} />
             </Route>
 
-            {/* Fallback */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </BrowserRouter>
-      </LocaleProvider>
-    </ThemeProvider>
-  );
+          </Route>
+), { basename: basePath || "/" });
+
+export default function App() {
+  return <RouterProvider router={router} />;
 }

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import type { ImageGalleryContent } from "../../types";
 import { resolveMediaUrl } from "../../lib/basePath";
 import { useLocale } from "../../hooks/useLocale";
+import { contentLang } from "../../lib/displayContent";
 
 interface Props {
   content: ImageGalleryContent;
@@ -74,6 +75,10 @@ export default function ImageGallery({ content }: Props) {
         {pageItems.map((item, idx) => (
           <div
             key={idx}
+            role="button"
+            tabIndex={0}
+            aria-label={item.caption || t.section.imageAlt}
+            onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); openPreview(idx); } }}
             className="group relative overflow-hidden cursor-pointer glass-card rounded-xl"
             onClick={() => openPreview(idx)}
             onMouseEnter={(e) => {
@@ -99,12 +104,9 @@ export default function ImageGallery({ content }: Props) {
             </div>
             {item.caption && (
               <div
-                className="absolute bottom-0 left-0 right-0 p-3"
-                style={{
-                  background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)',
-                }}
+                className="relative p-3"
               >
-                <p className="text-base truncate" style={{ color: 'var(--ink)' }}>{item.caption}</p>
+                <p lang={contentLang(item.caption)} className="text-base [overflow-wrap:anywhere]" style={{ color: 'var(--ink)' }}>{item.caption}</p>
               </div>
             )}
             {/* Hover overlay */}

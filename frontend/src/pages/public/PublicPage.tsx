@@ -1,153 +1,157 @@
-import { useEffect, useState } from "react";
-import type { Page, Section } from "../../types";
-import { getPageBySlug, getPageSections } from "../../api/pages";
+import { Fragment, useEffect, useLayoutEffect, useState } from "react";
+import { Link, useOutletContext } from "react-router-dom";
+import type { Page, Section, SiteConfig } from "../../types";
+import { basePath, resolveMediaUrl } from "../../lib/basePath";
+import { localePath } from "../../lib/localePath";
 import SectionRenderer from "../../components/display/SectionRenderer";
 import { useLocale } from "../../hooks/useLocale";
+import { contentLang } from "../../lib/displayContent";
 
-interface Props {
-  slug: string;
+interface Props { slug: string }
+
+function resolveOgImage(value: string | null | undefined, origin: string): string | undefined {
+  if (!value) return undefined;
+  try {
+    const url = new URL(resolveMediaUrl(value), origin);
+    return url.protocol === "http:" || url.protocol === "https:" ? url.href : undefined;
+  } catch {
+    // Invalid legacy configuration must not interrupt rendering or other metadata.
+    return undefined;
+  }
 }
 
 export default function PublicPage({ slug }: Props) {
   const [page, setPage] = useState<Page | null>(null);
   const [sections, setSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { t, localized } = useLocale();
+  const [error, setError] = useState<"notFound" | "networkError" | "timeout" | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  const { t, localized, locale } = useLocale();
+  const context = useOutletContext<{ siteConfig: SiteConfig | null } | undefined>();
+  const siteConfig = context?.siteConfig;
 
   useEffect(() => {
     let cancelled = false;
-
+    let timedOut = false;
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => { timedOut = true; controller.abort(); }, 15000);
+    async function fetchPublic<T>(url: string): Promise<T> {
+      const response = await fetch(url, { signal: controller.signal });
+      if (!response.ok) throw response;
+      return response.json();
+    }
     async function load() {
       setLoading(true);
       setError(null);
+      setPage(null);
+      setSections([]);
+      if (!slug) {
+        setError("notFound");
+        setLoading(false);
+        window.clearTimeout(timeout);
+        return;
+      }
       try {
         const [pageData, secs] = await Promise.all([
-          getPageBySlug(slug),
-          getPageSections(slug),
+          fetchPublic<Page>(`${basePath}/api/pages/${encodeURIComponent(slug)}`),
+          fetchPublic<Section[]>(`${basePath}/api/pages/${encodeURIComponent(slug)}/sections`),
         ]);
         if (cancelled) return;
+        if (!pageData.visible) { setError("notFound"); return; }
         setPage(pageData);
-        setSections(secs.filter((s) => s.visible));
-        document.title = localized(pageData.title_zh, pageData.title_en);
-      } catch {
-        if (!cancelled) {
-          setError(t.common.error);
-        }
+        setSections(secs.filter((section) => section.visible).sort((a, b) => a.sort_order - b.sort_order));
+      } catch (err) {
+        if (!cancelled) setError(err instanceof Response && err.status === 404 ? "notFound" : timedOut ? "timeout" : "networkError");
       } finally {
+        window.clearTimeout(timeout);
+        controller.abort();
         if (!cancelled) setLoading(false);
       }
     }
+    void load();
+    return () => { cancelled = true; window.clearTimeout(timeout); controller.abort(); };
+  }, [slug, attempt]);
 
-    load();
-    return () => {
-      cancelled = true;
+  useLayoutEffect(() => {
+    // Clear previous-route metadata before paint, including static initial tags.
+    const clear = () => document.head.querySelectorAll('meta[name="description"], meta[name="robots"], meta[property^="og:"]').forEach(node => node.remove());
+    clear();
+    const setMeta = (key: string, value: string, property = false) => {
+      if (!value) return;
+      const element = document.createElement("meta");
+      element.setAttribute(property ? "property" : "name", key);
+      element.content = value;
+      document.head.appendChild(element);
     };
-  }, [slug, localized, t.common.error]);
+    const validPage = page?.slug === slug && !loading && !error;
+    if (!validPage || !page) {
+      document.title = error ? (error === "notFound" ? t.publicPage.notFoundTitle : t.publicPage.errorTitle) : t.common.loading;
+      if (error) setMeta("robots", "noindex, nofollow");
+      return clear;
+    }
+    const title = localized(page.title_zh, page.title_en)
+      || localized(siteConfig?.seo_default_title_zh || "", siteConfig?.seo_default_title_en || "")
+      || siteConfig?.site_title || t.nav.home;
+    const description = localized(page.meta_description_zh, page.meta_description_en)
+      || localized(siteConfig?.seo_default_description_zh || "", siteConfig?.seo_default_description_en || "");
+    document.title = title;
+    setMeta("description", description);
+    setMeta("og:title", title, true);
+    setMeta("og:description", description, true);
+    setMeta("og:type", "website", true);
+    const url = new URL(window.location.href); url.hash = "";
+    setMeta("og:url", url.href, true);
+    if (siteConfig?.site_title) setMeta("og:site_name", siteConfig.site_title, true);
+    const ogImage = resolveOgImage(siteConfig?.seo_og_image, window.location.origin);
+    if (ogImage) setMeta("og:image", ogImage, true);
+    return clear;
+  }, [page, slug, loading, error, siteConfig, localized, t]);
 
-  if (loading) {
-    return (
-      <div
-        className="min-h-[60vh] flex items-center justify-center tech-bg"
-        style={{ background: "var(--color-bg)" }}
-      >
-        <div className="text-center glass-card rounded-2xl px-10 py-12">
-          <div className="relative w-12 h-12 mx-auto mb-4">
-            <div
-              className="absolute inset-0 rounded-full border-2 animate-spin"
-              style={{ borderColor: "transparent", borderTopColor: "var(--color-primary)" }}
-            />
-            <div
-              className="absolute inset-2 rounded-full border-2 animate-spin"
-              style={{
-                borderColor: "transparent",
-                borderTopColor: "var(--color-gradient)",
-                animationDirection: "reverse",
-                animationDuration: "0.8s",
-              }}
-            />
-          </div>
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-            {t.common.loading}
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // Do not show the previous page's sections while a new route begins loading.
+  if (loading || (page && page.slug !== slug)) return (
+    <div role="status" className="public-state min-h-[60vh] px-4 py-24 text-center">
+      <div aria-hidden="true" className="mx-auto mb-5 h-10 w-10 rounded-full border-2 border-primary border-t-transparent animate-spin motion-reduce:animate-none" />
+      <p>{t.common.loading}</p>
+    </div>
+  );
 
-  if (error || !page) {
-    return (
-      <div
-        className="min-h-[60vh] flex items-center justify-center tech-bg"
-        style={{ background: "var(--color-bg)" }}
-      >
-        <div className="text-center glass-card rounded-2xl px-10 py-12">
-          <div
-            className="w-16 h-16 mb-4 mx-auto rounded-2xl flex items-center justify-center"
-            style={{
-              background: "rgba(var(--color-highlight-rgb), 0.08)",
-              border: "1px solid rgba(var(--color-highlight-rgb), 0.15)",
-            }}
-          >
-            <svg
-              className="w-8 h-8"
-              fill="none"
-              style={{ color: "var(--color-highlight)" }}
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
-              />
-            </svg>
-          </div>
-          <p className="text-lg font-medium" style={{ color: "var(--text-muted)" }}>
-            {error || t.common.error}
-          </p>
-        </div>
-      </div>
-    );
-  }
+  if (error || !page) return (
+    <div className="public-state min-h-[60vh] px-4 py-24 text-center">
+      <h1 className="font-display text-3xl font-semibold mb-4">{error === "notFound" ? t.publicPage.notFoundTitle : t.publicPage.errorTitle}</h1>
+      <p role="alert" className="reading-muted max-w-xl mx-auto mb-6">{t.publicPage[error || "networkError"]}</p>
+      {error !== "notFound" && <button className="public-action rounded-lg px-5 py-3 font-medium" onClick={() => setAttempt((value) => value + 1)}>{t.publicPage.retry}</button>}
+      <Link className="inline-block mx-3 mt-4 underline underline-offset-4" to={localePath("/", locale)}>{t.publicPage.returnHome}</Link>
+    </div>
+  );
 
+  const title = localized(page.title_zh, page.title_en);
+  const firstHero = sections.findIndex(section => section.type === "profile_hero");
+  const homeIntroduction = slug === "home" && (siteConfig?.project_title || siteConfig?.banner_url) ? (
+    <div className="relative px-4 sm:px-6 lg:px-8 xl:px-10 pt-8">
+      {siteConfig.project_title && <p lang={contentLang(siteConfig.project_title)} className="reading-muted text-lg whitespace-pre-wrap [overflow-wrap:anywhere]">{siteConfig.project_title}</p>}
+      {siteConfig.banner_url && <img className="mt-5 w-full max-h-[28rem] object-contain rounded-xl" src={resolveMediaUrl(siteConfig.banner_url)} alt={siteConfig.project_title || siteConfig.site_title || ""} />}
+    </div>
+  ) : null;
   return (
-    <div className="tech-bg" style={{ background: "var(--color-bg)" }}>
-      {sections.length === 0 ? (
-        <div
-          className="flex flex-col items-center justify-center py-32"
-          style={{ color: "var(--text-muted)" }}
-        >
-          <div
-            className="w-20 h-20 mb-6 rounded-2xl flex items-center justify-center glass-card"
-          >
-            <svg
-              className="w-10 h-10 opacity-40"
-              fill="none"
-              stroke="var(--color-primary)"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1}
-                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-              />
-            </svg>
-          </div>
-        </div>
-      ) : (
-        <div>
-          {sections.map((section, idx) => (
-            <SectionRenderer
-              key={section.id}
-              section={section}
-              slug={slug}
-              compact={idx > 0 && sections[idx - 1].type === section.type}
-            />
-          ))}
-        </div>
-      )}
+    <div className="public-page tech-bg">
+      {(slug !== "home" || firstHero === -1) && <header className="relative px-4 sm:px-6 lg:px-8 xl:px-10 pt-12 sm:pt-16 pb-4">
+        <h1 lang={contentLang(title)} className="page-heading font-display text-4xl sm:text-5xl font-bold [overflow-wrap:anywhere]">{title}</h1>
+        {slug === "research" && sections.length > 0 && <nav aria-label={t.publicPage.onThisPage} className="section-nav mt-8 rounded-xl p-4 sm:p-5">
+          <p className="reading-muted text-sm mb-3">{t.publicPage.onThisPage}</p>
+          <ul className="flex flex-wrap gap-2 sm:gap-3">
+            {sections.map((section) => <li key={section.id} className="min-w-0 max-w-full">
+              <a lang={contentLang(localized(section.title_zh, section.title_en))} className="inline-block rounded-md px-3 py-2 underline underline-offset-4 [overflow-wrap:anywhere]" href={`#section-${section.id}`}>{localized(section.title_zh, section.title_en)}</a>
+            </li>)}
+          </ul>
+        </nav>}
+      </header>}
+      {firstHero === -1 && homeIntroduction}
+      {sections.length === 0 ? <div role="status" className="public-state px-4 py-24 text-center"><p>{t.publicPage.empty}</p></div> : sections.map((section, index) => (
+        <Fragment key={section.id}>
+          <SectionRenderer section={section} slug={section.type === "profile_hero" && index !== firstHero ? undefined : slug} pageTitles={slug === "home" ? [] : [page.title_zh, page.title_en]} compact={index > 0 && sections[index - 1].type === section.type} />
+          {index === firstHero && homeIntroduction}
+        </Fragment>
+      ))}
     </div>
   );
 }

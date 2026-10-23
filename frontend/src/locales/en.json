@@ -1,8 +1,8 @@
 {
   "nav": { "home": "Home", "about": "About", "research": "Research", "projects": "Projects", "honors": "Honors", "cv": "CV", "blog": "Blog", "admin": "Admin" },
-  "common": { "readMore": "Read More", "back": "Back", "downloadCV": "Download CV", "contact": "Contact", "language": "Language", "theme": "Theme", "loading": "Loading...", "error": "Failed to load" },
+  "common": { "readMore": "Read More", "back": "Back", "viewCV": "View CV", "contact": "Contact", "language": "Language", "theme": "Theme", "loading": "Loading...", "error": "Failed to load", "toggleMenu": "Toggle navigation menu", "switchLanguage": "中" },
   "home": { "viewResearch": "View Research", "viewProjects": "View Projects" },
-  "footer": { "builtWith": "Built with FastAPI + React", "copyright": "© 2026 Hu Xing", "email": "jiuminga1@qq.com" },
+  "footer": { "builtWith": "Built with FastAPI + React" },
   "section": {
     "noData": "No data",
     "noContent": "No content",
@@ -14,5 +14,48 @@
     "viewFullTimeline": "View full timeline"
   },
   "pagination": { "prev": "Previous", "next": "Next" },
-  "dataTable": { "index": "No." }
+  "dataTable": { "index": "No.", "scrollHint": "If the table is wider than the screen, scroll horizontally to see every field. Keyboard users can focus the table and use the arrow keys.", "scrollLabel": "Complete data table, scroll horizontally" },
+  "publicPage": {
+    "onThisPage": "On this page", "originalContent": "Content below is shown in its original language. No separate translation is provided.",
+    "notFoundTitle": "Page not found", "notFound": "This page does not exist or is not public. Use the site navigation to visit another page.",
+    "errorTitle": "Unable to load this page", "networkError": "The page could not be loaded. Check your connection and try again.",
+    "retry": "Try again", "empty": "There is no public content on this page yet.", "timeout": "The request timed out. Check your connection and try again.", "returnHome": "Return home"
+  },
+  "files": {
+    "description": "Manage uploaded images, videos and PDF documents.", "pdf": "PDF document", "document": "Document", "viewDocument": "View document", "copyLink": "Copy link", "copied": "Copied", "copyFailed": "Could not copy the link. Copy the address from the document link manually."
+  },
+  "authRecovery": {
+    "expiredTitle": "Sign-in expired. Your input is still here.", "expired": "Your input is kept in this tab. Do not refresh or close it. Sign in again in a new tab, then return here and save manually. Your previous changes will not be retried automatically.", "signIn": "Sign in again in a new tab", "restoredTitle": "Sign-in restored", "restored": "You can save again. Review your input and submit it manually. No previous operation has been replayed automatically."
+  },
+  "settings": {
+    "title": "Site settings", "intro": "Manage site identity, the home introduction, footer, appearance, and search and sharing information. All changes require an explicit save.",
+    "identity": "Site identity and home page", "appearance": "Appearance", "preset": "Color preset", "preview": "Local appearance preview", "previewText": "Site title preview",
+    "previewHint": "Choosing a preset, font size or color only changes this preview. It does not save other inputs or affect public pages. Save to apply changes.",
+    "imageHint": "Choose an image authorized for this site. Leave empty to omit it.", "colorHint": "For example #0D9488",
+    "fontSize": "Public page font size", "standard": "Standard · 16px", "large": "Large · 18px", "extraLarge": "Extra large · 20px",
+    "defaultTheme": "Default visitor appearance", "light": "Light", "dark": "Dark", "system": "System", "defaultThemeHint": "Used only when the visitor has not chosen an appearance. Saved visitor preferences are not replaced.",
+    "localeHint": "The URL determines the language: / for Chinese and /en/ for English. This legacy default_locale value is retained for compatibility and does not override the URL:",
+    "seo": "Search and sharing defaults", "seoHint": "Page titles and descriptions from page management take priority. These site values fill missing fields. Only a configured sharing image is published; leave empty to omit it.",
+    "loadedError": "Settings could not be loaded. Saving is disabled to avoid overwriting the site with defaults. Please reload.", "saveError": "Could not save. Your input is still here; review it and try again.", "saved": "Settings saved. Public pages use the new configuration on their next load.", "unsaved": "Unsaved changes",
+    "presetNames": { "teal-amber": "Teal and amber", "deep-indigo": "Indigo and sage", "forest-terracotta": "Forest and terracotta", "cyber-purple": "Cyber purple", "ink-blue-gold": "Ink blue and gold" },
+    "labels": { "site_title": "Site name", "project_title": "Home page subtitle", "footer_text": "Footer text", "logo_url": "Navigation logo", "banner_url": "Home banner", "primary_color": "Primary color", "gradient_color": "Gradient color", "accent_color": "Accent color", "seo_default_title_zh": "Default Chinese page title", "seo_default_title_en": "Default English page title", "seo_default_description_zh": "Default Chinese page description", "seo_default_description_en": "Default English page description", "seo_og_image": "Default sharing image" },
+    "hints": { "site_title": "Shown in navigation and used as the browser title when both page and SEO titles are missing.", "project_title": "Shown as the home introduction and used for banner alternative text. It does not replace the person's name in the CMS.", "footer_text": "Shown as entered at the bottom of every page. Empty means omitted; personal details are not added automatically.", "logo_url": "Shown beside the site name in navigation. Empty means the name alone.", "banner_url": "Only the configured image is shown, on the home page. Empty means no banner." }
+  },
+  "pages": {
+    "title": "Page management", "intro": "Manage page structure, navigation and page descriptions.", "create": "New page", "edit": "Edit page", "sections": "sections", "hidden": "Hidden", "hide": "Hide", "show": "Show", "empty": "No pages yet.",
+    "homeProtection": "Home is the site entry point and cannot be hidden or deleted. Its title and description can still be edited.", "newHint": "Under the current design, new pages are public once saved. Make sure the title and description are ready to publish. Editing an existing hidden page does not publish it.", "slugHint": "The path cannot be changed after creation. Descriptions are used for search and sharing.", "slug": "Page path (slug)",
+    "discard": "Discard your unsaved changes and close?", "confirmDelete": "Delete “{title}” and all its sections? This cannot be undone.",
+    "loadError": "Pages could not be loaded. Creating and saving are disabled. Please retry.", "saveError": "Could not save. Your input is still here.", "deleteError": "Could not delete. Please retry.", "updateError": "Could not update. Please retry.", "reorderError": "Could not reorder. The original order has been restored.", "required": "Enter a path and a Chinese title.",
+    "fields": { "title_zh": "Chinese title", "title_en": "English title", "meta_description_zh": "Chinese page description", "meta_description_en": "English page description" }
+  },
+  "admin": {
+    "contentManagement": "Content management", "newSection": "New section", "editSection": "Edit section",
+    "page": "Page", "choosePage": "Select a page", "pageUnavailable": "This page is unavailable. Select a valid page; for an existing section, return to the list to check.",
+    "titleZh": "Chinese title (required)", "titleEn": "English title (optional)", "titleRequired": "Enter a Chinese title",
+    "loadFailed": "Loading failed. Return to the list and try again. Saving is disabled to prevent incorrect changes.", "sectionMissing": "This section does not exist. Return to content management.",
+    "saved": "Saved", "saveFailed": "Could not save. Check the content and try again.", "save": "Save", "saving": "Saving…", "cancel": "Cancel",
+    "reorderFailed": "Could not reorder. The original order has been restored. Please try again.", "deleteFailed": "Could not delete. Please try again.", "updateFailed": "Could not update. Please try again.",
+    "moveUp": "Move up", "moveDown": "Move down", "edit": "Edit", "delete": "Delete", "updating": "Updating, please wait…",
+    "types": { "rich_text": "Rich text", "image_gallery": "Image gallery", "data_table": "Data table", "external_links": "External links", "video": "Video", "metric_cards": "Metric cards", "timeline": "Timeline", "profile_hero": "Profile hero", "cta_band": "Call to action" }
+  }
 }
