@@ -32,16 +32,6 @@ export default function ExternalLinks({ content }: Props) {
           rel="noopener noreferrer"
           className="group block glass-card rounded-xl px-5 py-4 transition-all duration-200"
           style={{ color: "var(--ink)", textDecoration: "none" }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = "var(--border-glow)";
-            e.currentTarget.style.boxShadow = "0 4px 20px var(--glow-primary), 0 8px 30px rgba(0,0,0,0.12)";
-            e.currentTarget.style.transform = "translateY(-2px)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = "";
-            e.currentTarget.style.boxShadow = "";
-            e.currentTarget.style.transform = "";
-          }}
         >
           <div className="flex items-baseline justify-between gap-4">
             <div className="min-w-0 [overflow-wrap:anywhere]">
@@ -56,7 +46,7 @@ export default function ExternalLinks({ content }: Props) {
             </div>
             <span
               aria-hidden="true"
-              className="shrink-0 transition-transform duration-200 motion-reduce:transition-none group-hover:translate-x-0.5"
+              className="shrink-0 transition-transform duration-200 motion-reduce:transition-none motion-safe:group-hover:translate-x-0.5"
               style={{ fontSize: "16px", color: "var(--accent)" }}
             >
               →

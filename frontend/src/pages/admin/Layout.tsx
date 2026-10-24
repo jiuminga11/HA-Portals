@@ -1,99 +1,66 @@
+import { useEffect, useId, useRef, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import AdminSidebar from "../../components/layout/AdminSidebar";
 import { basePath } from "../../lib/basePath";
 import AuthRecoveryNotice from "../../components/common/AuthRecoveryNotice";
+import { useModalDialog } from "../../components/common/useModalDialog";
+import { useLocale } from "../../hooks/useLocale";
+import "../../styles/admin.css";
 
 export default function AdminLayout() {
   const navigate = useNavigate();
+  const { t } = useLocale();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuId = useId();
+  const titleId = useId();
+  useModalDialog(menuOpen, dialogRef, closeRef, triggerRef);
 
-  const handleLogout = () => {
-    // The destination clears auth only after the dirty-navigation blocker approves.
-    navigate("/admin/login?logout=1", { replace: true });
-  };
+  useEffect(() => {
+    const desktop = window.matchMedia("(min-width: 768px)");
+    const closeOnDesktop = () => { if (desktop.matches) setMenuOpen(false); };
+    desktop.addEventListener("change", closeOnDesktop);
+    return () => desktop.removeEventListener("change", closeOnDesktop);
+  }, []);
 
   return (
-    <div
-      className="flex flex-col h-screen"
-      style={{ background: 'var(--bg-base)' }}
-    >
-      {/* Top bar */}
-      <header
-        className="px-6 py-3 flex items-center justify-between shrink-0"
-        style={{
-          background: 'var(--bg-surface)',
-          borderBottom: '1px solid var(--card-border)',
-          backdropFilter: 'blur(12px)',
-        }}
-      >
-        <div className="flex items-center gap-3">
-          <div
-            className="w-7 h-7 rounded-lg flex items-center justify-center"
-            style={{
-              background: 'linear-gradient(135deg, #3B82F6, #06B6D4)',
-              boxShadow: '0 0 10px rgba(59,130,246,0.4)',
-            }}
-          >
-            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+    <div className="admin-shell flex flex-col h-screen">
+      <header className="admin-topbar px-3 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-2 shrink-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <button ref={triggerRef} type="button" className="admin-toolbar-button md:hidden"
+            aria-label={t.admin.openMenu} aria-expanded={menuOpen} aria-controls={menuId}
+            onClick={() => setMenuOpen(true)}>
+            <svg aria-hidden="true" className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
-          </div>
-          <span className="font-semibold text-sm" style={{ color: '#1E293B' }}>HA-PORTALS 管理后台</span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <a
-            href={basePath || "/"}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all duration-200"
-            style={{ color: '#64748B' }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLAnchorElement).style.color = '#1E3A8A';
-              (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(30,58,138,0.08)';
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLAnchorElement).style.color = '#64748B';
-              (e.currentTarget as HTMLAnchorElement).style.background = '';
-            }}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-            </svg>
-            访问前台
-          </a>
-
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all duration-200"
-            style={{ color: '#64748B' }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.color = '#FCA5A5';
-              (e.currentTarget as HTMLButtonElement).style.background = 'rgba(239,68,68,0.08)';
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.color = '#64748B';
-              (e.currentTarget as HTMLButtonElement).style.background = '';
-            }}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            退出登录
           </button>
+          <span className="font-semibold text-sm">{t.admin.shellTitle}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <a href={basePath || "/"} target="_blank" rel="noopener noreferrer" className="admin-toolbar-button text-xs">{t.admin.visitSite}</a>
+          <button type="button" onClick={() => navigate("/admin/login?logout=1", { replace: true })}
+            className="admin-toolbar-button text-xs">{t.admin.logout}</button>
         </div>
       </header>
-
-      {/* Body */}
-      <div className="flex flex-1 min-h-0">
-        <AdminSidebar />
-        <main
-          className="flex-1 overflow-y-auto p-6"
-          style={{ background: 'var(--bg-base)' }}
-        >
+      <div className="flex flex-1 min-h-0 min-w-0">
+        <AdminSidebar className="hidden md:flex w-56" />
+        <main className="admin-main flex-1 min-w-0 overflow-y-auto p-3 sm:p-6">
           <AuthRecoveryNotice />
           <Outlet />
         </main>
       </div>
+      <dialog id={menuId} ref={dialogRef} aria-labelledby={titleId}
+        className="admin-navigation-dialog p-0"
+        onCancel={event => { event.preventDefault(); setMenuOpen(false); }}>
+        <div className="flex items-center justify-between gap-3 px-4 pt-4">
+          <h2 id={titleId} className="font-semibold text-sm">{t.admin.menu}</h2>
+          <button ref={closeRef} type="button" className="admin-navigation-close px-3 py-2 rounded-lg text-sm"
+            onClick={() => setMenuOpen(false)}>{t.admin.closeMenu}</button>
+        </div>
+        <AdminSidebar className="flex w-full" onNavigate={() => setMenuOpen(false)} />
+      </dialog>
     </div>
   );
 }

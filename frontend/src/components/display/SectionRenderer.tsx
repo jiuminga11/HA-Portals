@@ -154,11 +154,10 @@ export default function SectionRenderer({ section, slug, compact = false, pageTi
     {renderContent(section, slug, pageTitles)}
   </>;
 
-  // Vertical rhythm: standard py-20; compact pt-4 pb-20.
-  // Band halves mobile padding (§8): py-10 below sm.
+  // Compact mobile rhythm; keep a clear section break without desktop-sized gaps.
   const rhythm = compact
-    ? treatment === "band" ? "pt-4 pb-10 sm:pb-20" : "pt-4 pb-20"
-    : treatment === "band" ? "py-10 sm:py-20" : "py-20";
+    ? "pt-4 pb-10 sm:pb-16"
+    : "py-10 sm:py-16";
   const gutter = "px-4 sm:px-6 lg:px-8 xl:px-10";
 
   const sectionProps = {

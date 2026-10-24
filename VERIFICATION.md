@@ -19,7 +19,7 @@ full 的像素取样使用 `REMEDIATION_IMAGE_PYTHON`，默认运行 runner 的�
 
 | Profile | 实际覆盖 |
 | --- | --- |
-| core（快速业务验收） | 两个 TS 配置检查、ESLint、外置 `/ha/` 生产构建及编译 CSS 契约；自动发现全部 backend `test_*.py`；auth/routing/content helper；真实 API/媒体 smoke；pass1 功能、reading、states、admin、settings-files、gate、avatar；12 个公开页面组合（六页×中英×亮色×390px）及公开交互 |
+| core（快速业务验收） | 两个 TS 配置检查、ESLint、外置 `/ha/` 生产构建及编译 CSS 契约；自动发现全部 backend `test_*.py`；auth/routing/content helper；真实 API/媒体 smoke；pass1 功能、reading、states、admin、settings-files、gate、avatar；公开站导航故障恢复/滚动焦点/打印/移动模态与后台窄屏/模态/删除锁/主题预览专项；12 个公开页面组合（六页×中英×亮色×390px）及公开交互 |
 | full | core 业务，加公开 72 组合（六页×中英×亮暗×320/390/1440），替代 core 12 组合；三个预设亮暗主题的 30 项局部 contrast 取样；显式必跑 browser-a11y-performance.cjs 与 browser-security-concurrency.cjs。缺失脚本/不支持取样或未达阈值均失败，不宣称全站无障碍 |
 | smoke | 仅合成 fixture、真实 API、端口 0 preview、HTTP/PNG/下载/404 生命周期自检；静态 HTML 是明确测试占位，不是生产构建，不运行完整套件 |
 

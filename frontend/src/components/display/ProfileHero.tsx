@@ -86,7 +86,7 @@ export default function ProfileHero({ content, headingLevel: Heading = "h1" }: P
 
   return (
     <div
-      className="profile-hero relative overflow-hidden tech-bg py-12 lg:py-[120px]"
+      className="profile-hero relative overflow-hidden tech-bg py-8 sm:py-10 lg:py-16"
     >
       {/* Extra floating orbs for depth */}
       <div
@@ -111,13 +111,13 @@ export default function ProfileHero({ content, headingLevel: Heading = "h1" }: P
       />
 
       <div className="relative w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Left: text content */}
           <div className="order-1 min-w-0 text-left [overflow-wrap:anywhere]">
             {/* Avatar — only shown when a photo is uploaded; initials fallback removed (duplicated the name) */}
             {avatarSrc && (
               <div
-                className="w-[96px] h-[96px] lg:w-[112px] lg:h-[112px] rounded-full p-[3px] mb-8 bg-gradient-primary"
+                className="w-[80px] h-[80px] lg:w-[96px] lg:h-[96px] rounded-full p-[3px] mb-5 bg-gradient-primary"
                 style={{ boxShadow: "0 12px 40px rgba(var(--color-primary-rgb), 0.22)" }}
               >
                 <div
@@ -155,7 +155,7 @@ export default function ProfileHero({ content, headingLevel: Heading = "h1" }: P
               <p
                 lang={contentLang(subline)}
                 className="mt-4"
-                style={{ color: "var(--ink-3)", fontSize: "20px", letterSpacing: "0.5px" }}
+                style={{ color: "var(--ink-3)", fontSize: "1.25rem", letterSpacing: "0.5px" }}
               >
                 {subline}
               </p>
@@ -165,8 +165,8 @@ export default function ProfileHero({ content, headingLevel: Heading = "h1" }: P
             {mission && (
               <p
                 lang={contentLang(mission)}
-                className="mt-8 lg:mt-10 lg:max-w-[720px]"
-                style={{ color: "var(--ink-2)", fontSize: "24px", lineHeight: 1.7 }}
+                className="mt-5 lg:mt-6 lg:max-w-[720px] text-xl sm:text-2xl"
+                style={{ color: "var(--ink-2)", lineHeight: 1.7 }}
               >
                 {mission}
               </p>
@@ -174,7 +174,7 @@ export default function ProfileHero({ content, headingLevel: Heading = "h1" }: P
 
             {/* Tags */}
             {tags.length > 0 && (
-              <div className="flex flex-wrap gap-3 mt-8">
+              <div className="flex flex-wrap gap-2 mt-5">
                 {tags.map((tag, idx) => (
                   <span
                     key={idx}
@@ -194,13 +194,13 @@ export default function ProfileHero({ content, headingLevel: Heading = "h1" }: P
 
             {/* CTA row */}
             {cta_buttons.length > 0 && (
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mt-10">
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mt-6">
                 {cta_buttons.map((btn, idx) => {
                   const label = localized(btn.label_zh, btn.label_en);
                   const isInternal = isDisplayPageLink(btn.url);
                   const isPrimary = idx === 0;
                   const className = isPrimary
-                    ? "inline-flex items-center rounded-md text-lg font-semibold transition-all duration-200 motion-reduce:transition-none hover:-translate-y-0.5"
+                    ? "inline-flex items-center rounded-md text-lg font-semibold transition-all duration-200 motion-reduce:transition-none motion-safe:hover:-translate-y-0.5"
                     : "inline-flex items-center rounded-md text-lg font-medium transition-all duration-200 motion-reduce:transition-none hover-bg px-3 py-2";
                   const style = isPrimary
                     ? {
@@ -209,7 +209,7 @@ export default function ProfileHero({ content, headingLevel: Heading = "h1" }: P
                         padding: "14px 28px",
                         boxShadow: "0 8px 28px rgba(var(--color-primary-rgb), 0.28)",
                       }
-                    : { color: "var(--accent)" };
+                    : { color: "var(--reading-accent)" };
                   const inner = isPrimary ? (
                     label
                   ) : (
@@ -233,7 +233,7 @@ export default function ProfileHero({ content, headingLevel: Heading = "h1" }: P
 
             {/* Social links */}
             {social_links.length > 0 && (
-              <div className="flex flex-wrap items-center gap-4 mt-10">
+              <div className="flex flex-wrap items-center gap-3 mt-6">
                 {social_links.map((link, idx) => (
                   <a
                     key={idx}

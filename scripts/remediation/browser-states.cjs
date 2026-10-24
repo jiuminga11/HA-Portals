@@ -126,7 +126,13 @@ async function main() {
   const ready = () => page.locator('.public-page').waitFor();
   async function spa(slug, locale = 'zh') {
     const target = new URL(routePath(slug, locale)).pathname;
-    await page.locator(`header.fixed a[href="${target}"]`).first().click();
+    const desktopLink = page.locator(`.site-header nav a[href="${target}"]`);
+    await desktopLink.waitFor({ state: 'attached' });
+    if (await desktopLink.isVisible()) await desktopLink.click();
+    else {
+      await page.locator('button[aria-controls="mobile-navigation"]').click();
+      await page.locator(`.mobile-navigation-dialog[open] a[href="${target}"]`).click();
+    }
     await ready();
   }
   let failure;
@@ -218,8 +224,14 @@ async function main() {
       // then unpublish its target on the server before the user clicks it.
       await h.api('PUT', `/admin/pages/${hidden.id}`, { visible: true });
       await page.goto(routePath('research')); await ready();
-      const link = page.locator(`header.fixed a[href="${new URL(routePath('test-hidden')).pathname}"]`).first();
-      await link.waitFor();
+      const hiddenTarget = new URL(routePath('test-hidden')).pathname;
+      const desktopHiddenLink = page.locator(`.site-header nav a[href="${hiddenTarget}"]`);
+      await desktopHiddenLink.waitFor({ state: 'attached' });
+      const link = await desktopHiddenLink.isVisible() ? desktopHiddenLink : await (async () => {
+        await page.locator('button[aria-controls="mobile-navigation"]').click();
+        return page.locator(`.mobile-navigation-dialog[open] a[href="${hiddenTarget}"]`);
+      })();
+      await link.waitFor({ state: 'visible' });
       await h.api('PUT', `/admin/pages/${hidden.id}`, { visible: false });
       assert(await page.locator('main [id^="section-"]').count() > 0);
       for (const suffix of ['', '/sections']) {
@@ -280,15 +292,22 @@ async function main() {
       // Direct URL entry must also deny access, and a fresh menu must omit it.
       await page.goto(routePath('test-hidden'));
       await page.getByRole('heading', { name: zh.publicPage.notFoundTitle, exact: true }).waitFor();
-      await page.locator(`header.fixed a[href="${new URL(routePath('research')).pathname}"]`).first().waitFor();
+      await page.locator(`.site-header nav a[href="${new URL(routePath('research')).pathname}"]`).waitFor({ state: 'attached' });
       assert.equal(await page.locator('main [id^="section-"]').count(), 0);
       assert.equal(await page.locator('main').getByText(hidden.title_zh, { exact: true }).count(), 0);
-      assert.equal(await page.locator(`header.fixed a[href="${new URL(routePath('test-hidden')).pathname}"]`).count(), 0);
+      assert.equal(await page.locator(`a[href="${new URL(routePath('test-hidden')).pathname}"]`).count(), 0);
     });
   } catch (e) { failure = e; }
   finally { await h.finish(failure); }
   async function spaLoading(slug) {
-    await page.locator(`header.fixed a[href="${new URL(routePath(slug)).pathname}"]`).first().click();
+    const target = new URL(routePath(slug)).pathname;
+    const desktopLink = page.locator(`.site-header nav a[href="${target}"]`);
+    await desktopLink.waitFor({ state: 'attached' });
+    if (await desktopLink.isVisible()) await desktopLink.click();
+    else {
+      await page.locator('button[aria-controls="mobile-navigation"]').click();
+      await page.locator(`.mobile-navigation-dialog[open] a[href="${target}"]`).click();
+    }
   }
 }
 

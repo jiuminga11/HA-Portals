@@ -1,80 +1,47 @@
+import { useId, useState } from "react";
 import type { VideoContent } from "../../types";
 import { resolveMediaUrl } from "../../lib/basePath";
 import { useLocale } from "../../hooks/useLocale";
 import { contentLang } from "../../lib/displayContent";
+import { safeContentUrl } from "../../lib/safeUrl";
+import zh from "../../locales/a11y.zh.json";
+import en from "../../locales/a11y.en.json";
 
-interface Props {
-  content: VideoContent;
+function VideoItem({ item }: { item: VideoContent["items"][number] }) {
+  const { t, locale } = useLocale();
+  const labels = locale === "en" ? en : zh;
+  const titleId = useId();
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const source = safeContentUrl(item.url, true);
+  const poster = safeContentUrl(item.poster || "", true);
+  return <div className="overflow-hidden glass-card rounded-2xl">
+    <div className="relative aspect-video" style={{ background: "var(--color-bg)" }}>
+      <video key={attempt} src={source ? resolveMediaUrl(source) : undefined} aria-labelledby={titleId}
+        className="block w-full h-full object-contain" controls preload="metadata"
+        poster={poster ? resolveMediaUrl(poster) : undefined} onError={() => setFailed(true)}>
+        {t.section.videoNotSupported}
+      </video>
+    </div>
+    <div className="px-4 py-3" style={{ borderTop: "1px solid var(--card-border)" }}>
+      <h3 id={titleId} lang={contentLang(item.title)} className="text-base font-medium [overflow-wrap:anywhere]">{item.title}</h3>
+      {(failed || !source) && <div className="mt-3 text-sm">
+        <p role="alert">{labels.videoFailed}</p>
+        <div className="flex flex-wrap gap-4 mt-3">
+          <button type="button" className="underline underline-offset-4 disabled:opacity-50" disabled={!source}
+            onClick={() => { setFailed(false); setAttempt(value => value + 1); }}>{labels.retryVideo}</button>
+          {source && <a className="underline underline-offset-4" href={resolveMediaUrl(source)} target="_blank" rel="noopener noreferrer">{labels.openVideo}</a>}
+        </div>
+      </div>}
+    </div>
+  </div>;
 }
 
-export default function VideoPlayer({ content }: Props) {
-  const { items = [] } = content;
+export default function VideoPlayer({ content }: { content: VideoContent }) {
   const { t } = useLocale();
-
-  if (items.length === 0) {
-    return (
-      <div className="text-center py-8" style={{ color: 'var(--text-muted)' }}>
-        <svg className="w-12 h-12 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-        </svg>
-        <p>{t.section.noVideos}</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {items.map((item, idx) => (
-        <div
-          key={idx}
-          className="overflow-hidden glass-card rounded-2xl transition-all duration-300"
-          onMouseEnter={(e) => {
-            const el = e.currentTarget as HTMLDivElement;
-            el.style.borderColor = 'var(--border-glow)';
-            el.style.boxShadow = '0 4px 20px var(--glow-primary), 0 8px 24px rgba(0,0,0,0.12)';
-          }}
-          onMouseLeave={(e) => {
-            const el = e.currentTarget as HTMLDivElement;
-            el.style.borderColor = '';
-            el.style.boxShadow = '';
-          }}
-        >
-          {/* Video container */}
-          <div
-            className="relative aspect-video"
-            style={{ background: 'var(--color-bg)' }}
-          >
-            <video
-              className="w-full h-full object-contain"
-              controls
-              preload="metadata"
-              poster={item.poster ? resolveMediaUrl(item.poster) : undefined}
-              style={{ display: 'block' }}
-            >
-              <source src={resolveMediaUrl(item.url)} />
-              {t.section.videoNotSupported}
-            </video>
-          </div>
-
-          {/* Title bar */}
-          <div
-            className="px-4 py-3 flex items-center gap-2"
-            style={{ borderTop: '1px solid var(--card-border)' }}
-          >
-            <div
-              className="w-1.5 h-1.5 rounded-full shrink-0"
-              style={{ background: 'var(--color-accent)', boxShadow: '0 0 6px var(--color-accent)' }}
-            />
-            <h3
-              lang={contentLang(item.title)}
-              className="text-base font-medium min-w-0 [overflow-wrap:anywhere]"
-              style={{ color: 'var(--text-base)' }}
-            >
-              {item.title}
-            </h3>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+  const items = content.items ?? [];
+  if (!items.length) return <p className="reading-muted text-center py-8">{t.section.noVideos}</p>;
+  return <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {items.map((item, index) => <VideoItem key={`${index}:${item.url}`} item={item} />)}
+  </div>;
 }

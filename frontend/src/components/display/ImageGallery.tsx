@@ -15,6 +15,13 @@ function mediaSource(value: string): string {
   return safe ? resolveMediaUrl(safe) : "";
 }
 
+function ThumbnailImage({ src, alt, labels }: { src: string; alt: string; labels: typeof zh }) {
+  const [failed, setFailed] = useState(false);
+  if (!src || failed) return <span className="flex h-full items-center p-3 text-sm reading-muted [overflow-wrap:anywhere]">{src ? labels.thumbnailFailed : labels.invalidImage}</span>;
+  return <img src={src} alt={alt} loading="lazy" decoding="async" onError={() => setFailed(true)}
+    className="w-full h-full object-cover transition-transform duration-500 motion-reduce:transition-none motion-safe:group-hover:scale-105" />;
+}
+
 function PreviewImage({ src, alt, labels }: { src: string; alt: string; labels: typeof zh }) {
   const [status, setStatus] = useState<"loading" | "ready" | "error">(src ? "loading" : "error");
   const [attempt, setAttempt] = useState(0);
@@ -64,8 +71,7 @@ export default function ImageGallery({ content }: Props) {
         aria-label={`${labels.openImage}: ${item.caption || t.section.imageAlt}`}
         onClick={event => { triggerRef.current = event.currentTarget; setPreviewIndex(startIndex + index); }}>
         <div className="aspect-square overflow-hidden">
-          {src ? <img src={src} alt={item.caption || t.section.imageAlt} loading="lazy" decoding="async" className="w-full h-full object-cover transition-transform duration-500 motion-reduce:transition-none motion-safe:group-hover:scale-105" />
-            : <span className="flex h-full items-center p-3 text-sm">{labels.invalidImage}</span>}
+          <ThumbnailImage key={src} src={src} alt={item.caption || t.section.imageAlt} labels={labels} />
         </div>
         {item.caption && <p lang={contentLang(item.caption)} className="p-3 text-base [overflow-wrap:anywhere]">{item.caption}</p>}
       </button>;
@@ -93,12 +99,15 @@ export default function ImageGallery({ content }: Props) {
         {previewItem && previewIndex !== null && <>
           <p role="status" className="text-sm reading-muted">{labels.position.replace("{current}", String(previewIndex + 1)).replace("{total}", String(items.length))}</p>
           <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-            <button type="button" className="gallery-control shrink-0" aria-label={labels.previousImage} aria-disabled={previewIndex === 0} onClick={() => move(-1)}>‹</button>
+            <button type="button" className="gallery-control shrink-0" aria-label={labels.previousImage} aria-disabled={previewIndex === 0} onClick={() => { if (previewIndex > 0) move(-1); }}>‹</button>
             <PreviewImage key={`${previewIndex}:${previewItem.url}`} src={mediaSource(previewItem.url)} alt={previewItem.caption || t.section.imageAlt} labels={labels} />
-            <button type="button" className="gallery-control shrink-0" aria-label={labels.nextImage} aria-disabled={previewIndex === items.length - 1} onClick={() => move(1)}>›</button>
+            <button type="button" className="gallery-control shrink-0" aria-label={labels.nextImage} aria-disabled={previewIndex === items.length - 1} onClick={() => { if (previewIndex < items.length - 1) move(1); }}>›</button>
           </div>
-          {previewItem.caption && <div id={captionId} lang={contentLang(previewItem.caption)} role="region" aria-label={labels.caption} tabIndex={0}
-            className="gallery-caption rounded-lg p-3 text-base [overflow-wrap:anywhere] whitespace-pre-wrap">{previewItem.caption}</div>}
+          {previewItem.caption && <>
+            <p id={`${captionId}-hint`} className="text-xs reading-muted">{labels.captionScrollHint}</p>
+            <div id={captionId} lang={contentLang(previewItem.caption)} role="region" aria-label={labels.caption} aria-describedby={`${captionId}-hint`} tabIndex={0}
+              className="gallery-caption rounded-lg p-3 text-base [overflow-wrap:anywhere] whitespace-pre-wrap">{previewItem.caption}</div>
+          </>}
         </>}
       </div>
     </dialog>

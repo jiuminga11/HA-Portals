@@ -1,0 +1,71 @@
+/* The CMS deliberately uses light forms regardless of the public site preference.
+   Tokens are scoped to its shell; no root or public-page selectors belong here. */
+.admin-shell {
+  --admin-panel: #fff;
+  --admin-ink: #1e293b;
+  --admin-border: #cbd5e1;
+  --admin-note: #f1f5f9;
+  --admin-bg: #f8fafc;
+  --admin-muted: #475569;
+  --admin-sidebar-bg: #0f172a;
+  --admin-sidebar-text: #cbd5e1;
+  --admin-sidebar-muted: #a6b5ca;
+  --color-primary: #1e40af;
+  --color-primary-hover: #1e3a8a;
+  --color-primary-rgb: 30, 64, 175;
+  --color-gradient: #0e7490;
+  --color-accent: #b45309;
+  --color-bg: var(--admin-bg);
+  --color-bg-secondary: var(--admin-note);
+  --color-bg-card: var(--admin-panel);
+  --color-text: var(--admin-ink);
+  --color-text-secondary: var(--admin-muted);
+  --color-text-muted: var(--admin-muted);
+  --color-border: var(--admin-border);
+  --bg-base: var(--admin-bg);
+  --bg-surface: var(--admin-panel);
+  --bg-elevated: var(--admin-note);
+  --bg-card: var(--admin-panel);
+  --text-base: var(--admin-ink);
+  --text-muted: var(--admin-muted);
+  --text-faint: var(--admin-muted);
+  --ink: var(--admin-ink);
+  --ink-2: var(--admin-muted);
+  --ink-3: var(--admin-muted);
+  --ink-4: var(--admin-muted);
+  --hairline: var(--admin-border);
+  --hairline-2: var(--admin-note);
+  --reading-accent: var(--color-primary);
+  --reading-muted: var(--admin-muted);
+  --card-bg: var(--admin-panel);
+  --card-border: var(--admin-border);
+  --input-bg: var(--admin-panel);
+  --input-border: var(--admin-border);
+  --hover-bg: var(--admin-note);
+  color-scheme: light;
+  color: var(--admin-ink);
+  background: var(--admin-bg);
+  height: 100dvh;
+  font-size: 1rem;
+}
+.admin-shell .admin-topbar { background: var(--admin-panel); border-bottom: 1px solid var(--admin-border); }
+.admin-shell .admin-toolbar-button { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: .5rem .65rem; border-radius: .5rem; color: var(--admin-muted); }
+.admin-shell .admin-toolbar-button:hover { background: var(--admin-note); color: var(--admin-ink); }
+.admin-shell :is(button, a, input, select, textarea):focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
+.admin-shell button[aria-disabled="true"] { opacity: .6; cursor: wait; }
+.admin-shell .admin-sidebar { background: var(--admin-sidebar-bg); color: var(--admin-sidebar-text); }
+.admin-shell .admin-sidebar a:hover { background: #1e293b; }
+.admin-shell .admin-sidebar a:focus-visible, .admin-shell .admin-navigation-close:focus-visible { outline-color: #93c5fd; }
+.admin-shell .admin-navigation-dialog { width: min(22rem, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); overflow-y: auto; border: 1px solid #334155; border-radius: 1rem; background: var(--admin-sidebar-bg); color: var(--admin-sidebar-text); }
+.admin-shell .admin-navigation-dialog::backdrop { background: rgb(15 23 42 / .6); }
+.admin-shell .admin-navigation-close { border: 1px solid #64748b; }
+.admin-shell .admin-section-dialog { width: min(28rem, calc(100vw - 2rem)); }
+/* Use the public CSS palette directly, not inherited legacy aliases or preset metadata. */
+.admin-shell .settings-preview { background: var(--color-bg); color: var(--color-text); border-color: var(--color-border); color-scheme: light; }
+.admin-shell .settings-preview.dark { color-scheme: dark; }
+@media (min-width: 768px) {
+  .admin-shell .admin-toolbar-button.md\:hidden { display: none; }
+}
+@media (max-width: 639px) {
+  .admin-shell .admin-settings-card { padding: 1rem; }
+}

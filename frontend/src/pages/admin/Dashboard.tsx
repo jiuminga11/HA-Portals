@@ -1,10 +1,11 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useId } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import type { Section, SectionType, Page } from "../../types";
 import { getSections, deleteSection, reorderSections, updateSection } from "../../api/sections";
 import { getAdminPages } from "../../api/admin-pages";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { useLocale } from "../../hooks/useLocale";
+import { useModalDialog } from "../../components/common/useModalDialog";
 
 const TYPE_LABELS: Record<SectionType, string> = {
   rich_text: "富文本",
@@ -51,6 +52,12 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showNewModal, setShowNewModal] = useState(false);
+  const newDialogRef = useRef<HTMLDialogElement>(null);
+  const firstTypeRef = useRef<HTMLButtonElement>(null);
+  const newTriggerRef = useRef<HTMLButtonElement>(null);
+  const newTitleId = useId();
+  const newDescriptionId = useId();
+  useModalDialog(showNewModal, newDialogRef, firstTypeRef, newTriggerRef);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -181,7 +188,7 @@ export default function Dashboard() {
   return (
     <div className="max-w-6xl">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-xl font-bold text-slate-800">内容管理</h1>
           <p className="text-sm text-slate-500 mt-0.5">管理前台展示的内容区块</p>
@@ -197,6 +204,7 @@ export default function Dashboard() {
             管理页面
           </Link>
           <button
+            ref={newTriggerRef}
             onClick={() => setShowNewModal(true)}
             disabled={mutating}
             className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity shadow-sm"
@@ -204,20 +212,20 @@ export default function Dashboard() {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            新建区块
+            {t.admin.newSection}
           </button>
         </div>
       </div>
 
       {/* Page filter */}
       {pages.length > 0 && (
-        <div className="mb-4 flex items-center gap-2">
+        <div className="mb-4 flex flex-wrap items-center gap-2">
           <label className="text-sm text-slate-500">页面筛选：</label>
           <select
             disabled={mutating}
             value={selectedPageId ? String(selectedPageId) : "all"}
             onChange={(e) => handlePageFilter(e.target.value)}
-            className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white"
+            className="max-w-full min-w-0 px-3 py-1.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white"
           >
             <option value="all">全部页面</option>
             {pages.map((page) => (
@@ -259,7 +267,7 @@ export default function Dashboard() {
           {filteredSections.map((section, idx) => (
             <div
               key={section.id}
-              className="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-4 hover:border-slate-300 transition-colors"
+              className="bg-white rounded-xl border border-slate-200 p-3 sm:p-4 flex flex-wrap sm:flex-nowrap items-center gap-3 hover:border-slate-300 transition-colors"
             >
               {/* Order controls */}
               <div className="flex flex-col gap-0.5 shrink-0">
@@ -358,28 +366,30 @@ export default function Dashboard() {
         title="删除区块"
         message={`确定删除「${sections.find((s) => s.id === deleteId)?.title_zh}」区块？此操作不可撤销。`}
         confirmText={mutating ? t.admin.updating : t.admin.delete}
+        busy={mutating}
         danger
         onConfirm={handleDelete}
         onCancel={() => { if (!mutationLock.current) setDeleteId(null); }}
       />
 
       {/* New section modal */}
-      {showNewModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-sm w-full mx-4 overflow-hidden">
+      <dialog ref={newDialogRef} aria-labelledby={newTitleId} aria-describedby={newDescriptionId}
+        onCancel={event => { event.preventDefault(); setShowNewModal(false); }}
+        className="admin-page-dialog admin-section-dialog rounded-2xl shadow-2xl p-0">
             <div className="px-6 py-5 border-b border-slate-200">
-              <h3 className="text-lg font-semibold text-slate-800">选择区块类型</h3>
-              <p className="text-sm text-slate-500 mt-1">区块类型创建后不可修改</p>
+              <h3 id={newTitleId} className="text-lg font-semibold text-slate-800">{t.admin.chooseSectionType}</h3>
+              <p id={newDescriptionId} className="text-sm text-slate-500 mt-1">{t.admin.sectionTypeHint}</p>
             </div>
             <div className="p-4 grid grid-cols-1 gap-2">
               {SECTION_TYPES.map((type) => (
                 <button
                   key={type}
+                  ref={type === SECTION_TYPES[0] ? firstTypeRef : undefined}
                   onClick={() => handleCreateSection(type)}
                   className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors text-left"
                 >
                   <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${TYPE_COLORS[type]}`}>
-                    {TYPE_LABELS[type]}
+                    {t.admin.types[type]}
                   </span>
                   <span className="text-sm text-slate-600">
                     {type === "rich_text" && "适合长文字描述、项目介绍"}
@@ -400,12 +410,10 @@ export default function Dashboard() {
                 onClick={() => setShowNewModal(false)}
                 className="w-full py-2.5 text-sm text-slate-500 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
               >
-                取消
+                {t.admin.cancel}
               </button>
             </div>
-          </div>
-        </div>
-      )}
+      </dialog>
     </div>
   );
 }

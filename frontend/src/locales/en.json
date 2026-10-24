@@ -22,6 +22,8 @@
     "retry": "Try again", "empty": "There is no public content on this page yet.", "timeout": "The request timed out. Check your connection and try again.", "returnHome": "Return home"
   },
   "files": {
+    "loadFailed": "Could not load files. Please try again.", "uploadFailed": "Could not upload. Please try again.", "deleteFailed": "Could not delete. Please try again.", "inUse": "This file is in use and cannot be deleted. Remove its references in the content editor first.",
+    "uploading": "Uploading", "upload": "Upload file", "deleteTitle": "Delete file", "deleteConfirm": "Delete “{filename}”? Files that are still in use cannot be deleted.", "deleting": "Deleting, please wait…", "dismissError": "Dismiss error",
     "description": "Manage uploaded images, videos and PDF documents.", "pdf": "PDF document", "document": "Document", "viewDocument": "View document", "copyLink": "Copy link", "copied": "Copied", "copyFailed": "Could not copy the link. Copy the address from the document link manually."
   },
   "authRecovery": {
@@ -49,6 +51,9 @@
     "fields": { "title_zh": "Chinese title", "title_en": "English title", "meta_description_zh": "Chinese page description", "meta_description_en": "English page description" }
   },
   "admin": {
+    "shellTitle": "HA-PORTALS Admin", "visitSite": "Visit site", "logout": "Sign out", "menu": "Admin menu", "openMenu": "Open admin menu", "closeMenu": "Close menu",
+    "navigation": { "settings": "Site settings", "content": "Content management", "pages": "Page management", "files": "File management", "guide": "User guide" },
+    "chooseSectionType": "Choose a section type", "sectionTypeHint": "The section type cannot be changed after creation.",
     "contentManagement": "Content management", "newSection": "New section", "editSection": "Edit section",
     "page": "Page", "choosePage": "Select a page", "pageUnavailable": "This page is unavailable. Select a valid page; for an existing section, return to the list to check.",
     "titleZh": "Chinese title (required)", "titleEn": "English title (optional)", "titleRequired": "Enter a Chinese title",

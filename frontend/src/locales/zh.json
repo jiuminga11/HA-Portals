@@ -22,6 +22,8 @@
     "retry": "重新加载", "empty": "此页面暂无公开内容。", "timeout": "请求超时，请检查网络连接后重试。", "returnHome": "返回首页"
   },
   "files": {
+    "loadFailed": "文件加载失败，请重试。", "uploadFailed": "上传失败，请重试。", "deleteFailed": "删除失败，请重试。", "inUse": "该文件正在被使用，无法删除。请先在内容编辑中移除引用后再删除。",
+    "uploading": "上传中", "upload": "上传文件", "deleteTitle": "删除文件", "deleteConfirm": "确定删除「{filename}」？若文件正在被引用，删除将失败。", "deleting": "正在删除，请稍候…", "dismissError": "关闭错误提示",
     "description": "管理已上传的图片、视频和 PDF 文档。", "pdf": "PDF 文档", "document": "文档", "viewDocument": "查看文档", "copyLink": "复制链接", "copied": "已复制", "copyFailed": "未能复制链接，请通过查看文档的链接手动复制地址。"
   },
   "authRecovery": {
@@ -49,6 +51,9 @@
     "fields": { "title_zh": "中文标题", "title_en": "英文标题", "meta_description_zh": "中文页面描述", "meta_description_en": "英文页面描述" }
   },
   "admin": {
+    "shellTitle": "HA-PORTALS 管理后台", "visitSite": "访问前台", "logout": "退出登录", "menu": "管理菜单", "openMenu": "打开管理菜单", "closeMenu": "关闭菜单",
+    "navigation": { "settings": "站点设置", "content": "内容管理", "pages": "页面管理", "files": "文件管理", "guide": "使用说明" },
+    "chooseSectionType": "选择区块类型", "sectionTypeHint": "区块类型创建后不可修改",
     "contentManagement": "内容管理", "newSection": "新建区块", "editSection": "编辑区块",
     "page": "所属页面", "choosePage": "请选择所属页面", "pageUnavailable": "所属页面不可用，请选择有效页面；已有区块请返回列表检查。",
     "titleZh": "中文标题（必填）", "titleEn": "英文标题（可选）", "titleRequired": "请填写中文标题",

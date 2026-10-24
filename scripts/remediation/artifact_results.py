@@ -10,7 +10,8 @@ ERRORS = {'Error', 'AssertionError', 'TypeError', 'ValueError', 'RuntimeError', 
           'SyntaxError', 'TimeoutError', 'NotAllowedError', 'AbortError', 'HTTPError', 'URLError'}
 STATUSES = {'passed', 'failed', 'skipped', 'pending', 'measured', 'not-observed-late-result-isolated'}
 HARNESSES = ['browser-states', 'browser-admin', 'browser-settings-files', 'browser-gate',
-             'browser-avatar', 'browser-security-concurrency']
+             'browser-avatar', 'browser-public-experience', 'browser-admin-experience',
+             'browser-security-concurrency']
 
 
 def read_json(directory, name):

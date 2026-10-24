@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useLayoutEffect, useState } from "react";
 import { Link, useOutletContext } from "react-router-dom";
-import type { Page, Section, SiteConfig } from "../../types";
+import type { Page, Section } from "../../types";
+import type { PublicPageContext } from "../../components/layout/PublicLayout";
 import { basePath, resolveMediaUrl } from "../../lib/basePath";
 import { localePath } from "../../lib/localePath";
 import SectionRenderer from "../../components/display/SectionRenderer";
@@ -26,9 +27,15 @@ export default function PublicPage({ slug }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<"notFound" | "networkError" | "timeout" | null>(null);
   const [attempt, setAttempt] = useState(0);
+  const [settledSlug, setSettledSlug] = useState<string | null>(null);
   const { t, localized, locale } = useLocale();
-  const context = useOutletContext<{ siteConfig: SiteConfig | null } | undefined>();
+  const context = useOutletContext<PublicPageContext | undefined>();
   const siteConfig = context?.siteConfig;
+  const onPageReady = context?.onPageReady;
+
+  useEffect(() => {
+    if (!loading && settledSlug === slug && (error || page?.slug === slug)) return onPageReady?.();
+  }, [loading, error, page, slug, settledSlug, onPageReady]);
 
   useEffect(() => {
     let cancelled = false;
@@ -48,6 +55,7 @@ export default function PublicPage({ slug }: Props) {
       if (!slug) {
         setError("notFound");
         setLoading(false);
+        setSettledSlug(slug);
         window.clearTimeout(timeout);
         return;
       }
@@ -65,7 +73,7 @@ export default function PublicPage({ slug }: Props) {
       } finally {
         window.clearTimeout(timeout);
         controller.abort();
-        if (!cancelled) setLoading(false);
+        if (!cancelled) { setLoading(false); setSettledSlug(slug); }
       }
     }
     void load();

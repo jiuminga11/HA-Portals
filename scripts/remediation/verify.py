@@ -26,7 +26,8 @@ BROWSER_TMP_ROOT = ROOT / '.browser-tmp'
 SOCKET_PATH_LIMIT = 107
 BROWSER_SOCKET_RESERVE = 47
 CORE_BROWSERS = ['browser-reading.cjs', 'browser-states.cjs', 'browser-admin.cjs',
-                 'browser-settings-files.cjs', 'browser-gate.cjs', 'browser-avatar.cjs']
+                 'browser-settings-files.cjs', 'browser-gate.cjs', 'browser-avatar.cjs',
+                 'browser-public-experience.cjs', 'browser-admin-experience.cjs']
 FULL_BROWSERS = ['browser-a11y-performance.cjs', 'browser-security-concurrency.cjs']
 
 

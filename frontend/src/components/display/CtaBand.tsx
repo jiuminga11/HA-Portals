@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import type { CtaBandContent } from "../../types";
 import { useLocale } from "../../hooks/useLocale";
 import { stripBasePath } from "../../lib/basePath";
-import { isDisplayPageLink } from "../../lib/displayContent";
+import { contentLang, isDisplayPageLink } from "../../lib/displayContent";
 import { localePath, resolveContentLink } from "../../lib/localePath";
 
 interface Props {
@@ -28,7 +28,8 @@ export default function CtaBand({ content }: Props) {
     <div className="text-center">
       {description && (
         <p
-          className="max-w-2xl mx-auto text-lg"
+          lang={contentLang(description)}
+          className="max-w-2xl mx-auto text-lg [overflow-wrap:anywhere]"
           style={{ color: "var(--ink-2)", lineHeight: 1.7 }}
         >
           {description}
@@ -42,16 +43,16 @@ export default function CtaBand({ content }: Props) {
             const isInternal = isDisplayPageLink(btn.url);
             const isPrimary = idx === 0;
             const className = isPrimary
-              ? "inline-flex items-center rounded-md text-lg font-semibold transition-all duration-200 motion-reduce:transition-none hover:-translate-y-0.5"
+              ? "inline-flex max-w-full [overflow-wrap:anywhere] items-center rounded-md text-lg font-semibold transition-all duration-200 motion-reduce:transition-none motion-safe:hover:-translate-y-0.5"
               : "inline-flex items-center rounded-md text-lg font-medium transition-all duration-200 motion-reduce:transition-none hover-bg px-3 py-2";
             const style = isPrimary
               ? {
-                  background: "linear-gradient(135deg, var(--color-primary), var(--color-gradient))",
+                  background: "var(--reading-accent)",
                   color: "var(--color-bg)",
                   padding: "14px 28px",
                   boxShadow: "0 8px 28px rgba(var(--color-primary-rgb), 0.28)",
                 }
-              : { color: "var(--accent)" };
+              : { color: "var(--reading-accent)" };
             const inner = isPrimary ? (
               label
             ) : (

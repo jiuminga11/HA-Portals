@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { isAxiosError } from "axios";
 import type { FileResponse } from "../../types";
 import { getFiles, deleteFile, uploadFile } from "../../api/upload";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
@@ -6,6 +7,12 @@ import { resolveMediaUrl } from "../../lib/basePath";
 import { useLocale } from "../../hooks/useLocale";
 
 type FileFilter = "all" | "image" | "video";
+
+function errorDetail(error: unknown): string | undefined {
+  if (!isAxiosError<{ detail?: unknown }>(error)) return;
+  const detail = error.response?.data?.detail;
+  return typeof detail === "string" && detail.trim() ? detail : undefined;
+}
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -29,6 +36,8 @@ export default function FileManager() {
   const [filter, setFilter] = useState<FileFilter>("all");
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const deleteLock = useRef(false);
+  const [deleting, setDeleting] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -39,7 +48,7 @@ export default function FileManager() {
       const data = await getFiles(f === "all" ? "all" : f);
       setFiles(data);
     } catch {
-      setError("加载失败");
+      setError(t.files.loadFailed);
     } finally {
       setLoading(false);
     }
@@ -50,21 +59,28 @@ export default function FileManager() {
   }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleDelete = async () => {
-    if (deleteId === null) return;
+    if (deleteId === null || deleteLock.current) return;
+    const targetId = deleteId;
+    deleteLock.current = true;
+    setDeleting(true);
+    setError(null);
     try {
-      await deleteFile(deleteId);
-      setFiles((prev) => prev.filter((f) => f.id !== deleteId));
+      await deleteFile(targetId);
+      setFiles((prev) => prev.filter((f) => f.id !== targetId));
       setDeleteId(null);
       setError(null);
     } catch (err: unknown) {
-      const status = (err as { response?: { status?: number; data?: { detail?: string } } })?.response?.status;
-      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      const status = isAxiosError(err) ? err.response?.status : undefined;
+      const msg = errorDetail(err);
       if (status === 409) {
-        setError("该文件正在被使用，无法删除。请先在内容编辑中移除引用后再删除。");
+        setError(t.files.inUse);
       } else {
-        setError(msg || "删除失败");
+        setError(msg || t.files.deleteFailed);
       }
       setDeleteId(null);
+    } finally {
+      deleteLock.current = false;
+      setDeleting(false);
     }
   };
 
@@ -89,7 +105,7 @@ export default function FileManager() {
       await uploadFile(file, setUploadProgress);
       await load(filter);
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || "上传失败";
+      const msg = errorDetail(err) || t.files.uploadFailed;
       setError(msg);
     } finally {
       setUploading(false);
@@ -118,14 +134,14 @@ export default function FileManager() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
-                上传中 {uploadProgress}%
+                {t.files.uploading} {uploadProgress}%
               </>
             ) : (
               <>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                 </svg>
-                上传文件
+                {t.files.upload}
               </>
             )}
             <input
@@ -140,9 +156,9 @@ export default function FileManager() {
       </div>
 
       {error && (
-        <div className="mb-4 bg-red-50 text-red-600 text-sm px-4 py-3 rounded-xl border border-red-200">
+        <div role="alert" className="mb-4 bg-red-50 text-red-600 text-sm px-4 py-3 rounded-xl border border-red-200 [overflow-wrap:anywhere]">
           {error}
-          <button className="ml-2 text-red-400 hover:text-red-300" onClick={() => setError(null)}>×</button>
+          <button aria-label={t.files.dismissError} className="ml-2 text-red-600" onClick={() => setError(null)}>×</button>
         </div>
       )}
 
@@ -162,7 +178,8 @@ export default function FileManager() {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-20">
+        <div role="status" className="flex items-center justify-center py-20">
+          <span className="sr-only">{t.common.loading}</span>
           <div className="w-8 h-8 border-4 border-slate-200 border-t-primary rounded-full animate-spin" />
         </div>
       ) : files.length === 0 ? (
@@ -206,7 +223,7 @@ export default function FileManager() {
                 )}
 
                 {/* Overlay actions */}
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                <div className="absolute inset-0 bg-black/50 opacity-100 sm:opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex items-center justify-center gap-2">
                   <button
                     onClick={() => handleCopyUrl(file.file_url)}
                     title="复制 URL"
@@ -224,7 +241,8 @@ export default function FileManager() {
                   </button>
                   <button
                     onClick={() => setDeleteId(file.id)}
-                    title="删除文件"
+                    disabled={deleting}
+                    title={t.files.deleteTitle}
                     className="w-9 h-9 bg-red-500 rounded-lg flex items-center justify-center text-white hover:bg-red-600 transition-colors"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -256,12 +274,13 @@ export default function FileManager() {
 
       <ConfirmDialog
         open={deleteId !== null}
-        title="删除文件"
-        message={`确定删除「${files.find((f) => f.id === deleteId)?.filename}」？若文件正在被引用，删除将失败。`}
-        confirmText="删除"
+        title={t.files.deleteTitle}
+        message={t.files.deleteConfirm.replace("{filename}", files.find((f) => f.id === deleteId)?.filename ?? "")}
+        confirmText={deleting ? t.files.deleting : t.admin.delete}
+        busy={deleting}
         danger
         onConfirm={handleDelete}
-        onCancel={() => setDeleteId(null)}
+        onCancel={() => { if (!deleteLock.current) setDeleteId(null); }}
       />
     </div>
   );

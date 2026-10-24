@@ -34,12 +34,20 @@ export default function SiteSettings() {
   const saveLock = useRef(false);
   const mounted = useRef(false);
   const previewRef = useRef<HTMLDivElement>(null);
+  const [systemDark, setSystemDark] = useState(() => window.matchMedia("(prefers-color-scheme: dark)").matches);
   const dirty = form !== null && JSON.stringify(form) !== snapshot;
   useUnsavedChanges(dirty);
 
   useEffect(() => {
     mounted.current = true;
     return () => { mounted.current = false; };
+  }, []);
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const update = () => setSystemDark(media.matches);
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
   }, []);
 
   useEffect(() => {
@@ -60,8 +68,6 @@ export default function SiteSettings() {
     const preview = previewRef.current;
     if (!preview || !form) return;
     preview.style.cssText = "";
-    const preset = THEME_PRESETS.find(item => item.id === form.theme_preset);
-    if (preset) for (const [key, value] of Object.entries(preset.colors)) preview.style.setProperty(key, value);
     preview.style.setProperty("--color-primary", form.primary_color);
     preview.style.setProperty("--color-gradient", form.gradient_color);
     preview.style.setProperty("--color-accent", form.accent_color);
@@ -142,7 +148,8 @@ export default function SiteSettings() {
             </select></label>
           </div>
           <p className="text-sm text-slate-500 mb-4">{t.settings.defaultThemeHint}</p>
-          <div ref={previewRef} className="settings-preview rounded-xl p-5">
+          <div ref={previewRef} data-theme={THEME_PRESETS.some(preset => preset.id === form.theme_preset) ? form.theme_preset : "teal-amber"}
+            className={`settings-preview rounded-xl p-5${form.default_theme === "dark" || (form.default_theme === "system" && systemDark) ? " dark" : ""}`}>
             <p className="font-semibold mb-3">{t.settings.preview}</p>
             <p>{form.site_title || t.settings.previewText}</p>
             <div className="settings-preview-swatch mt-4 h-4 rounded-full" />

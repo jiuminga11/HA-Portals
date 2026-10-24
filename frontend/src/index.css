@@ -125,8 +125,8 @@ body {
   }
 
   /* Hide interactive UI */
-  header, nav, footer,
-  button, .no-print,
+  .site-header, .navigation-feedback-bar, nav, footer,
+  button:not(.gallery-thumbnail), .no-print,
   [data-no-print] {
     display: none !important;
   }
@@ -163,6 +163,8 @@ body {
   .reveal {
     padding: 1rem 0 !important;
   }
+  .reveal, .reveal-x { opacity: 1 !important; transform: none !important; }
+  #main-content { padding-top: 0 !important; }
 }
 
 
