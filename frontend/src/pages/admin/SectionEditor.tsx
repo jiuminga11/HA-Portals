@@ -14,6 +14,7 @@ import MetricCardsEditor from "../../components/editor/MetricCardsEditor";
 import TimelineEditor from "../../components/editor/TimelineEditor";
 import ProfileHeroEditor from "../../components/editor/ProfileHeroEditor";
 import CtaBandEditor from "../../components/editor/CtaBandEditor";
+import { conflictMessage, isRevisionConflict } from "../../lib/securityMessages";
 
 type ContentTypes = RichTextContent | ImageGalleryContent | DataTableContent | ExternalLinksContent | VideoContent | MetricCardsContent | TimelineContent | ProfileHeroContent | CtaBandContent;
 
@@ -40,7 +41,8 @@ export default function SectionEditor() {
   const navigate = useNavigate();
   const isNew = !id || id === "new";
 
-  const { t, localized } = useLocale();
+  const { t, localized, locale } = useLocale();
+  const [revision, setRevision] = useState<string>();
   const pageIdParam = searchParams.get("page_id");
   const typeParam = searchParams.get("type");
   const [pageId, setPageId] = useState<number | null>(null);
@@ -81,6 +83,7 @@ export default function SectionEditor() {
       setLoadError(null);
       setBaseline(null);
       setCreatedId(null);
+      setRevision(undefined);
       try {
         const pages: Page[] = await getAdminPages();
         if (cancelled) return;
@@ -90,6 +93,7 @@ export default function SectionEditor() {
           if (cancelled) return;
           const section = sections.find((s) => s.id === Number(id));
           if (section) {
+            setRevision(section.revision);
             setTitleZh(section.title_zh);
             setTitleEn(section.title_en);
             setSectionType(section.type);
@@ -147,7 +151,8 @@ export default function SectionEditor() {
         });
         if (!mounted.current || latest.current.routeKey !== submittedRoute) return;
         setCreatedId(created.id);
-        setBaseline(submittedSnapshot);
+        setRevision(created.revision);
+        setBaseline(JSON.stringify({ pageId: created.page_id, titleZh: created.title_zh, titleEn: created.title_en, sectionType: created.type, content: created.content }));
         if (latest.current.snapshot === submittedSnapshot) {
           allowNextNavigation();
           navigate(returnUrl);
@@ -155,19 +160,26 @@ export default function SectionEditor() {
           showToast("success", t.admin.saved);
         }
       } else {
-        await updateSection(createdId ?? Number(id), {
+        const saved = await updateSection(createdId ?? Number(id), {
+          expected_revision: revision,
           title_zh: titleZh,
           title_en: titleEn,
           content: submittedContent,
         });
         if (!mounted.current || latest.current.routeKey !== submittedRoute) return;
-        setBaseline(submittedSnapshot);
+        setRevision(saved.revision);
+        setBaseline(JSON.stringify({ pageId: saved.page_id, titleZh: saved.title_zh, titleEn: saved.title_en, sectionType: saved.type, content: saved.content }));
+        if (latest.current.snapshot === submittedSnapshot) {
+          setTitleZh(saved.title_zh);
+          setTitleEn(saved.title_en);
+          setContent(saved.content);
+        }
         showToast("success", t.admin.saved);
       }
     } catch (err: unknown) {
       if (!mounted.current || latest.current.routeKey !== submittedRoute) return;
       const detail = (err as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail;
-      const msg = typeof detail === "string" ? detail : t.admin.saveFailed;
+      const msg = isRevisionConflict(err) ? conflictMessage(locale) : typeof detail === "string" ? detail : t.admin.saveFailed;
       showToast("error", msg);
     } finally {
       savingRef.current = false;

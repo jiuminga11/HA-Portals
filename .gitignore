@@ -39,3 +39,4 @@ backend/data/*.bak*
 # Local remediation evidence and isolated test data
 .remediation-runtime/
 .slim/deepwork/
+.browser-tmp/

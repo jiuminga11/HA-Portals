@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useLocale } from "../../hooks/useLocale";
 import { useTheme } from "../../hooks/useTheme";
@@ -6,6 +6,9 @@ import { localePath } from "../../lib/localePath";
 import { getPages } from "../../api/pages";
 import type { Page, SiteConfig } from "../../types";
 import { resolveMediaUrl } from "../../lib/basePath";
+import { useModalDialog } from "../common/useModalDialog";
+import zh from "../../locales/a11y.zh.json";
+import en from "../../locales/a11y.en.json";
 
 interface Props {
   siteConfig: SiteConfig | null;
@@ -19,6 +22,11 @@ export default function Header({ siteConfig }: Props) {
   const mobileOpen = mobileOpenPath === location.pathname;
   const [scrolled, setScrolled] = useState(false);
   const [pages, setPages] = useState<Page[]>([]);
+  const labels = locale === "en" ? en : zh;
+  const menuRef = useRef<HTMLDialogElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const closeMenuRef = useRef<HTMLButtonElement>(null);
+  useModalDialog(mobileOpen, menuRef, closeMenuRef, menuButtonRef);
 
   // Load pages for navigation
   useEffect(() => {
@@ -32,27 +40,15 @@ export default function Header({ siteConfig }: Props) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Close mobile menu on escape
+  // A CSS-hidden mobile overlay must not leave a desktop page scroll-locked.
   useEffect(() => {
-    if (!mobileOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMobileOpenPath(null);
+    const breakpoint = window.matchMedia("(min-width: 768px)");
+    const onChange = (event: MediaQueryListEvent) => {
+      if (event.matches) setMobileOpenPath(null);
     };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [mobileOpen]);
-
-  // Lock body scroll when mobile menu open
-  useEffect(() => {
-    if (mobileOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [mobileOpen]);
+    breakpoint.addEventListener("change", onChange);
+    return () => breakpoint.removeEventListener("change", onChange);
+  }, []);
 
   const toggleTheme = useCallback(() => {
     setTheme(resolvedTheme === "dark" ? "light" : "dark");
@@ -196,6 +192,7 @@ export default function Header({ siteConfig }: Props) {
 
               {/* Mobile hamburger */}
               <button
+                ref={menuButtonRef}
                 className="md:hidden p-2 rounded-lg transition-all duration-200"
                 style={{ color: "var(--text-muted)" }}
                 onClick={() => setMobileOpenPath(mobileOpen ? null : location.pathname)}
@@ -221,22 +218,18 @@ export default function Header({ siteConfig }: Props) {
         </div>
       </header>
 
-      {/* Mobile overlay */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-40 md:hidden">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0"
-            style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}
-            onClick={() => setMobileOpenPath(null)}
-          />
-
-          {/* Menu panel */}
-          <div
-            className="absolute top-16 left-0 right-0 bottom-0 overflow-y-auto"
-            style={{ background: "var(--bg-base)" }}
-          >
-            <nav id="mobile-navigation" className="flex flex-col px-6 py-8 gap-2">
+      <dialog ref={menuRef} className="mobile-navigation-dialog p-0 border-0" aria-label={labels.navigation}
+        onCancel={event => { event.preventDefault(); setMobileOpenPath(null); }}
+        onClick={event => {
+          const bounds = event.currentTarget.getBoundingClientRect();
+          if (event.target === event.currentTarget && (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom)) setMobileOpenPath(null);
+        }}>
+          <div className="px-6 py-6">
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <span className="font-semibold">{labels.navigation}</span>
+              <button ref={closeMenuRef} type="button" className="gallery-control" aria-label={labels.closeMenu} onClick={() => setMobileOpenPath(null)}>×</button>
+            </div>
+            <nav id="mobile-navigation" className="flex flex-col gap-2">
               {navItems.map((item) => {
                 const active = isActive(item.path);
                 return (
@@ -259,8 +252,7 @@ export default function Header({ siteConfig }: Props) {
               })}
             </nav>
           </div>
-        </div>
-      )}
+      </dialog>
     </>
   );
 }

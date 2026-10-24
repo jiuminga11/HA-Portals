@@ -1,13 +1,14 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');
-const { chromium } = require('playwright');
-const origin = 'http://127.0.0.1:15174';
+const { chromium, EXECUTABLE, RUN, ORIGIN, BASE, PYTHON, assertFixture, guard } = require('./browser-env.cjs');
+const origin = ORIGIN;
 const root = path.resolve(__dirname, '../..');
 const report = { checks: [] };
 let browser;
 (async () => {
-  browser = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
+  assertFixture();
+  browser = await chromium.launch({ executablePath: EXECUTABLE, args: ['--no-sandbox'] });
   const page = await browser.newPage({ viewport: { width: 390, height: 900 }, reducedMotion: 'reduce' });
   for (const slug of ['research', 'projects', 'honors']) {
     const sections = await (await fetch(`${origin}/ha/api/pages/${slug}/sections`)).json();
@@ -40,7 +41,7 @@ let browser;
   assert(await page.locator('.profile-hero').evaluate(el => el.querySelector('h1').getBoundingClientRect().top < el.querySelector('[aria-hidden="true"].order-2').getBoundingClientRect().top));
   report.checks.push('Mobile identity appears before the decorative mark');
   await page.goto(`${origin}/ha/en/projects`);
-  const gallery = page.locator('[role="button"]').filter({ has: page.locator('img') }).first();
+  const gallery = page.getByRole('button').filter({ has: page.locator('img') }).first();
   await gallery.waitFor(); await gallery.focus(); await page.keyboard.press('Enter');
   await page.getByRole('dialog').waitFor();
   await page.keyboard.press('Escape');
@@ -60,8 +61,8 @@ let browser;
   assert.equal(await email.getAttribute('href'), `mailto:${address}`);
   report.checks.push('Wrapped email copies in full through Ctrl+C and real browser clipboard; mailto unchanged');
   report.status = 'passed';
-})().catch(error => { report.status = 'failed'; report.error = error.message; process.exitCode = 1; }).finally(async () => {
-  fs.writeFileSync(path.join(root, '.remediation-runtime/reading-browser.json'), JSON.stringify(report, null, 2));
+})().catch(error => { report.status = 'failed'; report.error = error.name; process.exitCode = 1; }).finally(async () => {
+  fs.writeFileSync(path.join(RUN, 'reading-browser.json'), JSON.stringify(report, null, 2));
   if (browser) await browser.close();
   console.log(JSON.stringify(report, null, 2));
 });

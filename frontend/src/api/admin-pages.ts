@@ -11,6 +11,7 @@ export interface PageCreatePayload {
 }
 
 export interface PageUpdatePayload {
+  expected_revision?: string;
   slug?: string;
   title_zh?: string;
   title_en?: string;

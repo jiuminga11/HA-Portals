@@ -15,12 +15,18 @@ const { harness, ROOT, RUN, BASE, ORIGIN } = require('./browser-states.cjs');
     await h.remember('/site-config', { seo_og_image: config.seo_og_image });
     await h.check('malformed-og-image-never-crashes-public-content', async () => {
       for (const value of ['http://[', 'javascript:alert(1)']) {
-        await h.api('PUT', '/site-config', { seo_og_image: value });
+        await h.request('PUT', '/site-config', { seo_og_image: value }, { expectedStatus: 400 });
+        assert.equal((await h.api('GET', '/site-config')).seo_og_image, config.seo_og_image);
+        // Simulate a pre-hardening legacy GET without storing unsafe configuration.
+        await page.route('**/ha/api/site-config', route => route.request().method() === 'GET'
+          ? route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ...config, seo_og_image: value }) })
+          : route.continue());
         await page.goto(BASE + '/research');
         await page.locator('.public-page').waitFor();
         await page.waitForLoadState('networkidle');
         assert.equal(await page.locator('meta[property="og:image"]').count(), 0);
         assert.equal(await page.locator('main h1').count(), 1);
+        await page.unroute('**/ha/api/site-config');
       }
       assert.deepEqual(exceptions, []);
     });

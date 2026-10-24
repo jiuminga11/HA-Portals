@@ -7,14 +7,14 @@
  * No API interception, login, clicks, DB access, fixture changes or server startup.
  * The operator must point the preview's API at an isolated fixture, NOT owner DB.
  */
-const { chromium } = require('playwright');
+const { chromium, EXECUTABLE, RUN, BASE, IMAGE_PYTHON, assertFixture } = require('./browser-env.cjs');
 const { spawnSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '../..');
-const output = path.join(root, '.remediation-runtime/contrast.json');
-const base = new URL(process.env.CONTRAST_BASE_URL || 'http://127.0.0.1:15174/ha/');
+const output = path.join(RUN, 'contrast.json');
+const base = new URL(process.env.CONTRAST_BASE_URL || BASE + '/');
 if (!['127.0.0.1', 'localhost', '[::1]'].includes(base.hostname) || base.protocol !== 'http:') {
   throw new Error('Only a local HTTP fixture preview is supported.');
 }
@@ -59,7 +59,7 @@ function luminance(color) {
     .reduce((sum, v, i) => sum + v * [.2126, .7152, .0722][i], 0);
 }
 function backgroundPixels(png) {
-  const result = spawnSync('python3', ['-c',
+  const result = spawnSync(IMAGE_PYTHON, ['-c',
     'import sys,io,json;from PIL import Image;im=Image.open(io.BytesIO(sys.stdin.buffer.read())).convert("RGB");print(json.dumps(list(set(im.getdata()))))',
   ], { input: png, maxBuffer: 16 * 1024 * 1024 });
   if (result.status !== 0) throw new Error('PNG pixel extraction failed; verify python3 and Pillow.');
@@ -106,9 +106,10 @@ async function measure(page, point) {
 }
 
 (async () => {
+  assertFixture();
   let browser;
   try {
-    browser = await chromium.launch({ executablePath: '/usr/bin/google-chrome', headless: true, args: ['--no-sandbox'] });
+    browser = await chromium.launch({ executablePath: EXECUTABLE, headless: true, args: ['--no-sandbox'] });
     const context = await browser.newContext({ reducedMotion: 'reduce', deviceScaleFactor: 1, serviceWorkers: 'block' });
     const page = await context.newPage();
     for (const target of targets) {
@@ -139,9 +140,18 @@ async function measure(page, point) {
         report.results.push({ page: target.slug, viewportWidth: target.width, theme, mode: dark ? 'dark' : 'light', inlineColorOverrides, values });
       }
     }
+    const samples = report.results.flatMap(group => group.values);
+    report.status = samples.length === 30 && samples.every(value => {
+      if (value.status !== 'measured') return false;
+      const size = Number.parseFloat(value.fontSize);
+      const large = size >= 24 || (size >= 18.66 && Number(value.fontWeight) >= 700);
+      return large ? value.meetsLargeTextReference3 : value.meetsNormalTextReference4_5;
+    }) ? 'passed' : 'failed';
+    // Unsupported/missing measurements are not a passing accessibility result.
+    if (report.status !== 'passed') process.exitCode = 1;
   } catch (error) {
     // Do not emit response bodies, page text, screenshots, credentials or tokens.
-    report.errors.push({ name: error.name, message: String(error.message).split('\n')[0] });
+    report.errors.push({ name: error.name, message: String(error.name).split('\n')[0] });
     process.exitCode = 1;
   } finally {
     if (browser) await browser.close();

@@ -1,288 +1,106 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useId, useRef, useState } from "react";
 import type { ImageGalleryContent } from "../../types";
 import { resolveMediaUrl } from "../../lib/basePath";
 import { useLocale } from "../../hooks/useLocale";
 import { contentLang } from "../../lib/displayContent";
+import { safeContentUrl } from "../../lib/safeUrl";
+import { useModalDialog } from "../common/useModalDialog";
+import zh from "../../locales/a11y.zh.json";
+import en from "../../locales/a11y.en.json";
 
-interface Props {
-  content: ImageGalleryContent;
+interface Props { content: ImageGalleryContent }
+
+function mediaSource(value: string): string {
+  const safe = safeContentUrl(value, true);
+  return safe ? resolveMediaUrl(safe) : "";
+}
+
+function PreviewImage({ src, alt, labels }: { src: string; alt: string; labels: typeof zh }) {
+  const [status, setStatus] = useState<"loading" | "ready" | "error">(src ? "loading" : "error");
+  const [attempt, setAttempt] = useState(0);
+  return <div className="gallery-media min-w-0 flex-1 flex flex-col items-center justify-center gap-3">
+    {status === "loading" && <p role="status" className="text-sm">{labels.loadingImage}</p>}
+    {status === "error" && <p role="alert" className="text-center [overflow-wrap:anywhere]">{src ? labels.imageFailed : labels.invalidImage}</p>}
+    {src && <img key={attempt} src={src} alt={alt} decoding="async" hidden={status === "error"}
+      className="gallery-preview-image object-contain rounded-xl" onLoad={() => setStatus("ready")} onError={() => setStatus("error")} />}
+    <div className="flex flex-wrap justify-center gap-4 text-sm">
+      <button type="button" aria-disabled={!src || status === "loading"} className="underline underline-offset-4 aria-disabled:opacity-50"
+        onClick={() => { if (src && status !== "loading") { setStatus("loading"); setAttempt(value => value + 1); } }}>{labels.retryImage}</button>
+      {src && <a href={src} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{labels.openOriginal}</a>}
+    </div>
+  </div>;
 }
 
 export default function ImageGallery({ content }: Props) {
   const { columns = 4, page_size = 8, items = [] } = content;
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const labels = locale === "en" ? en : zh;
   const [currentPage, setCurrentPage] = useState(0);
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
-
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
+  const titleId = useId();
+  const captionId = useId();
   const effectivePageSize = page_size === 0 ? items.length : page_size;
   const totalPages = effectivePageSize > 0 ? Math.ceil(items.length / effectivePageSize) : 1;
-  const startIndex = currentPage * effectivePageSize;
+  const pageIndex = Math.min(currentPage, Math.max(0, totalPages - 1));
+  const startIndex = pageIndex * effectivePageSize;
   const pageItems = page_size === 0 ? items : items.slice(startIndex, startIndex + effectivePageSize);
-
-  const openPreview = useCallback((index: number) => {
-    setPreviewIndex(startIndex + index);
-    dialogRef.current?.showModal();
-  }, [startIndex]);
-
-  const closePreview = useCallback(() => {
-    setPreviewIndex(null);
-    dialogRef.current?.close();
-  }, []);
-
-  const prevImage = useCallback(() => {
-    setPreviewIndex((i) => (i !== null && i > 0 ? i - 1 : i));
-  }, []);
-
-  const nextImage = useCallback(() => {
-    setPreviewIndex((i) => (i !== null && i < items.length - 1 ? i + 1 : i));
-  }, [items.length]);
-
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (previewIndex === null) return;
-      if (e.key === "Escape") closePreview();
-      if (e.key === "ArrowLeft") prevImage();
-      if (e.key === "ArrowRight") nextImage();
-    };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [previewIndex, closePreview, prevImage, nextImage]);
-
-  if (items.length === 0) {
-    return (
-      <div className="text-center py-8" style={{ color: 'var(--text-muted)' }}>
-        <svg className="w-12 h-12 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-        <p>{t.section.noImages}</p>
-      </div>
-    );
-  }
-
-  const colClass: Record<number, string> = {
-    2: "grid-cols-2",
-    3: "grid-cols-3",
-    4: "grid-cols-2 sm:grid-cols-4",
-    5: "grid-cols-2 sm:grid-cols-5",
-    6: "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6",
-  };
+  const previewItem = previewIndex === null ? undefined : items[previewIndex];
+  useModalDialog(Boolean(previewItem), dialogRef, closeRef, triggerRef);
+  const close = () => setPreviewIndex(null);
+  const move = (direction: -1 | 1) => setPreviewIndex(index => index === null ? null : Math.max(0, Math.min(items.length - 1, index + direction)));
+  const colClass: Record<number, string> = { 2: "grid-cols-2", 3: "grid-cols-3", 4: "grid-cols-2 sm:grid-cols-4", 5: "grid-cols-2 sm:grid-cols-5", 6: "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6" };
   const gridClass = colClass[Math.min(Math.max(columns, 2), 6)] || "grid-cols-2 sm:grid-cols-4";
+  if (!items.length) return <p className="reading-muted text-center py-8">{t.section.noImages}</p>;
 
-  return (
-    <div>
-      <div className={`grid ${gridClass} gap-4`}>
-        {pageItems.map((item, idx) => (
-          <div
-            key={idx}
-            role="button"
-            tabIndex={0}
-            aria-label={item.caption || t.section.imageAlt}
-            onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); openPreview(idx); } }}
-            className="group relative overflow-hidden cursor-pointer glass-card rounded-xl"
-            onClick={() => openPreview(idx)}
-            onMouseEnter={(e) => {
-              const el = e.currentTarget as HTMLDivElement;
-              el.style.borderColor = 'var(--border-glow)';
-              el.style.boxShadow = '0 4px 20px var(--glow-primary), 0 8px 30px rgba(0,0,0,0.12)';
-              el.style.transform = 'translateY(-3px)';
-            }}
-            onMouseLeave={(e) => {
-              const el = e.currentTarget as HTMLDivElement;
-              el.style.borderColor = '';
-              el.style.boxShadow = '';
-              el.style.transform = '';
-            }}
-          >
-            <div className="aspect-square overflow-hidden">
-              <img
-                src={resolveMediaUrl(item.url)}
-                alt={item.caption || t.section.imageAlt}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                loading="lazy"
-              />
-            </div>
-            {item.caption && (
-              <div
-                className="relative p-3"
-              >
-                <p lang={contentLang(item.caption)} className="text-base [overflow-wrap:anywhere]" style={{ color: 'var(--ink)' }}>{item.caption}</p>
-              </div>
-            )}
-            {/* Hover overlay */}
-            <div
-              className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-              style={{ background: 'rgba(var(--color-primary-rgb), 0.08)' }}
-            >
-              <div
-                className="w-10 h-10 rounded-full flex items-center justify-center"
-                style={{
-                  background: 'rgba(var(--color-primary-rgb), 0.18)',
-                  border: '1px solid rgba(var(--color-primary-rgb), 0.35)',
-                  backdropFilter: 'blur(8px)',
-                }}
-              >
-                <svg className="w-5 h-5" style={{ color: 'var(--color-primary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                </svg>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-2 mt-8">
-          <button
-            onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
-            disabled={currentPage === 0}
-            className="px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 disabled:opacity-30"
-            style={{
-              background: 'var(--badge-bg)',
-              border: '1px solid var(--border-glow)',
-              color: 'var(--color-primary)',
-            }}
-          >
-            {t.pagination.prev}
-          </button>
-          {Array.from({ length: totalPages }, (_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrentPage(i)}
-              className="w-8 h-8 rounded-lg text-sm font-medium transition-all duration-200"
-              style={{
-                background: i === currentPage
-                  ? 'linear-gradient(135deg, var(--color-primary), var(--color-gradient))'
-                  : 'var(--bg-elevated)',
-                border: i === currentPage
-                  ? 'none'
-                  : '1px solid var(--card-border)',
-                color: i === currentPage ? 'var(--table-header-text)' : 'var(--text-muted)',
-                boxShadow: i === currentPage ? '0 0 12px var(--glow-primary)' : undefined,
-              }}
-            >
-              {i + 1}
-            </button>
-          ))}
-          <button
-            onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
-            disabled={currentPage === totalPages - 1}
-            className="px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 disabled:opacity-30"
-            style={{
-              background: 'var(--badge-bg)',
-              border: '1px solid var(--border-glow)',
-              color: 'var(--color-primary)',
-            }}
-          >
-            {t.pagination.next}
-          </button>
+  return <div>
+    <div className={`grid ${gridClass} gap-4`}>
+      {pageItems.map((item, index) => {
+        const src = mediaSource(item.url);
+        return <button type="button" key={startIndex + index}
+        className="gallery-thumbnail group relative min-w-0 overflow-hidden glass-card rounded-xl text-left"
+        aria-label={`${labels.openImage}: ${item.caption || t.section.imageAlt}`}
+        onClick={event => { triggerRef.current = event.currentTarget; setPreviewIndex(startIndex + index); }}>
+        <div className="aspect-square overflow-hidden">
+          {src ? <img src={src} alt={item.caption || t.section.imageAlt} loading="lazy" decoding="async" className="w-full h-full object-cover transition-transform duration-500 motion-reduce:transition-none motion-safe:group-hover:scale-105" />
+            : <span className="flex h-full items-center p-3 text-sm">{labels.invalidImage}</span>}
         </div>
-      )}
-
-      {/* Fullscreen Preview Dialog */}
-      <dialog
-        ref={dialogRef}
-        className="fixed inset-0 w-full h-full max-w-full max-h-full p-0 m-0"
-        style={{
-          border: "none",
-          background: 'color-mix(in srgb, var(--color-bg) 96%, transparent)',
-          backdropFilter: 'blur(20px)',
-        }}
-        onClick={(e) => {
-          if (e.target === dialogRef.current) closePreview();
-        }}
-      >
-        {previewIndex !== null && (
-          <div className="flex items-center justify-center w-full h-full relative">
-            <button
-              onClick={closePreview}
-              className="absolute top-4 right-4 z-10 rounded-full w-10 h-10 flex items-center justify-center transition-all duration-200"
-              style={{
-                background: 'rgba(var(--color-primary-rgb), 0.10)',
-                border: '1px solid rgba(var(--color-primary-rgb), 0.20)',
-                color: 'var(--text-muted)',
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(var(--color-primary-rgb), 0.22)';
-                (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-primary)';
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(var(--color-primary-rgb), 0.10)';
-                (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)';
-              }}
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-
-            {previewIndex > 0 && (
-              <button
-                onClick={prevImage}
-                className="absolute left-4 z-10 rounded-full w-12 h-12 flex items-center justify-center transition-all duration-200"
-                style={{
-                  background: 'rgba(var(--color-primary-rgb), 0.15)',
-                  border: '1px solid rgba(var(--color-primary-rgb), 0.30)',
-                  color: 'var(--color-primary)',
-                }}
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-            )}
-
-            {previewIndex < items.length - 1 && (
-              <button
-                onClick={nextImage}
-                className="absolute right-4 z-10 rounded-full w-12 h-12 flex items-center justify-center transition-all duration-200"
-                style={{
-                  background: 'rgba(var(--color-primary-rgb), 0.15)',
-                  border: '1px solid rgba(var(--color-primary-rgb), 0.30)',
-                  color: 'var(--color-primary)',
-                }}
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            )}
-
-            <img
-              src={resolveMediaUrl(items[previewIndex].url)}
-              alt={items[previewIndex].caption || t.section.imageAlt}
-              className="max-w-[90vw] max-h-[85vh] object-contain"
-              style={{
-                borderRadius: '12px',
-                boxShadow: '0 0 60px rgba(var(--color-primary-rgb), 0.15), 0 30px 60px rgba(0,0,0,0.5)',
-              }}
-            />
-
-            {items[previewIndex].caption && (
-              <div
-                className="absolute bottom-8 left-1/2 -translate-x-1/2 px-5 py-2 rounded-full text-lg"
-                style={{
-                  background: 'var(--card-bg)',
-                  border: '1px solid var(--card-border)',
-                  color: 'var(--text-muted)',
-                  backdropFilter: 'blur(12px)',
-                  boxShadow: 'var(--card-shadow)',
-                }}
-              >
-                {items[previewIndex].caption}
-              </div>
-            )}
-
-            <div
-              className="absolute bottom-16 left-1/2 -translate-x-1/2 text-base"
-              style={{ color: 'var(--text-faint)' }}
-            >
-              {previewIndex + 1} / {items.length}
-            </div>
-          </div>
-        )}
-      </dialog>
+        {item.caption && <p lang={contentLang(item.caption)} className="p-3 text-base [overflow-wrap:anywhere]">{item.caption}</p>}
+      </button>;
+      })}
     </div>
-  );
+    {totalPages > 1 && <nav aria-label={labels.gallery} className="flex flex-wrap justify-center items-center gap-2 mt-8">
+      <button type="button" className="gallery-page-button" onClick={() => setCurrentPage(Math.max(0, pageIndex - 1))} disabled={pageIndex === 0}>{t.pagination.prev}</button>
+      {Array.from({ length: totalPages }, (_, index) => <button type="button" key={index} aria-label={labels.page.replace("{page}", String(index + 1))} aria-current={pageIndex === index ? "page" : undefined}
+        className="gallery-page-button" onClick={() => setCurrentPage(index)}>{index + 1}</button>)}
+      <button type="button" className="gallery-page-button" onClick={() => setCurrentPage(Math.min(totalPages - 1, pageIndex + 1))} disabled={pageIndex === totalPages - 1}>{t.pagination.next}</button>
+    </nav>}
+    <dialog ref={dialogRef} aria-labelledby={titleId} aria-describedby={previewItem?.caption ? captionId : undefined}
+      className="gallery-dialog p-0 border-0 rounded-2xl"
+      onCancel={event => { event.preventDefault(); close(); }}
+      onClick={event => {
+        const bounds = event.currentTarget.getBoundingClientRect();
+        if (event.target === event.currentTarget && (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom)) close();
+      }}
+      onKeyDown={event => { if (event.key === "ArrowLeft" || event.key === "ArrowRight") { event.preventDefault(); move(event.key === "ArrowLeft" ? -1 : 1); } }}>
+      <div className="gallery-dialog-content flex flex-col gap-4 p-4 sm:p-6">
+        <div className="flex items-center justify-between gap-4">
+          <h2 id={titleId} className="text-lg font-semibold">{labels.gallery}</h2>
+          <button ref={closeRef} type="button" className="gallery-control shrink-0" aria-label={labels.closeImage} onClick={close}>×</button>
+        </div>
+        {previewItem && previewIndex !== null && <>
+          <p role="status" className="text-sm reading-muted">{labels.position.replace("{current}", String(previewIndex + 1)).replace("{total}", String(items.length))}</p>
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+            <button type="button" className="gallery-control shrink-0" aria-label={labels.previousImage} aria-disabled={previewIndex === 0} onClick={() => move(-1)}>‹</button>
+            <PreviewImage key={`${previewIndex}:${previewItem.url}`} src={mediaSource(previewItem.url)} alt={previewItem.caption || t.section.imageAlt} labels={labels} />
+            <button type="button" className="gallery-control shrink-0" aria-label={labels.nextImage} aria-disabled={previewIndex === items.length - 1} onClick={() => move(1)}>›</button>
+          </div>
+          {previewItem.caption && <div id={captionId} lang={contentLang(previewItem.caption)} role="region" aria-label={labels.caption} tabIndex={0}
+            className="gallery-caption rounded-lg p-3 text-base [overflow-wrap:anywhere] whitespace-pre-wrap">{previewItem.caption}</div>}
+        </>}
+      </div>
+    </dialog>
+  </div>;
 }

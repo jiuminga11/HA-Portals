@@ -2,13 +2,14 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');
-const { chromium } = require('playwright');
+const { chromium, EXECUTABLE, RUN, ORIGIN, BASE, PYTHON, assertFixture, guard } = require('./browser-env.cjs');
 const root = path.resolve(__dirname, '../..');
-const runtime = path.join(root, '.remediation-runtime/baseline-v1');
+const runtime = RUN;
 const pass = process.argv[2] || 'pass2';
+assert(/^[a-z0-9-]+$/.test(pass));
 const out = path.join(runtime, 'screenshots', pass);
 fs.mkdirSync(out, { recursive: true });
-const origin = 'http://127.0.0.1:15174';
+const origin = ORIGIN;
 const results = { checks: [], matrix: [], status: 'running' };
 let browser;
 async function stableShot(page, file) {
@@ -20,13 +21,14 @@ async function stableShot(page, file) {
   await page.screenshot({ path: path.join(out, `${file}.png`), fullPage: true, animations: 'disabled', mask: [page.locator('footer')] });
 }
 (async () => {
-  browser = await chromium.launch({ executablePath: '/usr/bin/google-chrome', headless: true, args: ['--no-sandbox'] });
+  assertFixture();
+  browser = await chromium.launch({ executablePath: EXECUTABLE, headless: true, args: ['--no-sandbox'] });
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
   const page = await context.newPage();
   const exceptions = [];
   page.on('pageerror', e => exceptions.push(e.message));
   if (!process.argv.includes('--interactions-only')) {
-  for (const locale of ['zh', 'en']) for (const theme of ['light', 'dark']) for (const width of [320, 390, 1440]) {
+  for (const locale of ['zh', 'en']) for (const theme of (process.argv.includes('--core') ? ['light'] : ['light', 'dark'])) for (const width of (process.argv.includes('--core') ? [390] : [320, 390, 1440])) {
     await page.setViewportSize({ width, height: 1000 });
     await page.goto(`${origin}/ha/`);
     await page.evaluate(({ theme, locale }) => { localStorage.setItem('theme', theme); localStorage.setItem('locale', locale === 'en' ? 'zh' : 'en'); }, { theme, locale });
@@ -52,7 +54,7 @@ async function stableShot(page, file) {
       results.matrix.push({ locale, slug, theme, width, ...state });
     }
   }
-  results.checks.push('72 stable pages: 6 pages × 2 languages × 2 modes × 3 widths; URL overrides conflicting stored locale; one h1; no document overflow or hidden content');
+   results.checks.push(`${results.matrix.length} stable pages; URL overrides conflicting stored locale; one h1; no document overflow or hidden content`);
   } else {
     const previous = JSON.parse(fs.readFileSync(path.join(runtime, `${pass}-browser.json`)));
     assert.equal(previous.matrix.length, 72);
@@ -109,7 +111,7 @@ async function stableShot(page, file) {
   results.checks.push('Touch menu navigation and keyboard Enter/Escape maintain expanded state');
   assert.deepEqual(exceptions, []);
   results.status = 'passed';
-})().catch(error => { results.status = 'failed'; results.error = error.message; process.exitCode = 1; }).finally(async () => {
+})().catch(error => { results.status = 'failed'; results.error = error.name; process.exitCode = 1; }).finally(async () => {
   fs.writeFileSync(path.join(runtime, `${pass}-browser.json`), JSON.stringify(results, null, 2));
   if (browser) await browser.close();
   console.log(JSON.stringify({ status: results.status, checks: results.checks, matrixCount: results.matrix.length, error: results.error }, null, 2));

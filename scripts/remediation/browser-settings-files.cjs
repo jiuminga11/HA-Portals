@@ -18,6 +18,7 @@ const path = require('node:path');
 const { randomUUID } = require('node:crypto');
 const { spawnSync } = require('node:child_process');
 const { harness, ROOT, RUN, ORIGIN, BASE, delay } = require('./browser-states.cjs');
+const { PYTHON } = require('./browser-env.cjs');
 
 async function main() {
   const h = await harness('browser-settings-files');
@@ -197,7 +198,7 @@ async function main() {
     await h.check('pdf-real-upload-view-download-byte-match', async () => {
       // Extract exactly the dependency-free generator; do not import/execute tests.
       const code = 'import ast, pathlib, sys\np=pathlib.Path(sys.argv[1])\nt=ast.parse(p.read_text())\nf=next(n for n in t.body if isinstance(n, ast.FunctionDef) and n.name=="test_only_pdf")\nns={}\nexec(compile(ast.Module(body=[f], type_ignores=[]), str(p), "exec"), ns)\nsys.stdout.buffer.write(ns["test_only_pdf"]())';
-      const generated = spawnSync('python3', ['-c', code, path.join(ROOT, 'backend/tests/test_site_contract.py')],
+      const generated = spawnSync(PYTHON, ['-c', code, path.join(ROOT, 'backend/tests/test_site_contract.py')],
         { cwd: RUN, env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' }, maxBuffer: 1024 * 1024 });
       assert.equal(generated.status, 0);
       const pdf = generated.stdout;

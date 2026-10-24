@@ -6,6 +6,9 @@ from sqlalchemy.orm import Session
 from app.deps import get_current_admin, get_db
 from app.models import SiteConfig
 from app.schemas import SiteConfigResponse, SiteConfigUpdate
+from app.file_references import writer_lock, validate_local_references
+from app.sanitizer import safe_url
+from app.revisions import snapshot, commit_edit
 
 router = APIRouter()
 
@@ -52,8 +55,20 @@ def update_site_config(
     _admin: bool = Depends(get_current_admin),
 ) -> SiteConfig:
     """更新站点配置（需鉴权）。仅更新显式传入的字段。"""
+    writer_lock(db)
     config = _get_or_create_config(db)
+    # The legacy singleton initializer may commit when the row was absent.
+    writer_lock(db)
+    original = snapshot(config)
     update_data = body.model_dump(exclude_unset=True)
+    expected = update_data.pop('expected_revision', None)
+    for field in ('logo_url', 'banner_url', 'seo_og_image'):
+        if update_data.get(field):
+            try:
+                update_data[field] = safe_url(update_data[field], media=True)
+            except ValueError as exc:
+                raise HTTPException(status_code=400, detail=str(exc)) from exc
+    validate_local_references(update_data)
 
     # 校验不可为 null 的字段
     for field_name in _NON_NULLABLE_FIELDS:
@@ -66,6 +81,4 @@ def update_site_config(
     for field_name, value in update_data.items():
         setattr(config, field_name, value)
 
-    db.commit()
-    db.refresh(config)
-    return config
+    return commit_edit(db, config, original, expected)

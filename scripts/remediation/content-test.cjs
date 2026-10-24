@@ -1,30 +1,27 @@
 // Execute the actual TypeScript content transforms in Chromium's real DOMParser.
-const fs = require('node:fs');
-const path = require('node:path');
-const { createRequire } = require('node:module');
-const { chromium } = require('playwright');
-const root = path.resolve(__dirname, '../../frontend');
-const ts = createRequire(path.join(root, 'package.json'))('typescript');
-const sources = {};
-for (const name of ['basePath', 'localePath', 'displayContent']) {
-  const source = fs.readFileSync(path.join(root, `src/lib/${name}.ts`), 'utf8').replaceAll('import.meta.env.BASE_URL', '"/ha/"');
-  sources[name] = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText;
-}
+const { chromium, EXECUTABLE } = require('./browser-env.cjs');
+const { sourcesFor, installDOMPurify, fixtureDocument } = require('./browser-modules.cjs');
 (async () => {
-  const browser = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
+  const browser = await chromium.launch({ executablePath: EXECUTABLE, args: ['--no-sandbox'] });
   try {
     const page = await browser.newPage();
+    await fixtureDocument(page);
+    await installDOMPurify(page);
+    const sources = sourcesFor(['src/lib/displayContent.ts']);
     const count = await page.evaluate(sources => {
       const modules = {};
-      const load = name => {
-        name = name.replace('./', '');
+      const load = (name, parent = 'src/lib/displayContent.ts') => {
+        if (name === 'dompurify') return window.DOMPurify;
+        if (name.startsWith('.')) name = new URL(name, 'http://modules.invalid/' + parent).pathname.slice(1);
+        if (!Object.hasOwn(sources, name)) name = [name + '.ts', name + '.tsx', name + '.json'].find(key => Object.hasOwn(sources, key));
+        if (!name) throw new Error('UnsupportedContentDependency');
         if (!modules[name]) {
           const module = { exports: {} }; modules[name] = module;
-          new Function('require', 'module', 'exports', sources[name])(load, module, module.exports);
+          new Function('require', 'module', 'exports', sources[name])(id => load(id, name), module, module.exports);
         }
         return modules[name].exports;
       };
-      const { prepareRichText } = load('displayContent');
+      const { prepareRichText } = load('src/lib/displayContent.ts');
       let count = 0;
       const check = (condition, message) => { if (!condition) throw new Error(message); count++; };
       const transform = html => new DOMParser().parseFromString(prepareRichText(html, ['Research title', 'A B'], 'en'), 'text/html');
@@ -43,4 +40,4 @@ for (const name of ['basePath', 'localePath', 'displayContent']) {
     }, sources);
     console.log(`Content preservation checks passed: ${count}`);
   } finally { await browser.close(); }
-})().catch(error => { console.error(error.message); process.exitCode = 1; });
+})().catch(error => { console.error(error.name); process.exitCode = 1; });

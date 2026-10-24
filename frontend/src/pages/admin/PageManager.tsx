@@ -6,6 +6,7 @@ import { getSections } from "../../api/sections";
 import { useLocale } from "../../hooks/useLocale";
 import { useUnsavedChanges } from "../../hooks/useUnsavedChanges";
 import AuthRecoveryNotice from "../../components/common/AuthRecoveryNotice";
+import { conflictMessage, isRevisionConflict } from "../../lib/securityMessages";
 
 type PageForm = Pick<Page, "title_zh" | "title_en" | "meta_description_zh" | "meta_description_en"> & { slug: string };
 const EMPTY_FORM: PageForm = { slug: "", title_zh: "", title_en: "", meta_description_zh: "", meta_description_en: "" };
@@ -15,7 +16,9 @@ function toForm(page: Page): PageForm {
 }
 
 export default function PageManager() {
-  const { t, localized } = useLocale();
+  const { t, localized, locale } = useLocale();
+  const [revision, setRevision] = useState<string>();
+  const [conflict, setConflict] = useState(false);
   const [pages, setPages] = useState<Page[]>([]);
   const [counts, setCounts] = useState<Record<number, number>>({});
   const [loading, setLoading] = useState(true);
@@ -55,11 +58,12 @@ export default function PageManager() {
 
   const begin = () => {
     if (lock.current || !loaded) return false;
-    lock.current = true; setSaving(true); setError(null); return true;
+    lock.current = true; setSaving(true); setError(null); setConflict(false); return true;
   };
   const end = () => { lock.current = false; setSaving(false); };
   const open = (page?: Page) => {
     const initial = page ? toForm(page) : EMPTY_FORM;
+    setRevision(page?.revision); setConflict(false);
     setForm(initial); setSnapshot(JSON.stringify(initial)); setError(null);
     setModal(page?.id ?? "new");
   };
@@ -75,11 +79,11 @@ export default function PageManager() {
       const { slug, ...fields } = form;
       const result = modal === "new"
         ? await createPage({ ...fields, slug: slug.trim().toLowerCase() })
-        : await updatePage(modal, fields);
+        : await updatePage(modal, { ...fields, expected_revision: revision });
       setPages(previous => modal === "new" ? [...previous, result] : previous.map(page => page.id === result.id ? result : page));
       const saved = toForm(result); setForm(saved); setSnapshot(JSON.stringify(saved));
       setModal(null);
-    } catch { setError("saveError"); }
+    } catch (error) { setConflict(isRevisionConflict(error)); setError("saveError"); }
     finally { end(); }
   };
   const remove = async (page: Page) => {
@@ -87,16 +91,16 @@ export default function PageManager() {
     if (!begin()) return;
     try {
       await deletePage(page.id);
-      setPages(previous => previous.filter(item => item.id !== page.id).map((item, sort_order) => ({ ...item, sort_order })));
+      setPages(await getAdminPages());
     } catch { setError("deleteError"); }
     finally { end(); }
   };
   const toggle = async (page: Page) => {
     if (page.slug === "home" || !begin()) return;
     try {
-      const result = await updatePage(page.id, { visible: !page.visible });
+      const result = await updatePage(page.id, { visible: !page.visible, expected_revision: page.revision });
       setPages(previous => previous.map(item => item.id === result.id ? result : item));
-    } catch { setError("updateError"); }
+    } catch (error) { setConflict(isRevisionConflict(error)); setError("updateError"); }
     finally { end(); }
   };
   const move = async (index: number, direction: -1 | 1) => {
@@ -107,7 +111,7 @@ export default function PageManager() {
     [next[index], next[target]] = [next[target], next[index]];
     const normalized = next.map((page, sort_order) => ({ ...page, sort_order }));
     setPages(normalized);
-    try { await reorderPages(normalized.map(({ id, sort_order }) => ({ id, sort_order }))); }
+    try { setPages(await reorderPages(normalized.map(({ id, sort_order }) => ({ id, sort_order })))); }
     catch { setPages(previous); setError("reorderError"); }
     finally { end(); }
   };
@@ -120,7 +124,7 @@ export default function PageManager() {
         <button className="rounded-xl bg-primary text-white px-4 py-3 font-semibold disabled:opacity-50" disabled={!loaded || saving} onClick={() => open()}>{t.pages.create}</button>
       </div>
       <p id="home-protection" className="admin-form-message mb-5">{t.pages.homeProtection}</p>
-      {error && modal === null && <div role="alert" className="admin-form-message mb-5">{t.pages[error]}{!loaded && <button className="underline ml-3" onClick={() => setAttempt(value => value + 1)}>{t.publicPage.retry}</button>}</div>}
+      {error && modal === null && <div role="alert" className="admin-form-message mb-5">{conflict ? conflictMessage(locale) : t.pages[error]}{!loaded && <button className="underline ml-3" onClick={() => setAttempt(value => value + 1)}>{t.publicPage.retry}</button>}</div>}
       {loaded && !pages.length && <p className="admin-settings-card">{t.pages.empty}</p>}
       <div className="space-y-3">
         {pages.map((page, index) => <article key={page.id} className="admin-settings-card flex flex-wrap gap-4 items-center">
@@ -146,7 +150,7 @@ export default function PageManager() {
             <h2 id="page-dialog-title" className="text-lg font-semibold mb-2">{modal === "new" ? t.pages.create : t.pages.edit}</h2>
             <AuthRecoveryNotice />
             <p className="text-sm text-slate-500 mb-5">{modal === "new" ? t.pages.newHint : t.pages.slugHint}</p>
-            {error && <p role="alert" className="admin-form-message mb-4">{t.pages[error]}</p>}
+            {error && <p role="alert" className="admin-form-message mb-4">{conflict ? conflictMessage(locale) : t.pages[error]}</p>}
             <label className="block text-sm font-medium mb-4">{t.pages.slug}<input autoFocus className="admin-form-input" value={form.slug} disabled={modal !== "new"} onChange={event => setForm(previous => ({ ...previous, slug: event.target.value }))} required /></label>
             {(["title_zh", "title_en", "meta_description_zh", "meta_description_en"] as const).map(key => <label key={key} className="block text-sm font-medium mb-4">{t.pages.fields[key]}
               <textarea className="admin-form-input" rows={key.includes("description") ? 3 : 1} required={key === "title_zh"} value={form[key]} onChange={event => setForm(previous => ({ ...previous, [key]: event.target.value }))} />

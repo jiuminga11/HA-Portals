@@ -5,8 +5,9 @@ import ImageUpload from "../../components/common/ImageUpload";
 import { THEME_PRESETS } from "../../themes/presets";
 import { useLocale } from "../../hooks/useLocale";
 import { useUnsavedChanges } from "../../hooks/useUnsavedChanges";
+import { conflictMessage, isRevisionConflict } from "../../lib/securityMessages";
 
-type SettingsForm = Omit<SiteConfig, "updated_at">;
+type SettingsForm = Omit<SiteConfig, "updated_at" | "revision">;
 function toForm(config: SiteConfig): SettingsForm {
   return {
     site_title: config.site_title, project_title: config.project_title, footer_text: config.footer_text,
@@ -21,7 +22,9 @@ function toForm(config: SiteConfig): SettingsForm {
 }
 
 export default function SiteSettings() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const [revision, setRevision] = useState<string>();
+  const [conflict, setConflict] = useState(false);
   const [form, setForm] = useState<SettingsForm | null>(null);
   const [snapshot, setSnapshot] = useState("");
   const [loading, setLoading] = useState(true);
@@ -44,6 +47,7 @@ export default function SiteSettings() {
     getSiteConfig().then(config => {
       if (cancelled) return;
       const loaded = toForm(config);
+      setRevision(config.revision);
       setForm(loaded);
       setSnapshot(JSON.stringify(loaded));
     }).catch(() => { if (!cancelled) setMessage("loadedError"); })
@@ -80,16 +84,18 @@ export default function SiteSettings() {
   const save = async () => {
     if (!mounted.current || !form || loading || saveLock.current) return;
     const submittedSnapshot = JSON.stringify(form);
-    saveLock.current = true; setSaving(true); setMessage(null);
+    saveLock.current = true; setSaving(true); setMessage(null); setConflict(false);
     try {
-      const saved = toForm(await updateSiteConfig(form));
+      const response = await updateSiteConfig({ ...form, expected_revision: revision });
+      const saved = toForm(response);
       if (!mounted.current) return;
+      setRevision(response.revision);
       // An already-running upload can finish while the fieldset is disabled.
       // Preserve that newer input; only the submitted form may be normalized.
       setForm(current => JSON.stringify(current) === submittedSnapshot ? saved : current);
       setSnapshot(JSON.stringify(saved));
       setMessage("saved");
-    } catch { if (mounted.current) setMessage("saveError"); }
+    } catch (error) { if (mounted.current) { setConflict(isRevisionConflict(error)); setMessage("saveError"); } }
     finally { saveLock.current = false; if (mounted.current) setSaving(false); }
   };
 
@@ -99,7 +105,7 @@ export default function SiteSettings() {
     <div className="max-w-5xl">
       <h1 className="text-xl font-bold text-slate-800">{t.settings.title}</h1>
       <p className="text-sm text-slate-500 mt-2 mb-6">{t.settings.intro}</p>
-      {message && <p role={message === "saved" ? "status" : "alert"} className="admin-form-message mb-5">{t.settings[message]}</p>}
+      {message && <p role={message === "saved" ? "status" : "alert"} className="admin-form-message mb-5">{conflict ? conflictMessage(locale) : t.settings[message]}</p>}
       <fieldset disabled={saving} className="space-y-6 min-w-0">
         <section className="admin-settings-card">
           <h2 className="font-semibold mb-5">{t.settings.identity}</h2>

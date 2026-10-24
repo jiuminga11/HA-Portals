@@ -420,3 +420,21 @@
 .settings-preview { background: var(--bg-base); color: var(--text-base); border: 1px solid var(--card-border); }
 .settings-preview-swatch { background: linear-gradient(135deg, var(--color-primary), var(--color-gradient), var(--color-accent)); }
 .auth-recovery-notice { background: var(--bg-surface); color: var(--ink); border-color: var(--hairline); }
+
+/* Native modal surfaces retain the current theme and provide browser focus containment. */
+.gallery-dialog { width: min(64rem, calc(100vw - 2rem)); max-width: calc(100vw - 2rem); max-height: calc(100dvh - 2rem); overflow-y: auto; background: var(--color-bg-card); color: var(--ink); }
+.gallery-dialog-content { min-width: 0; }
+.gallery-dialog::backdrop, .confirmation-dialog::backdrop, .mobile-navigation-dialog::backdrop { background: rgb(0 0 0 / .55); }
+.gallery-preview-image { max-width: 100%; max-height: 48dvh; }
+.gallery-caption { min-width: 0; max-width: 100%; max-height: 22dvh; overflow: auto; background: var(--hover-bg); color: var(--text-muted); }
+.gallery-control { display: inline-flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; border-radius: 50%; border: 1px solid var(--hairline); color: var(--reading-accent); background: var(--hover-bg); font-size: 1.5rem; }
+.gallery-control[aria-disabled="true"] { opacity: .45; cursor: default; }
+.gallery-page-button { padding: .4rem .7rem; border-radius: .5rem; border: 1px solid var(--card-border); color: var(--reading-accent); background: var(--badge-bg); }
+.gallery-page-button[aria-current="page"] { background: var(--reading-accent); color: var(--color-bg); }
+.gallery-page-button:disabled { opacity: .4; }
+.gallery-thumbnail { color: var(--ink); }
+.mobile-navigation-dialog { position: fixed; top: 4rem; margin: 0; width: 100%; max-width: 100%; max-height: calc(100dvh - 4rem); overflow-y: auto; color: var(--ink); background: var(--bg-base); }
+.confirmation-dialog { max-width: min(24rem, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); overflow-y: auto; }
+@media (prefers-reduced-motion: reduce) {
+  .gallery-thumbnail.glass-card:hover, .gallery-thumbnail:focus-visible { transform: none; }
+}

@@ -10,7 +10,7 @@ export function contentLang(text: string): string | undefined {
 /** Presentation only: keep stored HTML untouched, remove only a matching leading
  * heading, and keep the page h1 unique. Never remove an unmatched content heading. */
 export function prepareRichText(body: string, titles: string[], locale: "zh" | "en"): string {
-  const doc = new DOMParser().parseFromString(body, "text/html");
+  const doc = new DOMParser().parseFromString(sanitizeRichText(body), "text/html");
   const normalize = (text: string) => text.replace(/\s+/g, " ").trim();
   const first = doc.body.firstElementChild;
   // Only discard a plain, unadorned heading. Attributes or nested markup may
@@ -38,10 +38,11 @@ export function prepareRichText(body: string, titles: string[], locale: "zh" | "
       element.setAttribute(attribute, resolveMediaUrl(element.getAttribute(attribute) || ""));
     });
   }
-  return doc.body.innerHTML;
+  return sanitizeRichText(doc.body.innerHTML);
 }
 import { resolveMediaUrl, stripBasePath } from "./basePath";
 import { resolveContentLink } from "./localePath";
+import { sanitizeRichText } from "./security";
 
 /** Files and non-public routes must remain native links, not SPA page routes. */
 export function isDisplayPageLink(url: string): boolean {

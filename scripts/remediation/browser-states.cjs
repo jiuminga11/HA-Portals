@@ -14,11 +14,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');
-const { chromium } = require('/home/admin/node_modules/playwright');
-const ROOT = path.resolve(__dirname, '../..');
-const RUN = path.join(ROOT, '.remediation-runtime/baseline-v1');
-const ORIGIN = 'http://127.0.0.1:15174';
-const BASE = ORIGIN + '/ha';
+const { chromium, EXECUTABLE, ROOT, RUN, ORIGIN, BASE, assertFixture } = require('./browser-env.cjs');
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 async function harness(name) {
@@ -27,7 +23,8 @@ async function harness(name) {
   assert.equal(fs.realpathSync(secretPath), secretPath);
   assert.equal(fs.realpathSync(path.join(RUN, 'fixture.db')), path.join(RUN, 'fixture.db'));
   const manifest = JSON.parse(fs.readFileSync(path.join(RUN, 'manifest.json'), 'utf8'));
-  assert.equal(manifest.run, 'baseline-v1');
+  assertFixture();
+  assert.equal(manifest.run, path.basename(RUN));
   assert.deepEqual(Object.keys(manifest.pages), ['home', 'about', 'research', 'projects', 'honors', 'cv', 'test-hidden']);
   const secrets = JSON.parse(fs.readFileSync(secretPath, 'utf8'));
   assert.equal(secrets.ADMIN_USERNAME, 'remediation-test');
@@ -44,15 +41,20 @@ async function harness(name) {
     assert.equal(parsed.origin, ORIGIN);
     assert(parsed.pathname.startsWith('/ha/api/'));
   }
-  async function api(method, endpoint, body) {
+  async function request(method, endpoint, body, options = {}) {
     const url = BASE + '/api' + endpoint;
     guard(url);
     assert(verified || (method === 'GET') || endpoint === '/auth/login');
     const response = await fetch(url, { method, redirect: 'error', signal: AbortSignal.timeout(15000),
-      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-      body: body === undefined ? undefined : JSON.stringify(body) });
-    assert(response.ok, 'API status not successful');
-    return response.json();
+      headers: { ...(options.rawBody ? {} : { 'Content-Type': 'application/json' }), ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      body: body === undefined ? undefined : options.rawBody ? body : JSON.stringify(body) });
+    if (options.expectedStatus !== undefined) assert.equal(response.status, options.expectedStatus, 'Unexpected API status');
+    else assert(response.ok, 'API status not successful');
+    return response;
+  }
+  async function api(method, endpoint, body) {
+    const response = await request(method, endpoint, body);
+    return response.status === 204 ? null : response.json();
   }
   token = (await api('POST', '/auth/login', { username: secrets.ADMIN_USERNAME, password: secrets.ADMIN_PASSWORD })).access_token;
   const pages = await api('GET', '/admin/pages');
@@ -64,6 +66,13 @@ async function harness(name) {
     journal.push({ endpoint, original });
     fs.writeFileSync(path.join(RUN, `${name}-restore.json`), JSON.stringify(journal, null, 2), { mode: 0o600 });
     undo.push(() => api('PUT', endpoint, original));
+  }
+  function deferCleanup(label, callback) {
+    assert(/^[a-z0-9-]+$/.test(label) && typeof callback === 'function');
+    undo.push(async () => {
+      await callback();
+      results.checks.push({ stage: 'cleanup-' + label, status: 'passed' });
+    });
   }
   async function check(label, fn) {
     stage = label;
@@ -77,7 +86,7 @@ async function harness(name) {
     }
     throw new Error('ConditionTimeout');
   }
-  browser = await chromium.launch({ executablePath: '/usr/bin/google-chrome', headless: true, args: ['--no-sandbox'] });
+  browser = await chromium.launch({ executablePath: EXECUTABLE, headless: true, args: ['--no-sandbox'] });
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, locale: 'zh-CN', serviceWorkers: 'block' });
   context.setDefaultTimeout(12000);
   let badPath = false;
@@ -105,7 +114,7 @@ async function harness(name) {
     for (const item of results.checks) console.log(`${item.stage}: ${item.status}${item.error ? ' ' + item.error : ''}`);
     if (results.checks.some(item => item.status === 'failed')) process.exitCode = 1;
   }
-  return { api, manifest, pages, secrets, context, check, wait, remember, finish, results, token, guard };
+  return { api, request, manifest, pages, secrets, context, check, wait, remember, deferCleanup, finish, results, token, guard };
 }
 
 async function main() {

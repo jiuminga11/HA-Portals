@@ -5,6 +5,7 @@ import HXMark from "../common/HXMark";
 import { resolveMediaUrl, stripBasePath } from "../../lib/basePath";
 import { contentLang, isDisplayPageLink } from "../../lib/displayContent";
 import { localePath, resolveContentLink } from "../../lib/localePath";
+import { safeContentUrl } from "../../lib/safeUrl";
 
 interface Props {
   content: ProfileHeroContent;
@@ -76,6 +77,7 @@ export default function ProfileHero({ content, headingLevel: Heading = "h1" }: P
   } = content;
 
   const name = localized(name_zh, name_en);
+  const avatarSrc = safeContentUrl(avatar_url, true);
   const tagline = localized(tagline_zh, tagline_en);
   const mission = localized(mission_zh, mission_en);
   const subline = [name !== name_en ? name_en : "", tagline]
@@ -113,7 +115,7 @@ export default function ProfileHero({ content, headingLevel: Heading = "h1" }: P
           {/* Left: text content */}
           <div className="order-1 min-w-0 text-left [overflow-wrap:anywhere]">
             {/* Avatar — only shown when a photo is uploaded; initials fallback removed (duplicated the name) */}
-            {avatar_url && (
+            {avatarSrc && (
               <div
                 className="w-[96px] h-[96px] lg:w-[112px] lg:h-[112px] rounded-full p-[3px] mb-8 bg-gradient-primary"
                 style={{ boxShadow: "0 12px 40px rgba(var(--color-primary-rgb), 0.22)" }}
@@ -123,7 +125,8 @@ export default function ProfileHero({ content, headingLevel: Heading = "h1" }: P
                   style={{ background: "var(--color-bg-card)" }}
                 >
                   <img
-                    src={resolveMediaUrl(avatar_url)}
+                    src={resolveMediaUrl(avatarSrc)}
+                    decoding="async"
                     alt={name}
                     className="w-full h-full object-cover"
                     style={{ objectPosition: avatar_position }}

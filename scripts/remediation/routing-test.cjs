@@ -1,91 +1,110 @@
-// Focused tests of the real route tree/providers/helpers; no build output or DB writes.
-// Swap only browser history for memory history; retain the real data router and RouterProvider.
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
-const vm = require('node:vm');
-const { createRequire } = require('node:module');
-const root = path.resolve(__dirname, '../../frontend');
-const frontendRequire = createRequire(path.join(root, 'package.json'));
-const ts = frontendRequire('typescript');
-const React = frontendRequire('react');
-const router = frontendRequire('react-router-dom');
-const { renderToString } = frontendRequire('react-dom/server');
-let checks = 0;
+// Real route-tree SSR renderer in Chrome: DOM-dependent URL security runs against
+// the actual browser DOM and actual installed DOMPurify, not a fake sanitizer.
+// Only public presentation components/history are substituted, as in the original test.
+const { chromium, EXECUTABLE } = require('./browser-env.cjs');
+const { sourcesFor, installDOMPurify, fixtureDocument, routingDependencies } = require('./browser-modules.cjs');
+let stage = 'dependencies';
 
-for (const base of ['', '/ha']) {
-  const cache = new Map();
-  let entry = '/';
-  let activeRouter;
-  function load(file) {
-    file = path.resolve(file);
-    if (!path.extname(file)) file = ['.ts', '.tsx', '.json'].map(ext => file + ext).find(fs.existsSync);
-    if (cache.has(file)) return cache.get(file).exports;
-    const module = { exports: {} };
-    cache.set(file, module);
-    if (file.endsWith('.json')) return (module.exports = JSON.parse(fs.readFileSync(file, 'utf8')));
-    const source = fs.readFileSync(file, 'utf8').replaceAll('import.meta.env.BASE_URL', JSON.stringify(`${base}/`));
-    const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true } }).outputText;
-    function localRequire(id) {
-      if (id === 'react-router-dom') return {
-        ...router,
-        createBrowserRouter: (routes, options) => {
-          activeRouter = router.createMemoryRouter(routes, { ...options, initialEntries: [entry] });
-          return activeRouter;
-        },
-      };
-      if (id.endsWith('/PublicLayout')) return { __esModule: true, default: router.Outlet };
-      if (id.endsWith('/ThemeProvider')) return { ThemeProvider: ({ children }) => children };
-      if (id.endsWith('/PublicPage')) return { __esModule: true, default: ({ slug }) => {
-        const { locale } = load(path.join(root, 'src/hooks/useLocale.tsx')).useLocale();
-        return React.createElement('span', null, `${locale}:${slug || 'NOT_FOUND'}`);
-      } };
-      return id.startsWith('.') ? load(path.resolve(path.dirname(file), id)) : frontendRequire(id);
+(async () => {
+  const dependencies = await routingDependencies();
+  const browser = await chromium.launch({ executablePath: EXECUTABLE, args: ['--no-sandbox'] });
+  let checks = 0;
+  try {
+    const page = await browser.newPage();
+    stage = 'document-and-purifier';
+    await fixtureDocument(page);
+    await installDOMPurify(page);
+    const scriptErrors = [];
+    page.on('pageerror', error => scriptErrors.push(error));
+    await page.addScriptTag({ content: dependencies });
+    if (scriptErrors.length) throw scriptErrors[0];
+    for (const base of ['', '/ha']) {
+      stage = base ? 'ha-route-evaluation' : 'root-route-evaluation';
+      const sources = sourcesFor(['src/App.tsx', 'src/lib/localePath.ts', 'src/lib/basePath.ts'], base,
+        key => /\/(?:PublicLayout|ThemeProvider|PublicPage)\.[tj]sx?$/.test(key) || key.startsWith('src/pages/admin/'));
+      checks += await page.evaluate(({ sources, base }) => {
+        const { React, router, renderToString, jsxRuntime } = window.RoutingDependencies;
+        const cache = {};
+        let entry = '/';
+        let activeRouter;
+        let checks = 0;
+        const equal = (actual, expected) => { if (actual !== expected) throw new Error(`RoutingAssertion${checks}`); checks++; };
+        const storage = { getItem() { throw new Error('PublicLocaleMustNotReadStorage'); } };
+        function load(file) {
+          if (!Object.hasOwn(sources, file)) file = [file + '.ts', file + '.tsx', file + '.json'].find(key => Object.hasOwn(sources, key));
+          if (!file) throw new Error('MissingRoutingSource');
+          if (cache[file]) return cache[file].exports;
+          const module = { exports: {} }; cache[file] = module;
+          function localRequire(id) {
+            if (id === 'dompurify') return window.DOMPurify;
+            if (id === 'react') return React;
+            if (id === 'react/jsx-runtime') return jsxRuntime;
+            if (id === 'react-router-dom') return {
+              ...router,
+              createBrowserRouter: (routes, options) => {
+                activeRouter = router.createMemoryRouter(routes, { ...options, initialEntries: [entry] });
+                return activeRouter;
+              },
+            };
+            if (id.endsWith('/PublicLayout')) return { __esModule: true, default: router.Outlet };
+            if (id.endsWith('/ThemeProvider')) return { ThemeProvider: ({ children }) => children };
+            if (id.endsWith('/PublicPage')) return { __esModule: true, default: ({ slug }) => {
+              const { locale } = load('src/hooks/useLocale.tsx').useLocale();
+              return React.createElement('span', null, `${locale}:${slug || 'NOT_FOUND'}`);
+            } };
+            if (id.startsWith('.')) return load(new URL(id, 'http://modules.invalid/' + file).pathname.slice(1));
+            throw new Error('UnsupportedRoutingDependency');
+          }
+          new Function('require', 'module', 'exports', 'localStorage', sources[file])(localRequire, module, module.exports, storage);
+          return module.exports;
+        }
+        const { localePath, resolveContentLink, getPathLocale } = load('src/lib/localePath.ts');
+        const { resolveMediaUrl } = load('src/lib/basePath.ts');
+        equal(localePath('/cv?download=1#resume', 'en'), '/en/cv?download=1#resume');
+        equal(localePath('/en/cv?download=1#resume', 'zh'), '/cv?download=1#resume');
+        equal(localePath('/en/', 'en'), '/en/');
+        equal(getPathLocale('/english'), 'zh');
+        equal(getPathLocale('/en/cv'), 'en');
+        equal(resolveContentLink('/cv', 'en'), `${base}/en/cv`);
+        equal(resolveContentLink(`${base}/en/cv?x=1#top`, 'en'), `${base}/en/cv?x=1#top`);
+        equal(resolveContentLink('/uploads/cv.pdf', 'en'), `${base}/uploads/cv.pdf`);
+        equal(resolveContentLink('/upload/cv.pdf', 'en'), `${base}/upload/cv.pdf`);
+        equal(resolveContentLink('#resume', 'en'), '#resume');
+        equal(resolveContentLink('?download=1', 'en'), '?download=1');
+        equal(resolveContentLink('/admin/pages', 'en'), `${base}/admin/pages`);
+        equal(resolveMediaUrl('/uploads/cv.pdf'), `${base}/uploads/cv.pdf`);
+        equal(resolveMediaUrl(`${base}/uploads/cv.pdf`), `${base}/uploads/cv.pdf`);
+        for (const url of ['https://example.org/x', 'http://example.org/x', '//cdn.example.org/x', 'mailto:a@example.org']) {
+          equal(resolveMediaUrl(url), url);
+          equal(resolveContentLink(url, 'en'), url);
+        }
+        // data: is deliberately rejected by the new link security contract.
+        equal(resolveMediaUrl('data:image/png;base64,eA=='), 'data:image/png;base64,eA==');
+        equal(resolveContentLink('data:image/png;base64,eA==', 'en'), '#');
+        equal(resolveContentLink('javascript:alert(1)', 'en'), '#');
+        for (const [route, expected] of [
+          ['/', 'zh:home'], ['/cv', 'zh:cv'], ['/en', 'en:home'], ['/en/', 'en:home'],
+          ['/en/cv?x=1#resume', 'en:cv'], ['/missing/deep', 'zh:NOT_FOUND'], ['/en/missing/deep', 'en:NOT_FOUND'],
+        ]) {
+          entry = `${base}${route}`;
+          delete cache['src/App.tsx'];
+          const App = load('src/App.tsx').default;
+          try {
+            equal(renderToString(React.createElement(App)), `<span>${expected}</span>`);
+            equal(activeRouter.basename, base || '/');
+            const { pathname, search, hash } = activeRouter.state.location;
+            equal(`${pathname}${search}${hash}`, entry);
+          } finally { activeRouter.dispose(); }
+        }
+        return checks;
+      }, { sources, base });
     }
-    vm.runInNewContext(`(function(require,module,exports){${code}\n})`, {
-      console,
-      localStorage: { getItem() { throw new Error('Public locale must not read localStorage'); } },
-    })(localRequire, module, module.exports);
-    return module.exports;
-  }
-  const { localePath, resolveContentLink, getPathLocale } = load(path.join(root, 'src/lib/localePath.ts'));
-  const { resolveMediaUrl } = load(path.join(root, 'src/lib/basePath.ts'));
-  const equal = (actual, expected) => { assert.equal(actual, expected); checks++; };
-  equal(localePath('/cv?download=1#resume', 'en'), '/en/cv?download=1#resume');
-  equal(localePath('/en/cv?download=1#resume', 'zh'), '/cv?download=1#resume');
-  equal(localePath('/en/', 'en'), '/en/');
-  equal(getPathLocale('/english'), 'zh');
-  equal(getPathLocale('/en/cv'), 'en');
-  equal(resolveContentLink('/cv', 'en'), `${base}/en/cv`);
-  equal(resolveContentLink(`${base}/en/cv?x=1#top`, 'en'), `${base}/en/cv?x=1#top`);
-  equal(resolveContentLink('/uploads/cv.pdf', 'en'), `${base}/uploads/cv.pdf`);
-  equal(resolveContentLink('/upload/cv.pdf', 'en'), `${base}/upload/cv.pdf`);
-  equal(resolveContentLink('#resume', 'en'), '#resume');
-  equal(resolveContentLink('?download=1', 'en'), '?download=1');
-  equal(resolveContentLink('/admin/pages', 'en'), `${base}/admin/pages`);
-  equal(resolveMediaUrl('/uploads/cv.pdf'), `${base}/uploads/cv.pdf`);
-  equal(resolveMediaUrl(`${base}/uploads/cv.pdf`), `${base}/uploads/cv.pdf`);
-  for (const url of ['https://example.org/x', 'http://example.org/x', '//cdn.example.org/x', 'data:image/png;base64,eA==', 'mailto:a@example.org']) {
-    equal(resolveMediaUrl(url), url);
-    equal(resolveContentLink(url, 'en'), url);
-  }
-  const appFile = path.join(root, 'src/App.tsx');
-  for (const [route, expected] of [
-    ['/', 'zh:home'], ['/cv', 'zh:cv'], ['/en', 'en:home'], ['/en/', 'en:home'],
-    ['/en/cv?x=1#resume', 'en:cv'], ['/missing/deep', 'zh:NOT_FOUND'], ['/en/missing/deep', 'en:NOT_FOUND'],
-  ]) {
-    entry = `${base}${route}`;
-    // App creates its data router at module evaluation, just as a fresh deep-link load does.
-    cache.delete(appFile);
-    const App = load(appFile).default;
-    try {
-      equal(renderToString(React.createElement(App)), `<span>${expected}</span>`);
-      equal(activeRouter.basename, base || '/');
-      const { pathname, search, hash } = activeRouter.state.location;
-      equal(`${pathname}${search}${hash}`, entry);
-    } finally {
-      activeRouter.dispose();
-    }
-  }
-}
-console.log(`Routing checks passed: ${checks}`);
+    console.log(`Routing checks passed: ${checks}`);
+  } finally { await browser.close(); }
+})().catch(error => {
+  const known = String(error.message).match(/RoutingAssertion\d+|MissingRoutingSource|UnsupportedRoutingDependency|PublicLocaleMustNotReadStorage/);
+  // This helper never loads credentials, API responses, or owner data.
+  const safeLine = String(error.message).split('\n')[0].slice(0, 200);
+  console.error(`routing-helper/${stage}: ${error.name || 'Error'} ${known ? known[0] : safeLine}`);
+  process.exitCode = 1;
+});

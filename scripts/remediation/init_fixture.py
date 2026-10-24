@@ -12,11 +12,18 @@ ROOT = Path(__file__).resolve().parents[2]
 RUNTIME = ROOT / '.remediation-runtime'
 
 
-def run_path(name):
+def backend_python():
+    candidate = ROOT / 'backend/.venv/bin/python'
+    return os.environ.get('REMEDIATION_PYTHON', str(candidate) if candidate.exists() else sys.executable)
+
+
+def run_path(name, parent=None):
     if not name or any(c not in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_' for c in name):
         raise ValueError('Run name must contain only letters, digits, - and _')
-    path = RUNTIME / name
-    if path.resolve().parent != RUNTIME.resolve() or path.is_symlink():
+    parent = Path(parent if parent is not None else os.environ.get('REMEDIATION_FIXTURE_ROOT', str(RUNTIME))).absolute()
+    path = parent / name
+    if (RUNTIME.is_symlink() or not parent.resolve().is_relative_to(RUNTIME.resolve())
+            or parent.resolve() != parent or path.is_symlink()):
         raise ValueError('Unsafe runtime path')
     return path
 
@@ -26,7 +33,7 @@ def environment(path):
     env.update(json.loads((path / 'secrets.json').read_text()))
     env.update(DATABASE_URL=f'sqlite:///{path / "fixture.db"}', UPLOAD_DIR=str(path / 'uploads'),
                PYTHONPATH=str(ROOT / 'backend'), JWT_ALGORITHM='HS256', JWT_EXPIRE_MINUTES='60',
-               CORS_ORIGINS='["http://127.0.0.1:15174"]', PYTHONDONTWRITEBYTECODE='1')
+               CORS_ORIGINS=json.dumps([os.environ.get('REMEDIATION_ORIGIN', 'http://127.0.0.1:15174')]), PYTHONDONTWRITEBYTECODE='1')
     return env
 
 
@@ -40,6 +47,7 @@ def png(path, width, height, color):
 def initialize(name):
     path = run_path(name)
     path.mkdir(parents=True, exist_ok=False, mode=0o700)
+    (path / '.synthetic-fixture').write_text('remediation-fixture-v1\n')
     (path / 'uploads').mkdir()
     (path / 'screenshots').mkdir()
     secret = path / 'secrets.json'

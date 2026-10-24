@@ -12,7 +12,9 @@ from sqlalchemy.orm import Session
 from app.content_schemas import DEFAULT_CONTENT_MAP, validate_content
 from app.deps import get_current_admin, get_db, get_optional_admin
 from app.models import Page, Section
-from app.sanitizer import check_html_safe
+from app.sanitizer import sanitize_html
+from app.file_references import writer_lock, validate_local_references
+from app.revisions import snapshot, revision, commit_edit
 from app.schemas import (
     SectionCreate,
     SectionReorderRequest,
@@ -32,6 +34,7 @@ def _section_to_response(section: Section) -> SectionResponse:
         else section.content
     )
     return SectionResponse(
+        revision=revision(snapshot(section)),
         id=section.id,
         page_id=section.page_id,
         title_zh=section.title_zh,
@@ -69,10 +72,7 @@ def _validate_and_sanitize(section_type: str, content: dict) -> dict:
         )
 
     if section_type == "rich_text":
-        body = validated.get("body", "")
-        is_safe, reason = check_html_safe(body)
-        if not is_safe:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=reason)
+        validated["body"] = sanitize_html(validated.get("body", ""))
 
     return validated
 
@@ -109,6 +109,7 @@ def create_section(
     _admin: bool = Depends(get_current_admin),
 ) -> SectionResponse:
     """新建区块（需鉴权）。"""
+    writer_lock(db)
     # 验证 page_id 存在
     page = db.query(Page).filter(Page.id == body.page_id).first()
     if not page:
@@ -119,6 +120,7 @@ def create_section(
 
     content = body.content or DEFAULT_CONTENT_MAP.get(body.type, {})
     validated_content = _validate_and_sanitize(body.type, content)
+    validate_local_references(validated_content)
 
     # sort_order 设为该页面内当前最大值 +1
     max_order = (
@@ -153,6 +155,7 @@ def reorder_sections(
     _admin: bool = Depends(get_current_admin),
 ) -> list[SectionResponse]:
     """批量更新区块排序（需鉴权）。接收完整的 id+sort_order 映射。"""
+    writer_lock(db)
     # 全部校验完成后才修改 ORM 对象，非法请求不得写入。
     if not body.orders:
         raise HTTPException(
@@ -213,11 +216,14 @@ def update_section(
     _admin: bool = Depends(get_current_admin),
 ) -> SectionResponse:
     """更新区块（需鉴权）。content 为全量替换。"""
+    writer_lock(db)
     section = db.query(Section).filter(Section.id == section_id).first()
     if not section:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="区块不存在")
 
+    original = snapshot(section)
     update_data = body.model_dump(exclude_unset=True)
+    expected = update_data.pop('expected_revision', None)
 
     # 拒绝 NOT NULL 字段传 null（防止 500 IntegrityError）
     if "title_zh" in update_data:
@@ -246,10 +252,10 @@ def update_section(
                 detail="content 不允许为 null",
             )
         validated_content = _validate_and_sanitize(section.type, update_data["content"])
+        validate_local_references(validated_content)
         section.content = json.dumps(validated_content, ensure_ascii=False)
 
-    db.commit()
-    db.refresh(section)
+    section = commit_edit(db, section, original, expected)
     return _section_to_response(section)
 
 
@@ -263,6 +269,7 @@ def delete_section(
     _admin: bool = Depends(get_current_admin),
 ) -> dict:
     """删除区块（需鉴权）。"""
+    writer_lock(db)
     section = db.query(Section).filter(Section.id == section_id).first()
     if not section:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="区块不存在")

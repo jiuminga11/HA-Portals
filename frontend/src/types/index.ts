@@ -1,5 +1,6 @@
 // ===== Page =====
 export interface Page {
+  revision?: string;
   id: number;
   slug: string;
   title_zh: string;
@@ -125,7 +126,7 @@ export interface CtaBandContent {
 }
 
 // ===== Discriminated union (9 types) =====
-export type Section =
+export type Section = { revision?: string } & (
   | { id: number; page_id: number; title_zh: string; title_en: string; type: "rich_text";       sort_order: number; visible: boolean; content: RichTextContent;       created_at: string | null; updated_at: string | null; }
   | { id: number; page_id: number; title_zh: string; title_en: string; type: "image_gallery";   sort_order: number; visible: boolean; content: ImageGalleryContent;   created_at: string | null; updated_at: string | null; }
   | { id: number; page_id: number; title_zh: string; title_en: string; type: "data_table";      sort_order: number; visible: boolean; content: DataTableContent;      created_at: string | null; updated_at: string | null; }
@@ -134,10 +135,11 @@ export type Section =
   | { id: number; page_id: number; title_zh: string; title_en: string; type: "metric_cards";    sort_order: number; visible: boolean; content: MetricCardsContent;    created_at: string | null; updated_at: string | null; }
   | { id: number; page_id: number; title_zh: string; title_en: string; type: "timeline";        sort_order: number; visible: boolean; content: TimelineContent;       created_at: string | null; updated_at: string | null; }
   | { id: number; page_id: number; title_zh: string; title_en: string; type: "profile_hero";    sort_order: number; visible: boolean; content: ProfileHeroContent;    created_at: string | null; updated_at: string | null; }
-  | { id: number; page_id: number; title_zh: string; title_en: string; type: "cta_band";       sort_order: number; visible: boolean; content: CtaBandContent;       created_at: string | null; updated_at: string | null; };
+  | { id: number; page_id: number; title_zh: string; title_en: string; type: "cta_band";       sort_order: number; visible: boolean; content: CtaBandContent;       created_at: string | null; updated_at: string | null; });
 
 // ===== SiteConfig =====
 export interface SiteConfig {
+  revision?: string;
   site_title: string;
   project_title: string;
   logo_url: string | null;

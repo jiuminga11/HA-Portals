@@ -1,7 +1,7 @@
 """Focused HTTP regressions, stdlib only; every run uses a fresh synthetic DB."""
 import json
+import os
 from pathlib import Path
-import socket
 import subprocess
 import sys
 import time
@@ -12,23 +12,34 @@ import uuid
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'scripts/remediation'))
-from init_fixture import run_path
+from init_fixture import backend_python, run_path
 
 
 class RemediationHTTPTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.name = 'regression-' + uuid.uuid4().hex[:12]
-        cls.runtime = run_path(cls.name)
-        subprocess.run([str(ROOT / 'backend/.venv/bin/python'), str(ROOT / 'scripts/remediation/init_fixture.py'), cls.name], check=True, stdout=subprocess.DEVNULL)
-        with socket.socket() as sock:
-            sock.bind(('127.0.0.1', 0))
-            port = sock.getsockname()[1]
-        cls.base = f'http://127.0.0.1:{port}/api'
-        cls.server = subprocess.Popen([sys.executable, str(ROOT / 'scripts/remediation/serve.py'), cls.name, '--port', str(port)])
+        cls.fixture_env = os.environ.copy()
+        if root := os.environ.get('REMEDIATION_TEST_ROOT'):
+            test_root = Path(root).absolute()
+            runtime_root = ROOT / '.remediation-runtime'
+            if (runtime_root.is_symlink() or test_root.resolve() != test_root
+                    or not test_root.is_relative_to(runtime_root) or test_root == runtime_root):
+                raise ValueError('Unsafe REMEDIATION_TEST_ROOT')
+            test_root.mkdir(parents=True, exist_ok=True, mode=0o700)
+            if test_root.stat().st_uid != os.getuid():
+                raise ValueError('Test root owner mismatch')
+            cls.fixture_env['REMEDIATION_FIXTURE_ROOT'] = str(test_root / 'backend')
+            cls.runtime = run_path(cls.name, cls.fixture_env['REMEDIATION_FIXTURE_ROOT'])
+        else:
+            cls.runtime = run_path(cls.name)
+        subprocess.run([backend_python(), str(ROOT / 'scripts/remediation/init_fixture.py'), cls.name], check=True, stdout=subprocess.DEVNULL, timeout=30, env=cls.fixture_env)
+        cls.server = subprocess.Popen([backend_python(), str(ROOT / 'scripts/remediation/serve.py'), cls.name, '--port', '0'], env=cls.fixture_env)
         cls.addClassCleanup(cls.stop_server)
         for _ in range(100):
             try:
+                ready = json.loads((cls.runtime / 'backend-ready.json').read_text())
+                cls.base = f'http://127.0.0.1:{ready["port"]}/api'
                 with urllib.request.urlopen(cls.base + '/health', timeout=1):
                     break
             except (OSError, urllib.error.URLError):
@@ -43,8 +54,13 @@ class RemediationHTTPTests(unittest.TestCase):
 
     @classmethod
     def stop_server(cls):
-        cls.server.terminate()
-        cls.server.wait(timeout=10)
+        if cls.server.poll() is None:
+            cls.server.terminate()
+            try:
+                cls.server.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                cls.server.kill()
+                cls.server.wait(timeout=5)
 
     def request(self, method, path, body=None, admin=True, expected=200):
         headers = {'Content-Type': 'application/json'}

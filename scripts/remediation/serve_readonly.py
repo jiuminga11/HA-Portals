@@ -9,6 +9,9 @@ import sys
 
 from init_fixture import ROOT, environment, run_path
 
+if os.environ.get('REMEDIATION_ALLOW_READONLY') != '1' or os.environ.get('REMEDIATION_RUN'):
+    raise SystemExit('Readonly requires explicit separate opt-in; never run in verification')
+
 runtime = run_path('baseline-v1')
 source = ROOT / 'backend/data/ha-portals.db'
 if not source.is_file():

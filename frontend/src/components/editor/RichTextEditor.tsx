@@ -3,6 +3,8 @@ import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 import type { RichTextContent } from "../../types";
 import { uploadFile } from "../../api/upload";
+import { sanitizeRichText } from "../../lib/security";
+import { resolveMediaUrl } from "../../lib/basePath";
 
 interface Props {
   content: RichTextContent;
@@ -25,7 +27,7 @@ export default function RichTextEditor({ content, onChange }: Props) {
         const quill = quillRef.current?.getEditor();
         if (quill) {
           const range = quill.getSelection(true);
-          quill.insertEmbed(range.index, "image", res.file_url);
+          quill.insertEmbed(range.index, "image", resolveMediaUrl(res.file_url), "user");
           quill.setSelection(range.index + 1, 0);
         }
       } catch {
@@ -52,15 +54,15 @@ export default function RichTextEditor({ content, onChange }: Props) {
     [imageHandler]
   );
 
-  const formats = ["header", "bold", "italic", "list", "bullet", "link", "image"];
+  const formats = ["header", "bold", "italic", "list", "link", "image"];
 
   return (
     <div className="rounded-lg overflow-hidden border border-slate-200">
       <ReactQuill
         ref={quillRef}
         theme="snow"
-        value={content.body}
-        onChange={(val) => onChange({ body: val })}
+        value={sanitizeRichText(content.body)}
+        onChange={(val, _delta, source) => { if (source === "user") onChange({ body: val }); }}
         modules={modules}
         formats={formats}
         placeholder="在此输入内容..."

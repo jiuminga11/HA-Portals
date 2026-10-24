@@ -6,7 +6,20 @@ import re
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, model_validator
+from app.revisions import snapshot, revision
+
+
+class RevisionResponse(BaseModel):
+    revision: str = ''
+
+    @model_validator(mode='before')
+    @classmethod
+    def include_revision(cls, value):
+        if hasattr(value, '__table__'):
+            values = snapshot(value)
+            return {**values, 'revision': revision(values)}
+        return value
 
 
 # ===== Auth =====
@@ -26,7 +39,7 @@ class LoginResponse(BaseModel):
 # ===== SiteConfig =====
 
 
-class SiteConfigResponse(BaseModel):
+class SiteConfigResponse(RevisionResponse):
     site_title: str
     project_title: str
     logo_url: str | None
@@ -58,6 +71,7 @@ class SiteConfigUpdate(BaseModel):
     - 字段传值 → 更新为新值
     """
 
+    expected_revision: str | None = None
     logo_url: str | None = None
     banner_url: str | None = None
     site_title: str | None = None
@@ -159,6 +173,7 @@ class PageCreate(BaseModel):
 
 
 class PageUpdate(BaseModel):
+    expected_revision: str | None = None
     slug: str | None = None
     title_zh: str | None = None
     title_en: str | None = None
@@ -191,7 +206,7 @@ class PageUpdate(BaseModel):
         return v
 
 
-class PageResponse(BaseModel):
+class PageResponse(RevisionResponse):
     id: int
     slug: str
     title_zh: str
@@ -236,6 +251,7 @@ class SectionCreate(BaseModel):
 
 
 class SectionUpdate(BaseModel):
+    expected_revision: str | None = None
     title_zh: str | None = None
     title_en: str | None = None
     visible: bool | None = None
@@ -252,7 +268,7 @@ class SectionUpdate(BaseModel):
         return v
 
 
-class SectionResponse(BaseModel):
+class SectionResponse(RevisionResponse):
     id: int
     page_id: int
     title_zh: str

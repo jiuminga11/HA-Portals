@@ -1,0 +1,52 @@
+name: Isolated verification
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: verification-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.22.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12.13'
+      - name: Install existing application and pinned test dependencies
+        run: |
+          python -m venv backend/.venv
+          backend/.venv/bin/python -m pip install -r backend/requirements.txt Pillow==11.3.0
+          npm ci --prefix frontend
+          npm install --prefix scripts/remediation/tools --no-save --package-lock=false playwright@1.58.2
+          scripts/remediation/tools/node_modules/.bin/playwright install --with-deps chromium
+      - name: Supervisor unit tests
+        run: PYTHONDONTWRITEBYTECODE=1 python -m unittest discover -s scripts/remediation/tests -v
+      - name: Full isolated acceptance
+        env:
+          REMEDIATION_PYTHON: ${{ github.workspace }}/backend/.venv/bin/python
+          REMEDIATION_IMAGE_PYTHON: ${{ github.workspace }}/backend/.venv/bin/python
+        run: |
+          export PLAYWRIGHT_EXECUTABLE_PATH="$(node -e 'process.stdout.write(require("./scripts/remediation/tools/node_modules/playwright").chromium.executablePath())')"
+          python scripts/remediation/verify.py --profile full
+      - name: Upload only sanitized reports and approved synthetic screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: isolated-verification
+          path: .remediation-runtime/reports/verify-*/
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 7

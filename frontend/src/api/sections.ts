@@ -16,6 +16,7 @@ export interface SectionCreatePayload {
 }
 
 export interface SectionUpdatePayload {
+  expected_revision?: string;
   title_zh?: string;
   title_en?: string;
   visible?: boolean;

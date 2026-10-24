@@ -1,0 +1,4 @@
+{
+  "invalidImage": "This image address is unavailable. You can still read its description, change images or close the preview.",
+  "gallery": "Image preview", "openImage": "Open image preview", "closeImage": "Close image preview", "previousImage": "Previous image", "nextImage": "Next image", "loadingImage": "Loading image…", "imageFailed": "The image could not be loaded. Retry, or open the original in a new tab.", "retryImage": "Retry image", "openOriginal": "Open original image in a new tab", "caption": "Image description", "page": "Page {page}", "position": "Image {current} of {total}", "navigation": "Site navigation", "closeMenu": "Close navigation menu", "confirmTitle": "Confirm action", "confirm": "Confirm", "cancel": "Cancel"
+}

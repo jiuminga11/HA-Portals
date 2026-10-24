@@ -6,6 +6,9 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
+from app.revisions import snapshot, revision, commit_edit
+from app.file_references import writer_lock
 
 from app.deps import get_current_admin, get_db
 from app.models import Page, Section
@@ -85,6 +88,7 @@ def get_page_sections(
         content = json.loads(s.content) if isinstance(s.content, str) else s.content
         results.append(
             SectionResponse(
+                revision=revision(snapshot(s)),
                 id=s.id,
                 page_id=s.page_id,
                 title_zh=s.title_zh,
@@ -124,6 +128,7 @@ def create_page(
     _admin: bool = Depends(get_current_admin),
 ) -> PageResponse:
     """新建页面（需鉴权）。"""
+    writer_lock(db)
     if body.slug == "home" and not body.visible:
         raise HTTPException(status_code=400, detail="首页不可隐藏")
     # 检查 slug 唯一性
@@ -148,9 +153,13 @@ def create_page(
         sort_order=next_order,
     )
     db.add(page)
-    db.flush()
-    _normalize_page_sort_order(db)
-    db.commit()
+    try:
+        db.flush()
+        _normalize_page_sort_order(db)
+        db.commit()
+    except IntegrityError as exc:
+        db.rollback()
+        raise HTTPException(status_code=409, detail='slug 已存在') from exc
     db.refresh(page)
     return PageResponse.model_validate(page)
 
@@ -162,6 +171,7 @@ def reorder_pages(
     _admin: bool = Depends(get_current_admin),
 ) -> list[PageResponse]:
     """批量更新页面排序（需鉴权）。接收完整的 id+sort_order 映射。"""
+    writer_lock(db)
     # 校验：检查重复 ID
     ids = [item.id for item in body.orders]
     if len(ids) != len(set(ids)):
@@ -204,6 +214,7 @@ def update_page(
     _admin: bool = Depends(get_current_admin),
 ) -> PageResponse:
     """更新页面（需鉴权）。"""
+    writer_lock(db)
     page = db.query(Page).filter(Page.id == page_id).first()
     if not page:
         raise HTTPException(
@@ -211,7 +222,9 @@ def update_page(
             detail="页面不存在",
         )
 
+    original = snapshot(page)
     update_data = body.model_dump(exclude_unset=True)
+    expected = update_data.pop('expected_revision', None)
     if (
         page.slug != "home"
         and update_data.get("slug") == "home"
@@ -268,8 +281,7 @@ def update_page(
             )
         page.visible = update_data["visible"]
 
-    db.commit()
-    db.refresh(page)
+    page = commit_edit(db, page, original, expected)
     return PageResponse.model_validate(page)
 
 
@@ -283,6 +295,7 @@ def delete_page(
     _admin: bool = Depends(get_current_admin),
 ) -> dict:
     """删除页面及其所有 sections（需鉴权）。"""
+    writer_lock(db)
     page = db.query(Page).filter(Page.id == page_id).first()
     if not page:
         raise HTTPException(

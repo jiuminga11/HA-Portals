@@ -1,5 +1,6 @@
 """Production /ha/ preview, intentionally no root /uploads or /api aliases."""
 import argparse
+import json
 import http.client
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import os
@@ -13,6 +14,8 @@ parser.add_argument('--port', type=int, default=15174)
 parser.add_argument('--api-port', type=int, default=18002)
 parser.add_argument('--dist', type=Path, help='Existing production dist directory inside .remediation-runtime')
 args = parser.parse_args()
+if args.port in (8002, 5174) or args.api_port in (8002, 5174):
+    raise SystemExit('Refusing normal development ports')
 run = run_path(args.name)
 dist = (args.dist if args.dist is not None else run / 'dist').resolve()
 if not dist.is_relative_to(RUNTIME.resolve()):
@@ -80,4 +83,9 @@ prefix = 'preview' if args.port == 15174 else f'preview-{args.port}'
 with (run / f'{prefix}.log').open('a') as log:
     os.dup2(log.fileno(), 1)
     os.dup2(log.fileno(), 2)
-    ThreadingHTTPServer(('127.0.0.1', args.port), Handler).serve_forever()
+    server = ThreadingHTTPServer(('127.0.0.1', args.port), Handler)
+    ready = run / 'preview-ready.json'
+    temporary = ready.with_suffix('.tmp')
+    temporary.write_text(json.dumps({'port': server.server_port, 'pid': os.getpid()}))
+    temporary.replace(ready)
+    server.serve_forever()

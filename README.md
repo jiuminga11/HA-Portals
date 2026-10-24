@@ -137,20 +137,15 @@ npm run preview   # 预览生产构建
 
 ## 部署
 
-部署入口：
+部署工具默认只读检查，不会安装依赖、初始化数据库或修改服务：
 
 ```bash
 bash deploy/deploy.sh
 ```
 
-部署脚本会执行以下操作：
+实际发布必须另行授权并显式传入 `--apply`，使用预先核验的 operator 和独立候选目录。工具不执行 seed，不安装或修改系统服务；在停写确认后备份 SQLite 与上传文件，保留旧代码、前端产物和依赖，并检查 HTTP 及健康 JSON。默认代码回滚不恢复数据库；恢复数据有独立的数据丢失确认门槛。
 
-1. 创建/复用后端虚拟环境并安装依赖。
-2. 确保 `backend/data` 和 `backend/uploads` 目录存在。
-3. 检查 `backend/.env` 是否存在，并阻止使用默认密码或默认 JWT 密钥部署。
-4. 执行前端生产构建。
-5. 安装并重启 `ha-portals` systemd 服务。
-6. 安装 Nginx snippet，并提示或执行 Nginx reload。
+完整前置条件、命令、沙箱覆盖与回滚限制见 [deploy/README.md](deploy/README.md)。本轮仅做项目内沙箱验证，不等于已通过生产部署验收。
 
 生产环境路径：
 
@@ -163,6 +158,17 @@ API 入口: /ha/api/
 ```
 
 > `deploy/nginx.conf` 是 location snippet，需要被已有 Nginx server 块 include，不能直接作为完整 server 配置使用。
+
+## 一键隔离验收
+
+```bash
+python3 scripts/remediation/verify.py                 # 核心业务验收
+python3 scripts/remediation/verify.py --profile full  # 完整浏览器、安全、无障碍与部署沙箱
+```
+
+从零生成隔离数据库、上传目录和测试凭据，使用动态端口及外置生产构建，不读取真实运行数据，也不占用正常的 5174/8002 服务。默认结束后清理自身进程与敏感测试目录，只保留经过白名单筛选的报告和合成截图。
+
+环境、覆盖范围、排障与报告路径见 [VERIFICATION.md](VERIFICATION.md)。GitHub Actions 在 `dev/main` 推送、PR 和手动触发时运行同一入口；不使用生产或部署密钥。
 
 ## 内容管理模型
 

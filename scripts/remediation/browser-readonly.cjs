@@ -1,12 +1,13 @@
 // Existing content acceptance: GET-only read-only server; no screenshots or text export.
 const fs = require('node:fs');
 const path = require('node:path');
-const { chromium } = require('playwright');
+const { chromium, EXECUTABLE } = require('./browser-env.cjs');
+if (process.env.REMEDIATION_ALLOW_READONLY !== '1' || process.env.REMEDIATION_RUN) throw new Error('ReadonlyRequiresExplicitSeparateOptIn');
 const root = path.resolve(__dirname, '../..');
 const report = { boundary: 'SQLite mode=ro, lifespan off, GET-only API; no owner content or screenshots exported', matrix: [] };
 let browser;
 (async () => {
-  browser = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
+  browser = await chromium.launch({ executablePath: EXECUTABLE, args: ['--no-sandbox'] });
   const page = await browser.newPage({ viewport: { width: 390, height: 900 }, reducedMotion: 'reduce' });
   await page.route('**/*', route => {
     const request = route.request();

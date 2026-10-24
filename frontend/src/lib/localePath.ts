@@ -1,5 +1,6 @@
 import type { Locale } from "../hooks/LocaleContext";
 import { basePath, resolveMediaUrl, stripBasePath } from "./basePath";
+import { safeContentUrl } from "./safeUrl";
 
 const external = /^(?:[a-z][a-z\d+.-]*:|\/\/)/i;
 
@@ -21,6 +22,7 @@ export function localePath(path: string, locale: Locale): string {
 
 /** For content <a href>: localize pages, not files; apply basename exactly once. */
 export function resolveContentLink(url: string, locale: Locale): string {
+  url = safeContentUrl(url) || "#";
   if (!url || external.test(url) || /^[#?]/.test(url)) return url;
   const path = stripBasePath(url.startsWith("/") ? url : `/${url}`);
   const pathname = path.split(/[?#]/, 1)[0];

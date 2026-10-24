@@ -1,0 +1,4 @@
+{
+  "invalidImage": "图片地址不可用，无法加载或打开原图。你仍可查看说明、切换图片或关闭预览。",
+  "gallery": "图片预览", "openImage": "打开图片预览", "closeImage": "关闭图片预览", "previousImage": "上一张图片", "nextImage": "下一张图片", "loadingImage": "图片加载中…", "imageFailed": "图片未能加载。你可以重试，或在新标签页查看原图。", "retryImage": "重试加载图片", "openOriginal": "在新标签页查看原图", "caption": "图片说明", "page": "第 {page} 页", "position": "第 {current} 张，共 {total} 张", "navigation": "站点导航", "closeMenu": "关闭导航菜单", "confirmTitle": "确认操作", "confirm": "确认", "cancel": "取消"
+}

@@ -1,11 +1,12 @@
 """HTTP production-path smoke, not a substitute for browser acceptance."""
 import json
+import os
 import struct
 import urllib.error
 import urllib.request
 import zlib
 
-BASE = 'http://127.0.0.1:15174'
+BASE = os.environ.get('REMEDIATION_ORIGIN', 'http://127.0.0.1:15174')
 
 
 def get(path):

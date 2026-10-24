@@ -1,5 +1,9 @@
 # 隔离整改验证
 
+新的可重复验收入口：`python3 scripts/remediation/verify.py`（core），或加 `--profile full`。
+详细环境接口、动态端口、安全清理、CI artifact 白名单见根目录 `VERIFICATION.md`。
+下文保留的是手工/历史 baseline 操作说明，不是新 runner 的默认数据源。
+
 默认合成验证不读取 seed、私有 DB/uploads 或 backend/.env。每个 run 从零合成；已有目录拒绝覆盖。末尾的可选只读验收是单独入口，不参与写入测试。
 密码/JWT 在 run 内 0600 `secrets.json`，不要打印或提交。运行目录必须保持 git ignored。
 根 AGENTS 与 REMEDIATION_HANDOFF 已读；backend/AGENTS.md 不存在，遵循 backend/app/AGENTS.md。

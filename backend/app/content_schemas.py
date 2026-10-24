@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
+from app.sanitizer import safe_url
 
 
 # ===== rich_text =====
@@ -21,6 +22,11 @@ class RichTextContent(BaseModel):
 class ImageGalleryItem(BaseModel):
     url: str
     caption: str | None = None
+
+    @field_validator('url')
+    @classmethod
+    def validate_url(cls, value: str) -> str:
+        return safe_url(value, media=True)
 
 
 class ImageGalleryContent(BaseModel):
@@ -78,6 +84,11 @@ class ExternalLinkItem(BaseModel):
     date: str | None = None
     source: str | None = None
 
+    @field_validator('url')
+    @classmethod
+    def validate_url(cls, value: str) -> str:
+        return safe_url(value)
+
 
 class ExternalLinksContent(BaseModel):
     items: list[ExternalLinkItem] = []
@@ -90,6 +101,11 @@ class VideoItem(BaseModel):
     title: str
     url: str
     poster: str | None = None
+
+    @field_validator('url', 'poster')
+    @classmethod
+    def validate_url(cls, value: str | None) -> str | None:
+        return safe_url(value, media=True) if value is not None else None
 
 
 class VideoContent(BaseModel):
@@ -154,10 +170,20 @@ class SocialLink(BaseModel):
     url: str
     label: str = ""
 
+    @field_validator('url')
+    @classmethod
+    def validate_url(cls, value: str) -> str:
+        return safe_url(value)
+
 class CTAButton(BaseModel):
     label_zh: str
     label_en: str = ""
     url: str
+
+    @field_validator('url')
+    @classmethod
+    def validate_url(cls, value: str) -> str:
+        return safe_url(value)
 
 
 class ProfileHeroContent(BaseModel):
@@ -173,6 +199,11 @@ class ProfileHeroContent(BaseModel):
     tags: list[str] = []        # ["AI+Education", "AI+Psychology", ...]
     social_links: list[SocialLink] = []
     cta_buttons: list[CTAButton] = []
+
+    @field_validator('avatar_url')
+    @classmethod
+    def validate_url(cls, value: str) -> str:
+        return safe_url(value, media=True)
 
 
 # ===== cta_band =====
