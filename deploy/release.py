@@ -1,19 +1,27 @@
 #!/usr/bin/env python3
 """Fail-closed project releases. No application imports or system configuration writes."""
+import os
+import sys
+
+# Direct execution otherwise puts deploy/ before the standard library. Its
+# operator.py is an executable adapter, not Python's stdlib operator module.
+# CPython 3.12 imports operator while loading argparse/re/enum at startup.
+if __name__ == '__main__':
+    script_directory = os.path.dirname(os.path.realpath(__file__))
+    sys.path[:] = [entry for entry in sys.path if os.path.realpath(entry) != script_directory]
+
 import argparse
 from contextlib import contextmanager
 import fcntl
 import hashlib
 import json
 import math
-import os
 from pathlib import Path
 import re
 import shutil
 import signal
 import sqlite3
 import subprocess
-import sys
 import uuid
 
 

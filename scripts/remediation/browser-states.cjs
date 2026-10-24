@@ -211,23 +211,79 @@ async function main() {
       assert.equal(await page.title(), h.pages.find(p => p.slug === 'cv').title_zh);
     });
     await h.check('hidden-page-no-stale-content', async () => {
+      const hidden = h.pages.find(row => row.slug === 'test-hidden');
+      assert.equal(hidden.visible, false);
+      await h.remember(`/admin/pages/${hidden.id}`, { visible: hidden.visible });
+      // Model a real stale navigation menu: load a genuine React Router Link,
+      // then unpublish its target on the server before the user clicks it.
+      await h.api('PUT', `/admin/pages/${hidden.id}`, { visible: true });
       await page.goto(routePath('research')); await ready();
-      // Router navigation without reloading the document, with a paint-frame monitor.
-      await page.evaluate(() => {
-        window.__staleFrames = 0;
-        window.__watchHidden = true;
-        const frame = () => {
-          if (!window.__watchHidden) return;
-          if (location.pathname.endsWith('/test-hidden') && document.querySelector('main [id^="section-"]')) window.__staleFrames++;
-          requestAnimationFrame(frame);
+      const link = page.locator(`header.fixed a[href="${new URL(routePath('test-hidden')).pathname}"]`).first();
+      await link.waitFor();
+      await h.api('PUT', `/admin/pages/${hidden.id}`, { visible: false });
+      assert(await page.locator('main [id^="section-"]').count() > 0);
+      for (const suffix of ['', '/sections']) {
+        const response = await h.context.request.get(BASE + '/api/pages/test-hidden' + suffix);
+        assert.equal(response.status(), 404);
+      }
+      const match = url => /^\/ha\/api\/pages\/test-hidden(?:\/sections)?$/.test(url.pathname);
+      let release;
+      const gate = new Promise(resolve => { release = resolve; });
+      await page.route(match, async route => { await gate; await route.continue(); });
+      await page.evaluate(({ hiddenId, loadingTitle, hiddenTitle }) => {
+        const main = document.querySelector('main');
+        const evidence = window.__hiddenNavigation = {
+          committed: false, samples: 0, preCommitOldFrames: 0,
+          staleAfterCommit: 0, hiddenContent: 0,
         };
-        requestAnimationFrame(frame);
-        history.pushState({}, '', '/ha/test-hidden');
-        dispatchEvent(new PopStateEvent('popstate'));
-      });
+        const sample = () => {
+          // PublicPage's layout effect updates the title in the route commit.
+          // URL updates alone are NOT a React commit (RouterProvider transitions).
+          if (location.pathname.endsWith('/test-hidden') && document.title === loadingTitle) evidence.committed = true;
+          const sections = main.querySelectorAll('[id^="section-"]').length;
+          if (evidence.committed && sections) evidence.staleAfterCommit++;
+          if (main.querySelector(`#section-${hiddenId}`) || main.textContent.includes(hiddenTitle)
+              || main.textContent.includes('测试内容 test-hidden：')) evidence.hiddenContent++;
+          evidence.samples++;
+        };
+        const observer = new MutationObserver(sample);
+        observer.observe(main, { childList: true, subtree: true, characterData: true });
+        observer.observe(document.head, { childList: true, subtree: true, characterData: true });
+        let frameId;
+        const frame = () => {
+          sample();
+          if (!evidence.committed && location.pathname.endsWith('/test-hidden') && main.querySelector('[id^="section-"]')) evidence.preCommitOldFrames++;
+          frameId = requestAnimationFrame(frame);
+        };
+        frameId = requestAnimationFrame(frame);
+        window.__stopHiddenNavigation = () => { sample(); observer.disconnect(); cancelAnimationFrame(frameId); return evidence; };
+      }, { hiddenId: h.manifest.sections['test-hidden-body'], loadingTitle: zh.common.loading, hiddenTitle: hidden.title_zh });
+      try {
+        await link.click();
+        await page.locator('main [role="status"]').getByText(zh.common.loading, { exact: true }).waitFor();
+        assert.equal(new URL(page.url()).pathname, new URL(routePath('test-hidden')).pathname);
+        assert.equal(await page.locator('main [id^="section-"]').count(), 0);
+        // Hold real API responses across paints; do not depend on network speed.
+        await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        release();
+        await page.getByRole('heading', { name: zh.publicPage.notFoundTitle, exact: true }).waitFor();
+        assert.equal(await page.locator('main [id^="section-"]').count(), 0);
+      } finally {
+        release();
+        const evidence = await page.evaluate(() => window.__stopHiddenNavigation());
+        h.results.hiddenNavigation = evidence;
+        await page.unroute(match);
+      }
+      assert.equal(h.results.hiddenNavigation.committed, true, 'Must observe the SPA route commit without document reload');
+      assert.equal(h.results.hiddenNavigation.hiddenContent, 0, 'Hidden content must never enter the DOM');
+      assert.equal(h.results.hiddenNavigation.staleAfterCommit, 0, 'No previous sections after the new route commits');
+      // Direct URL entry must also deny access, and a fresh menu must omit it.
+      await page.goto(routePath('test-hidden'));
       await page.getByRole('heading', { name: zh.publicPage.notFoundTitle, exact: true }).waitFor();
+      await page.locator(`header.fixed a[href="${new URL(routePath('research')).pathname}"]`).first().waitFor();
       assert.equal(await page.locator('main [id^="section-"]').count(), 0);
-      assert.equal(await page.evaluate(() => { window.__watchHidden = false; return window.__staleFrames; }), 0);
+      assert.equal(await page.locator('main').getByText(hidden.title_zh, { exact: true }).count(), 0);
+      assert.equal(await page.locator(`header.fixed a[href="${new URL(routePath('test-hidden')).pathname}"]`).count(), 0);
     });
   } catch (e) { failure = e; }
   finally { await h.finish(failure); }

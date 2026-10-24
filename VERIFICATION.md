@@ -163,3 +163,13 @@ unit 覆盖所有权/symlink拒删、环境过滤、进程组范围、失败返�
 - 报告：`.remediation-runtime/reports/verify-03a6e5e65ee64980a66992a5a2b98e2f/report.json`。进程、主运行目录和浏览器短目录三项 cleanup 均 passed。
 - 整合期间已修复 backend 测试 spawn 重入、Chrome 长 socket 路径、Tailwind cwd 配置发现问题；非法 OG 写入测试已调整为验证新 API 的400拒绝及旧数据展示容错，而不是放宽业务断言。
 - 随后仅增加长说明键盘 End 触底断言并定向通过，无应用变更。范围、性能实测值及剩余限制见根目录 `HARDENING_REPORT.md`；远端 GitHub Actions 仍未触发。
+
+### 首次远端运行后的兼容性修正
+
+- GitHub run `40044355161` 在 `npm ci` 阶段失败：锁文件缺少跨平台可选依赖。提交 `8627683` 仅新增29个缺失记录，没有更改已有包条目或版本；干净目录中的安装、lint、TypeScript和生产构建通过。
+- run `40046699498` 的安装、监督器检查、构建和后端测试通过，但部署沙箱退出1。其原artifact只有阶段退出码，不能据此直接断定具体失败用例。
+- 使用独立 Python 3.12.13，并让 shell/shebang 与测试使用同一解释器后，确证 `deploy/operator.py` 遮蔽标准库同名模块，导致 CLI 启动循环导入。两个可执行入口现排除自身脚本目录；不改变部署权限或服务协议。新增启动与安全诊断回归，Python 3.12及3.10的34项沙箱检查通过。
+- 部署测试改由 `deploy_suite.py` 收集计数、固定测试ID和受限错误类型；完整入口在失败时也保留该摘要，不公开原始 traceback、断言正文、subtest参数或秘密。
+- 本地整合报告 `reports/verify-58f9c17591064892b902fcdbaed20223/report.json` 已确认部署34项通过，但后续 `hidden-page-no-stale-content` 浏览器断言失败。定向复现发现旧断言以 URL 更新作为 React 提交边界，混淆了提交前仍显示的公开旧内容；原失败现场已清理，不能追认其具体帧。测试现使用真实 Header Link，先加载菜单再于隔离 API 隐藏目标，延迟真实响应并检查 React 提交后无旧区块、隐藏内容始终不存在、匿名 API 与直接访问404。两次定向运行通过，未修改应用代码或跳过断言。**此记录不代表新一轮远端 CI 已通过。**
+- 公开页交互测试另补有时限的 `html.lang`/菜单展开状态等待和图片解码等待；不再把 URL 先更新当成 React DOM 已同步。矩阵成功检查改为固定名称，以便安全报告白名单保留。
+- 修正后的完整入口最终退出 **0**，所有阶段通过，部署34项零失败/错误/跳过；本地证据：`.remediation-runtime/reports/verify-9958b4d2fba244b2bc13b4f13bddd50d/report.json`，日志 `.remediation-runtime/ci-40046699498/full-integration-stable.log`。后续推送触发的远端结果仍需单独核对。

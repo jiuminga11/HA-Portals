@@ -1,10 +1,18 @@
 #!/usr/bin/env python3
 """Optional real operator adapter. Requires manually reviewed prepared.json; never sudo."""
+import os
+import sys
+
+# This executable must not shadow the standard-library operator module while
+# json/re/enum are being imported (notably on CPython 3.12).
+if __name__ == '__main__':
+    script_directory = os.path.dirname(os.path.realpath(__file__))
+    sys.path[:] = [entry for entry in sys.path if os.path.realpath(entry) != script_directory]
+
 import hashlib
 import json
 from pathlib import Path
 import subprocess
-import sys
 import time
 import urllib.request
 

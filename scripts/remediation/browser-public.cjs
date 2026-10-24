@@ -54,7 +54,7 @@ async function stableShot(page, file) {
       results.matrix.push({ locale, slug, theme, width, ...state });
     }
   }
-   results.checks.push(`${results.matrix.length} stable pages; URL overrides conflicting stored locale; one h1; no document overflow or hidden content`);
+   results.checks.push('Stable public matrix; URL overrides conflicting stored locale; one h1; no document overflow or hidden content');
   } else {
     const previous = JSON.parse(fs.readFileSync(path.join(runtime, `${pass}-browser.json`)));
     assert.equal(previous.matrix.length, 72);
@@ -65,17 +65,21 @@ async function stableShot(page, file) {
   await page.locator('main h1').waitFor();
   await page.reload();
   await page.locator('main h1').waitFor();
+  await page.waitForFunction(() => document.documentElement.lang === 'en');
   assert.equal(await page.locator('html').getAttribute('lang'), 'en');
   await page.getByRole('button', { name: '中', exact: true }).click();
   await page.waitForURL(`${origin}/ha/research?from=test#section-test`);
+  await page.waitForFunction(() => document.documentElement.lang === 'zh-CN');
   assert.equal(await page.locator('html').getAttribute('lang'), 'zh-CN');
   await page.getByRole('button', { name: 'EN', exact: true }).click();
   await page.waitForURL(`${origin}/ha/en/research?from=test#section-test`);
+  await page.waitForFunction(() => document.documentElement.lang === 'en');
   results.checks.push('Deep link reload and language switching retain page, query and hash');
   await page.goto(`${origin}/ha/en/`);
   await page.locator('main h1').waitFor();
   const avatar = page.locator('main img').first();
   await avatar.waitFor();
+  await avatar.evaluate(img => img.decode());
   assert((await avatar.getAttribute('src')).startsWith('/ha/uploads/'));
   assert(await avatar.evaluate(img => img.complete && img.naturalWidth > 0));
   assert.equal(await avatar.evaluate(img => getComputedStyle(img).objectPosition), '35% 25%');
@@ -100,13 +104,17 @@ async function stableShot(page, file) {
   const mobile = await touch.newPage();
   await mobile.goto(`${origin}/ha/en/`); await mobile.locator('main h1').waitFor();
   const menu = mobile.locator('button[aria-controls="mobile-navigation"]');
-  await menu.tap(); assert.equal(await menu.getAttribute('aria-expanded'), 'true');
+  const waitMenu = expanded => mobile.waitForFunction(value =>
+    document.querySelector('button[aria-controls="mobile-navigation"]')?.getAttribute('aria-expanded') === value, expanded);
+  await menu.tap(); await waitMenu('true'); assert.equal(await menu.getAttribute('aria-expanded'), 'true');
   await mobile.locator('#mobile-navigation a[href="/ha/en/research"]').tap();
   await mobile.waitForURL(`${origin}/ha/en/research`);
+  await waitMenu('false');
   assert.equal(await menu.getAttribute('aria-expanded'), 'false');
   await menu.focus(); await mobile.keyboard.press('Enter');
+  await waitMenu('true');
   assert.equal(await menu.getAttribute('aria-expanded'), 'true');
-  await mobile.keyboard.press('Escape'); assert.equal(await menu.getAttribute('aria-expanded'), 'false');
+  await mobile.keyboard.press('Escape'); await waitMenu('false'); assert.equal(await menu.getAttribute('aria-expanded'), 'false');
   await touch.close();
   results.checks.push('Touch menu navigation and keyboard Enter/Escape maintain expanded state');
   assert.deepEqual(exceptions, []);

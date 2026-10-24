@@ -5,6 +5,7 @@ import io
 import json
 import os
 import signal
+import shlex
 from pathlib import Path
 import sqlite3
 import subprocess
@@ -76,7 +77,17 @@ class ReleaseTests(unittest.TestCase):
         self.adapter.chmod(0o700)
         self.argv = ['--root', str(self.root), '--apply', '--adapter', str(self.adapter),
                      '--source', str(self.root / 'candidate')]
-        self.environment = patch.dict(os.environ, {'PYTHONDONTWRITEBYTECODE': '1'})
+        # Shell wrappers/stub shebangs must use the interpreter running this suite,
+        # not a different system python3 that can hide version-specific failures.
+        interpreter = self.root / 'test-interpreter'
+        interpreter.mkdir()
+        launcher = interpreter / 'python3'
+        launcher.write_text('#!/bin/sh\nexec ' + shlex.quote(sys.executable) + ' "$@"\n')
+        launcher.chmod(0o700)
+        self.environment = patch.dict(os.environ, {
+            'PYTHONDONTWRITEBYTECODE': '1',
+            'PATH': str(interpreter) + os.pathsep + os.environ['PATH'],
+        })
         self.environment.start()
 
     def tearDown(self):
@@ -129,6 +140,44 @@ class ReleaseTests(unittest.TestCase):
                                 capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(before, release.inventory(self.root))
+
+    def test_operator_direct_startup_uses_stdlib_operator(self):
+        operator = PROJECT / 'deploy/operator.py'
+        # No args must reach the adapter's controlled error handler, not fail
+        # importing stdlib modules with a circular-import traceback.
+        rejected = subprocess.run([sys.executable, '-B', str(operator)],
+                                  capture_output=True, text=True)
+        self.assertEqual(rejected.returncode, 1)
+        self.assertEqual(rejected.stdout + rejected.stderr, '')
+
+        tools = self.root / 'operator-command-stubs'
+        tools.mkdir()
+        nginx = ('# configuration file sandbox.conf:\nlocation /ha/api/ {}\n'
+                 f'alias {self.root}/frontend/dist/;\nalias {self.root}/backend/uploads/;\n')
+        service = (f'WorkingDirectory={self.root}/backend\n'
+                   f'EnvironmentFiles={self.root}/backend/.env\n'
+                   f'ExecStart={self.root}/backend/venv/bin/uvicorn\n')
+        for name, value in (('nginx', nginx), ('systemctl', service)):
+            stub = tools / name
+            stub.write_text('#!/usr/bin/env python3\nimport pathlib\n'
+                            f'with pathlib.Path({str(self.root / "operator-stub-calls")!r}).open("a") as log: log.write({name!r}+"\\n")\n'
+                            f'print({value!r},end="")\n')
+            stub.chmod(0o700)
+        (self.root / 'deploy').mkdir()
+        (self.root / 'deploy/prepared.json').write_text(json.dumps({
+            'nginx_sha256': release.hashlib.sha256(nginx.encode()).hexdigest(),
+            'service_sha256': release.hashlib.sha256(service.encode()).hexdigest(),
+            'env_sha256': release.digest(self.root / 'backend/.env'),
+            'root': str(self.root), 'reviewed_environment_file_only': True,
+            'reviewed_exclusive_writer': True, 'reviewed_effective_locations': True,
+        }))
+        environment = dict(os.environ, PATH=str(tools) + os.pathsep + os.environ['PATH'])
+        result = subprocess.run([str(operator), 'verify', str(self.root)], env=environment,
+                                capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout), dict.fromkeys(
+            ('service_config', 'nginx_include', 'aliases', 'environment', 'exclusive_writer'), True))
+        self.assertEqual((self.root / 'operator-stub-calls').read_text().splitlines(), ['nginx', 'systemctl'])
 
     def test_cli_with_build_and_install_command_stubs(self):
         tools = self.root / 'tools'
@@ -375,6 +424,39 @@ fail = root / 'fail' '''.rstrip())
         self.assertEqual(before, {sig: signal.getsignal(sig) for sig in release.CANCEL_SIGNALS})
         self.assertEqual(self.invoke(), 0)
         self.assertEqual(before, {sig: signal.getsignal(sig) for sig in release.CANCEL_SIGNALS})
+
+    def test_safe_suite_diagnostics_excludes_payloads(self):
+        spec = importlib.util.spec_from_file_location('deploy_suite', PROJECT / 'scripts/remediation/deploy_suite.py')
+        wrapper = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(wrapper)
+        payload = 'PRIVATE_PAYLOAD_MUST_NOT_BE_REPORTED'
+
+        class PayloadCases(unittest.TestCase):
+            def test_failure(case):
+                with case.subTest(secret=payload):
+                    case.fail(payload)
+
+            def test_error(case):
+                raise type(payload, (Exception,), {})(payload)
+
+            def test_skip(case):
+                case.skipTest(payload)
+
+        path = self.root / 'safe-summary.json'
+        result = wrapper.SafeResult(set(), path)
+        unittest.defaultTestLoader.loadTestsFromTestCase(PayloadCases).run(result)
+        summary = wrapper.read_summary(path)
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            wrapper.print_summary(summary)
+        self.assertNotIn(payload, path.read_text() + output.getvalue())
+        self.assertEqual((summary['tests'], summary['failures'], summary['errors'], summary['skipped']), (3, 1, 1, 1))
+        self.assertEqual({item['type'] for item in summary['issues']}, {'AssertionError', 'Exception', 'Skipped'})
+        self.assertFalse(result.wasSuccessful())
+        summary['issues'][0]['test'] = payload
+        path.write_text(json.dumps(summary))
+        with self.assertRaises(ValueError):
+            wrapper.read_summary(path)
 
     def test_runner_root_is_confined_and_preferred(self):
         selected = self.sandbox / 'runner-tests'

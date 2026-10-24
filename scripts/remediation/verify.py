@@ -15,6 +15,7 @@ import time
 import urllib.request
 import uuid
 from artifact_results import collect_results
+from deploy_suite import read_summary as read_deploy_summary, print_summary as print_deploy_summary
 
 ROOT = Path(__file__).resolve().parents[2]
 TOOLS = ROOT / 'scripts/remediation'
@@ -300,6 +301,15 @@ def run(args):
             entry.update(exit_code=result, status='passed' if result == 0 else 'failed', seconds=round(time.monotonic() - started, 2))
         finally:
             processes.stop(child)
+            if label == 'deploy-sandbox':
+                try:
+                    report['deploy'] = read_deploy_summary(fixture / 'deploy-summary.json')
+                    print_deploy_summary(report['deploy'])
+                except Exception:
+                    # Never echo malformed JSON, arbitrary keys, paths or payloads.
+                    report['deploy'] = {'diagnostic': 'missing-or-invalid-summary'}
+                    print('deploy-tests: missing-or-invalid-summary', flush=True)
+                    entry.update(exit_code=entry.get('exit_code') or 1, status='failed')
         print(f'{label}: {entry.get("status", "interrupted")} exit={entry.get("exit_code", 130)}', flush=True)
         if entry.get('exit_code') != 0:
             raise StageFailure(entry.get('exit_code', 1))
@@ -332,8 +342,7 @@ def run(args):
             summary = json.loads((fixture / 'backend-summary.json').read_text())
             report['backend'] = {key: int(summary[key]) for key in ['tests', 'failures', 'errors', 'skipped']}
             if args.profile == 'full':
-                execute('deploy-sandbox', [python, '-B', '-m', 'unittest', 'discover',
-                        '-s', 'deploy/tests', '-v'])
+                execute('deploy-sandbox', [python, '-B', str(TOOLS / 'deploy_suite.py')])
             for helper in ['auth-test.cjs', 'routing-test.cjs', 'content-test.cjs']:
                 execute(helper[:-4], ['node', str(TOOLS / helper)])
         else:
