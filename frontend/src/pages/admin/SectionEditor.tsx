@@ -161,7 +161,7 @@ export default function SectionEditor() {
         }
       } else {
         const saved = await updateSection(createdId ?? Number(id), {
-          expected_revision: revision,
+          expected_revision: revision ?? "",
           title_zh: titleZh,
           title_en: titleEn,
           content: submittedContent,

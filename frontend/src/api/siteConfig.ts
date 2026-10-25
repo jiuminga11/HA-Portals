@@ -6,7 +6,7 @@ export async function getSiteConfig(): Promise<SiteConfig> {
   return res.data;
 }
 
-export async function updateSiteConfig(data: Record<string, string | null | undefined>): Promise<SiteConfig> {
+export async function updateSiteConfig(data: Record<string, string | null | undefined> & { expected_revision: string }): Promise<SiteConfig> {
   const res = await client.put<SiteConfig>("/site-config", data);
   return res.data;
 }

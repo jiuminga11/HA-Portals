@@ -108,13 +108,8 @@ export default function Dashboard() {
     if (!deleted || !beginMutation()) return;
     try {
       await deleteSection(deleted.id);
-      setSections((prev) => {
-        const remaining = prev.filter((s) => s.id !== deleted.id);
-        const pageSections = remaining.filter((s) => s.page_id === deleted.page_id)
-          .sort((a, b) => a.sort_order - b.sort_order || a.id - b.id);
-        const ranks = new Map(pageSections.map((s, index) => [s.id, index]));
-        return remaining.map((s) => s.page_id === deleted.page_id ? { ...s, sort_order: ranks.get(s.id)! } : s);
-      });
+      // Deletion normalizes remaining ranks and changes their revisions.
+      setSections(await getSections());
       setDeleteId(null);
     } catch {
       setDeleteId(null);
@@ -158,10 +153,10 @@ export default function Dashboard() {
   const handleToggleVisible = async (section: Section) => {
     if (!beginMutation()) return;
     try {
-      const updated = await updateSection(section.id, { visible: !section.visible });
+      const updated = await updateSection(section.id, { visible: !section.visible, expected_revision: section.revision ?? "" });
       setSections((prev) => prev.map((s) => (s.id === section.id ? updated : s)));
-    } catch {
-      setError(t.admin.updateFailed);
+    } catch (error) {
+      setError(isRevisionConflict(error) ? conflictMessage(locale) : t.admin.updateFailed);
     } finally {
       endMutation();
     }

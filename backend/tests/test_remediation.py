@@ -62,7 +62,25 @@ class RemediationHTTPTests(unittest.TestCase):
                 cls.server.kill()
                 cls.server.wait(timeout=5)
 
-    def request(self, method, path, body=None, admin=True, expected=200):
+    def request(self, method, path, body=None, admin=True, expected=200, with_precondition=True):
+        # Synthetic fixture setup/cleanup only. Explicit supplied stale/invalid
+        # preconditions are preserved; contract tests can disable this helper.
+        if method == 'PUT' and admin and with_precondition:
+            body = dict(body or {})
+            if path.endswith('/reorder') and 'expected_previous_order' not in body:
+                rows = self.request('GET', '/admin/pages' if path.startswith('/admin/pages') else '/sections')
+                if path == '/sections/reorder':
+                    requested = {item['id'] for item in body.get('orders', [])}
+                    page = next((row['page_id'] for row in rows if row['id'] in requested), None)
+                    rows = [row for row in rows if row['page_id'] == page]
+                body['expected_previous_order'] = [row['id'] for row in sorted(rows, key=lambda row: (row['sort_order'], row['id']))]
+            elif not path.endswith('/reorder') and 'expected_revision' not in body:
+                if path == '/site-config':
+                    row = self.request('GET', path)
+                else:
+                    rows = self.request('GET', '/admin/pages' if path.startswith('/admin/pages/') else '/sections')
+                    row = next(row for row in rows if row['id'] == int(path.rsplit('/', 1)[1]))
+                body['expected_revision'] = row['revision']
         headers = {'Content-Type': 'application/json'}
         if admin:
             headers['Authorization'] = 'Bearer ' + self.token
@@ -79,6 +97,20 @@ class RemediationHTTPTests(unittest.TestCase):
         result = self.request('POST', '/sections', {'page_id': page, 'title_zh': '测试独立中文', 'title_en': 'Independent English 测试', 'type': 'rich_text', 'content': {'body': '<p>测试正文</p>'}}, expected=201)
         self.addCleanup(self.request, 'DELETE', f'/sections/{result["id"]}')
         return result
+
+    def test_required_preconditions_have_consistent_http_status(self):
+        for path, payload, key in [
+            ('/sections/1', {'title_zh': 'TEST ONLY'}, 'expected_revision'),
+            ('/admin/pages/1', {'title_zh': 'TEST ONLY'}, 'expected_revision'),
+            ('/site-config', {'site_title': 'TEST ONLY'}, 'expected_revision'),
+            ('/sections/reorder', {'orders': []}, 'expected_previous_order'),
+            ('/admin/pages/reorder', {'orders': []}, 'expected_previous_order'),
+        ]:
+            for condition in [{}, {key: None}, {key: ''}]:
+                with self.subTest(path=path, condition=condition):
+                    response = self.request('PUT', path, dict(payload, **condition), expected=409, with_precondition=False)
+                    self.assertEqual(response['detail'], 'revision_conflict')
+            self.request('PUT', path, dict(payload, **{key: 123}), expected=422, with_precondition=False)
 
     def test_bilingual_title_save_and_reload(self):
         item = self.create()

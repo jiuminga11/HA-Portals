@@ -6,7 +6,7 @@ import re
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, Field, StrictInt, field_validator, model_validator
+from pydantic import BaseModel, Field, StrictInt, StrictStr, field_validator, model_validator
 from app.revisions import snapshot, revision
 
 
@@ -62,7 +62,13 @@ class SiteConfigResponse(RevisionResponse):
     model_config = {"from_attributes": True}
 
 
-class SiteConfigUpdate(BaseModel):
+class RevisionUpdateRequest(BaseModel):
+    # Optional during parsing only: routes reject absent/null/blank with 409, not 422.
+    expected_revision: StrictStr | None = Field(default=None, description=
+        "Required non-empty revision from the latest read. Missing/null/blank or stale values return 409 revision_conflict.")
+
+
+class SiteConfigUpdate(RevisionUpdateRequest):
     """
     更新语义：
     - 字段未传（不在 JSON 中）→ 不更新
@@ -71,7 +77,6 @@ class SiteConfigUpdate(BaseModel):
     - 字段传值 → 更新为新值
     """
 
-    expected_revision: str | None = None
     logo_url: str | None = None
     banner_url: str | None = None
     site_title: str | None = None
@@ -172,8 +177,7 @@ class PageCreate(BaseModel):
         return v
 
 
-class PageUpdate(BaseModel):
-    expected_revision: str | None = None
+class PageUpdate(RevisionUpdateRequest):
     slug: str | None = None
     title_zh: str | None = None
     title_en: str | None = None
@@ -226,12 +230,19 @@ class ReorderItem(BaseModel):
     sort_order: int
 
 
-class PageReorderRequest(BaseModel):
-    orders: list[ReorderItem]
-    # Optional for legacy clients; omission retains last-writer-wins behavior.
+class ReorderPrecondition(BaseModel):
     expected_previous_order: list[StrictInt] | None = Field(
-        default=None, description="All page IDs in the previously observed sort_order,id order. "
-        "A mismatch returns 409 revision_conflict. Omission/null retains legacy last-writer-wins behavior.")
+        default=None, description="Required complete scope ID list in previously observed sort_order,id order, "
+        "including hidden rows. Missing/null/blank or mismatched order returns 409 revision_conflict.")
+
+    @field_validator('expected_previous_order', mode='before')
+    @classmethod
+    def blank_order(cls, value):
+        return None if isinstance(value, str) and not value.strip() else value
+
+
+class PageReorderRequest(ReorderPrecondition):
+    orders: list[ReorderItem]
 
 
 # ===== Section =====
@@ -254,8 +265,7 @@ class SectionCreate(BaseModel):
         return v
 
 
-class SectionUpdate(BaseModel):
-    expected_revision: str | None = None
+class SectionUpdate(RevisionUpdateRequest):
     title_zh: str | None = None
     title_en: str | None = None
     visible: bool | None = None
@@ -288,13 +298,8 @@ class SectionResponse(RevisionResponse):
 
 
 
-class SectionReorderRequest(BaseModel):
+class SectionReorderRequest(ReorderPrecondition):
     orders: list[ReorderItem]
-    # Complete same-page ID order, including hidden sections. Not a version counter.
-    expected_previous_order: list[StrictInt] | None = Field(
-        default=None, description="All same-page section IDs (including hidden) in the previously observed "
-        "sort_order,id order. A mismatch returns 409 revision_conflict. "
-        "Omission/null retains legacy last-writer-wins behavior.")
 
 
 # ===== File =====

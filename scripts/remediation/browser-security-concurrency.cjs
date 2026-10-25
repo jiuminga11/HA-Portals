@@ -173,8 +173,19 @@ const { PYTHON, assertFixture } = require('./browser-env.cjs');
         assert.equal(response.status, 401, 'Invalid token must be a controlled 401');
       }
     });
-    h.results.pending.push('Legacy clients omitting expected_revision retain unconditional writes; this is not global conflict prevention.');
-    h.results.pending.push('Reorder clients omitting expected_previous_order retain last-writer-wins behavior; an order that changes and returns to the same IDs is not detected.');
+    await h.check('missing-write-preconditions-require-refresh', async () => {
+      for (const [endpoint, body] of [
+        [`/sections/${sectionId}`, { title_zh: 'TEST ONLY rejected' }],
+        [`/admin/pages/${pageId}`, { title_zh: 'TEST ONLY rejected' }],
+        ['/site-config', { site_title: 'TEST ONLY rejected' }],
+        ['/sections/reorder', { orders: [] }],
+        ['/admin/pages/reorder', { orders: [] }],
+      ]) {
+        const response = await h.request('PUT', endpoint, body, { withPrecondition: false, expectedStatus: 409 });
+        assert.equal((await response.json()).detail, 'revision_conflict');
+      }
+    });
+    h.results.pending.push('Content/order fingerprints do not detect changes that return to exactly the same content/order (ABA). Delete endpoints have no revision precondition.');
   } catch (error) { failure = error; }
   finally { await h.finish(failure); }
 })().catch(error => { console.error(`bootstrap: ${error.name}`); process.exitCode = 1; });

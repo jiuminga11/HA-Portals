@@ -163,7 +163,8 @@ async function save(page) {
   await page.reload(); await page.getByLabel('中文标题').waitFor();
   assert.equal(await page.getByLabel('中文标题').inputValue(), '测试仅修改中文');
   assert.equal(await page.getByLabel('英文标题').inputValue(), 'Only English changed TEST');
-  await api('PUT', `/sections/${sectionId}`, { title_zh: original.title_zh, title_en: original.title_en }, token);
+   const restoreRevision = (await api('GET', '/sections', undefined, token)).find(s => s.id === sectionId).revision;
+   await api('PUT', `/sections/${sectionId}`, { title_zh: original.title_zh, title_en: original.title_en, expected_revision: restoreRevision }, token);
   results.checks.push('Unchanged save, single-language edits and reload preserve both titles');
   stage = 'new-section-page-selection';
   await page.goto(`${origin}/ha/admin/sections/new?type=rich_text`);

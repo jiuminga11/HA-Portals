@@ -75,7 +75,9 @@ class SortContractTests(unittest.TestCase):
                     for s in db.query(Section).order_by(Section.id).all()]
 
     def reorder(self, pairs):
-        body = SectionReorderRequest(orders=[
+        current = [row.id for row in self.db.query(Section.id).filter(Section.page_id == 7)
+                   .order_by(Section.sort_order, Section.id).all()]
+        body = SectionReorderRequest(expected_previous_order=current, orders=[
             {"id": section_id, "sort_order": order} for section_id, order in pairs
         ])
         return sections.reorder_sections(body, self.db, True)

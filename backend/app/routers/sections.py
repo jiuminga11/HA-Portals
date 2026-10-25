@@ -14,7 +14,7 @@ from app.deps import get_current_admin, get_db, get_optional_admin
 from app.models import Page, Section
 from app.sanitizer import sanitize_html
 from app.file_references import writer_lock, validate_local_references
-from app.revisions import snapshot, revision, commit_edit
+from app.revisions import snapshot, revision, commit_edit, require_precondition
 from app.schemas import (
     SectionCreate,
     SectionReorderRequest,
@@ -156,6 +156,7 @@ def reorder_sections(
 ) -> list[SectionResponse]:
     """批量更新区块排序（需鉴权）。接收完整的 id+sort_order 映射。"""
     writer_lock(db)
+    require_precondition(db, body.expected_previous_order)
     # 全部校验完成后才修改 ORM 对象，非法请求不得写入。
     if not body.orders:
         raise HTTPException(
@@ -189,13 +190,12 @@ def reorder_sections(
             detail="orders 必须属于同一页面",
         )
     page_id = next(iter(page_ids))
-    if body.expected_previous_order is not None:
-        current_order = [row.id for row in db.query(Section.id)
-                         .filter(Section.page_id == page_id)
-                         .order_by(Section.sort_order, Section.id).all()]
-        if body.expected_previous_order != current_order:
-            db.rollback()
-            raise HTTPException(status_code=409, detail='revision_conflict')
+    current_order = [row.id for row in db.query(Section.id)
+                     .filter(Section.page_id == page_id)
+                     .order_by(Section.sort_order, Section.id).all()]
+    if body.expected_previous_order != current_order:
+        db.rollback()
+        raise HTTPException(status_code=409, detail='revision_conflict')
     page_section_ids = {
         row.id for row in db.query(Section.id).filter(Section.page_id == page_id).all()
     }
@@ -224,6 +224,7 @@ def update_section(
 ) -> SectionResponse:
     """更新区块（需鉴权）。content 为全量替换。"""
     writer_lock(db)
+    require_precondition(db, body.expected_revision)
     section = db.query(Section).filter(Section.id == section_id).first()
     if not section:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="区块不存在")

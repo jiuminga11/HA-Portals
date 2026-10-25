@@ -8,7 +8,7 @@ from app.models import SiteConfig
 from app.schemas import SiteConfigResponse, SiteConfigUpdate
 from app.file_references import writer_lock, validate_local_references
 from app.sanitizer import safe_url
-from app.revisions import snapshot, commit_edit
+from app.revisions import snapshot, commit_edit, require_precondition
 
 router = APIRouter()
 
@@ -56,6 +56,7 @@ def update_site_config(
 ) -> SiteConfig:
     """更新站点配置（需鉴权）。仅更新显式传入的字段。"""
     writer_lock(db)
+    require_precondition(db, body.expected_revision)
     config = _get_or_create_config(db)
     # The legacy singleton initializer may commit when the row was absent.
     writer_lock(db)

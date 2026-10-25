@@ -45,6 +45,26 @@ async function harness(name) {
     const url = BASE + '/api' + endpoint;
     guard(url);
     assert(verified || (method === 'GET') || endpoint === '/auth/login');
+    // Only synthetic fixture setup/restoration uses this read-before-write helper.
+    // Browser requests are never intercepted/retried; explicit stale tokens stay stale.
+    if (method === 'PUT' && !options.rawBody && options.withPrecondition !== false) {
+      body = { ...body };
+      if (endpoint.endsWith('/reorder') && !Object.hasOwn(body, 'expected_previous_order')) {
+        let rows = await api('GET', endpoint.startsWith('/admin/pages') ? '/admin/pages' : '/sections');
+        if (endpoint === '/sections/reorder') {
+          const ids = new Set((body.orders || []).map(row => row.id));
+          const pageId = rows.find(row => ids.has(row.id))?.page_id;
+          rows = rows.filter(row => row.page_id === pageId);
+        }
+        body.expected_previous_order = rows.sort((a, b) => a.sort_order - b.sort_order || a.id - b.id).map(row => row.id);
+      } else if (!endpoint.endsWith('/reorder') && !Object.hasOwn(body, 'expected_revision')) {
+        const row = endpoint === '/site-config' ? await api('GET', endpoint)
+          : (await api('GET', endpoint.startsWith('/admin/pages/') ? '/admin/pages' : '/sections'))
+            .find(row => row.id === Number(endpoint.split('/').at(-1)));
+        assert(row?.revision, 'Fixture update requires a current revision');
+        body.expected_revision = row.revision;
+      }
+    }
     const response = await fetch(url, { method, redirect: 'error', signal: AbortSignal.timeout(15000),
       headers: { ...(options.rawBody ? {} : { 'Content-Type': 'application/json' }), ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       body: body === undefined ? undefined : options.rawBody ? body : JSON.stringify(body) });

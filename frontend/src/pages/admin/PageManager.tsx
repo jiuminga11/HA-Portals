@@ -79,7 +79,7 @@ export default function PageManager() {
       const { slug, ...fields } = form;
       const result = modal === "new"
         ? await createPage({ ...fields, slug: slug.trim().toLowerCase() })
-        : await updatePage(modal, { ...fields, expected_revision: revision });
+        : await updatePage(modal, { ...fields, expected_revision: revision ?? "" });
       setPages(previous => modal === "new" ? [...previous, result] : previous.map(page => page.id === result.id ? result : page));
       const saved = toForm(result); setForm(saved); setSnapshot(JSON.stringify(saved));
       setModal(null);
@@ -98,7 +98,7 @@ export default function PageManager() {
   const toggle = async (page: Page) => {
     if (page.slug === "home" || !begin()) return;
     try {
-      const result = await updatePage(page.id, { visible: !page.visible, expected_revision: page.revision });
+      const result = await updatePage(page.id, { visible: !page.visible, expected_revision: page.revision ?? "" });
       setPages(previous => previous.map(item => item.id === result.id ? result : item));
     } catch (error) { setConflict(isRevisionConflict(error)); setError("updateError"); }
     finally { end(); }

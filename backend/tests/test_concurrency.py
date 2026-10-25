@@ -11,6 +11,7 @@ from sqlalchemy import create_engine, event
 from sqlalchemy.orm import Session
 from pydantic import ValidationError
 from app.schemas import PageReorderRequest, SectionReorderRequest
+from app.revisions import revision, snapshot
 
 
 def reference_writer(database, uploads, ready):
@@ -22,7 +23,8 @@ def reference_writer(database, uploads, ready):
             time.sleep(0.3)
         event.listen(db, 'before_commit', before_commit)
         fixture.sections.update_section(1, fixture.SectionUpdate(
-            content={'body': '<a href="/uploads/TEST-ONLY.pdf?v=1&amp;x=2">TEST ONLY</a>'}), db, True)
+            content={'body': '<a href="/uploads/TEST-ONLY.pdf?v=1&amp;x=2">TEST ONLY</a>'},
+            expected_revision=revision(snapshot(db.get(fixture.Section, 1)))), db, True)
     engine.dispose()
 
 
@@ -83,6 +85,49 @@ class ConcurrencyTests(unittest.TestCase):
                 second.rollback()
                 self.assertEqual(getattr(second.get(model, 1), field), 'first')
 
+    def test_missing_null_blank_preconditions_are_409_without_writes(self):
+        cases = [
+            (fixture.SectionUpdate, {'title_zh': 'must not write'}, 'expected_revision',
+             lambda body, db: fixture.sections.update_section(1, body, db, True)),
+            (fixture.PageUpdate, {'title_zh': 'must not write'}, 'expected_revision',
+             lambda body, db: fixture.pages.update_page(1, body, db, True)),
+            (fixture.SiteConfigUpdate, {'site_title': 'must not write'}, 'expected_revision',
+             lambda body, db: fixture.site_config.update_site_config(body, db, True)),
+            (SectionReorderRequest, {'orders': [{'id': 1, 'sort_order': 0}]}, 'expected_previous_order',
+             lambda body, db: fixture.sections.reorder_sections(body, db, True)),
+            (PageReorderRequest, {'orders': [{'id': 1, 'sort_order': 7}]}, 'expected_previous_order',
+             lambda body, db: fixture.pages.reorder_pages(body, db, True)),
+        ]
+        writes = []
+        def track(conn, cursor, statement, parameters, context, executemany):
+            if statement.lstrip().split()[0].upper() in {'INSERT', 'UPDATE', 'DELETE'}:
+                writes.append(statement)
+        event.listen(self.engine, 'before_cursor_execute', track)
+        try:
+            for schema, payload, key, call in cases:
+                for condition in [{}, {key: None}, {key: ''}, {key: '  '}]:
+                    with self.subTest(schema=schema.__name__, condition=condition), Session(self.engine, autoflush=False) as db:
+                        with self.assertRaises(HTTPException) as error:
+                            call(schema(**payload, **condition), db)
+                        self.assertEqual((error.exception.status_code, error.exception.detail), (409, 'revision_conflict'))
+                        self.assertEqual(writes, [])
+                        self.assertFalse(db.dirty)
+        finally:
+            event.remove(self.engine, 'before_cursor_execute', track)
+        # A missing singleton must not be created as a side effect of rejection.
+        with Session(self.engine) as db:
+            db.query(fixture.SiteConfig).delete()
+            db.commit()
+            with self.assertRaises(HTTPException):
+                fixture.site_config.update_site_config(fixture.SiteConfigUpdate(site_title='no create'), db, True)
+            self.assertEqual(db.query(fixture.SiteConfig).count(), 0)
+
+    def test_revision_types_are_strict(self):
+        for schema in [fixture.SectionUpdate, fixture.PageUpdate, fixture.SiteConfigUpdate]:
+            for value in [123, True, [], {}]:
+                with self.subTest(schema=schema.__name__, value=value), self.assertRaises(ValidationError):
+                    schema(expected_revision=value)
+
     def prepare_reorder(self):
         with Session(self.engine) as db:
             db.add_all([fixture.Page(id=2, slug='test-hidden', title_zh='TEST ONLY', visible=False),
@@ -130,13 +175,18 @@ class ConcurrencyTests(unittest.TestCase):
                 finally:
                     event.remove(self.engine, 'before_cursor_execute', record_write)
 
-    def test_legacy_reorder_still_accepts_missing_precondition(self):
+    def test_reorder_requires_precondition_and_preserves_sparse_page_contract(self):
         for model, schema, reorder in self.prepare_reorder():
             with self.subTest(model=model.__name__), Session(self.engine, autoflush=False) as db:
                 order = [3, 1, 2]
                 # Preserve page sparse-sort contract, while sections require 0..n-1.
                 scale = 7 if model is fixture.Page else 1
-                reorder(schema(orders=[{'id': id_, 'sort_order': i * scale} for i, id_ in enumerate(order)]), db, True)
+                body = schema(orders=[{'id': id_, 'sort_order': i * scale} for i, id_ in enumerate(order)])
+                with self.assertRaises(HTTPException) as error:
+                    reorder(body, db, True)
+                self.assertEqual(error.exception.status_code, 409)
+                body.expected_previous_order = self.reorder_snapshot(db, model)
+                reorder(body, db, True)
                 self.assertEqual(self.reorder_snapshot(db, model), order)
 
     def test_reorder_wrong_previous_values_do_not_mutate(self):
@@ -161,17 +211,19 @@ class ConcurrencyTests(unittest.TestCase):
         with Session(self.engine, autoflush=False) as first, Session(self.engine, autoflush=False) as second:
             row = first.get(fixture.Page, 1)
             original = snapshot(row)
-            fixture.pages.update_page(1, fixture.PageUpdate(title_zh='winner'), second, True)
+            fixture.pages.update_page(1, fixture.PageUpdate(title_zh='winner', expected_revision=revision(original)), second, True)
             row.title_zh = 'must not overwrite'
             with self.assertRaises(HTTPException) as error:
                 commit_edit(first, row, original, revision(original))
             self.assertEqual(error.exception.status_code, 409)
             self.assertEqual(first.get(fixture.Page, 1).title_zh, 'winner')
 
-    def test_legacy_unconditional_update_remains_supported(self):
+    def test_legacy_unconditional_update_is_rejected(self):
         with Session(self.engine, autoflush=False) as db:
-            fixture.pages.update_page(1, fixture.PageUpdate(title_zh='legacy'), db, True)
-            self.assertEqual(db.get(fixture.Page, 1).title_zh, 'legacy')
+            with self.assertRaises(HTTPException) as error:
+                fixture.pages.update_page(1, fixture.PageUpdate(title_zh='legacy'), db, True)
+            self.assertEqual(error.exception.status_code, 409)
+            self.assertEqual(db.get(fixture.Page, 1).title_zh, 'TEST ONLY')
 
     def test_public_section_revision_can_conditionally_update(self):
         with Session(self.engine, autoflush=False) as reader:
@@ -222,7 +274,7 @@ class ConcurrencyTests(unittest.TestCase):
         from unittest.mock import patch
         with patch.object(fixture.settings, 'UPLOAD_DIR', self.directory.name), Session(self.engine, autoflush=False) as db:
             with self.assertRaises(HTTPException) as error:
-                fixture.sections.update_section(1, fixture.SectionUpdate(content={
+                fixture.sections.update_section(1, fixture.SectionUpdate(expected_revision=revision(snapshot(db.get(fixture.Section, 1))), content={
                     'body': '<img src="/uploads/TEST-ONLY-missing.png">'}), db, True)
             self.assertEqual(error.exception.status_code, 409)
             db.rollback()

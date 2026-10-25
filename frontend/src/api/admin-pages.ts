@@ -11,7 +11,7 @@ export interface PageCreatePayload {
 }
 
 export interface PageUpdatePayload {
-  expected_revision?: string;
+  expected_revision: string;
   slug?: string;
   title_zh?: string;
   title_en?: string;
@@ -41,7 +41,7 @@ export async function deletePage(id: number): Promise<void> {
 
 export async function reorderPages(
   orders: { id: number; sort_order: number }[],
-  expectedPreviousOrder?: number[]
+  expectedPreviousOrder: number[]
 ): Promise<Page[]> {
   const res = await client.put<Page[]>("/admin/pages/reorder", { orders, expected_previous_order: expectedPreviousOrder });
   return res.data;

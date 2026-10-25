@@ -17,12 +17,19 @@ def revision(values: dict) -> str:
                                      default=str, separators=(',', ':')).encode()).hexdigest()
 
 
+def require_precondition(db: Session, value) -> None:
+    if value is None or (isinstance(value, str) and not value.strip()):
+        db.rollback()
+        raise HTTPException(status_code=409, detail='revision_conflict')
+
+
 def commit_edit(db: Session, row, original: dict, expected: str | None):
     """CAS predicates use original raw columns, not second-resolution updated_at alone.
 
-    Legacy clients omitting expected_revision retain unconditional update semantics.
+    Every edit requires a revision, including no-op saves.
     """
-    if expected is not None and expected != revision(original):
+    require_precondition(db, expected)
+    if expected != revision(original):
         db.rollback()
         raise HTTPException(status_code=409, detail='revision_conflict')
     model = type(row)
@@ -31,13 +38,12 @@ def commit_edit(db: Session, row, original: dict, expected: str | None):
     # Prevent ORM flush from bypassing the conditional UPDATE.
     db.expunge(row)
     statement = update(model.__table__).where(model.id == original['id'])
-    if expected is not None:
-        for column in model.__table__.columns:
-            # SQLite CURRENT_TIMESTAMP and bound datetime values differ in their
-            # textual fractional-second representation. All actual content fields
-            # participate; timestamps are not the concurrency authority.
-            if column.name not in {'created_at', 'updated_at'}:
-                statement = statement.where(column == original[column.name])
+    for column in model.__table__.columns:
+        # SQLite CURRENT_TIMESTAMP and bound datetime values differ in their
+        # textual fractional-second representation. All actual content fields
+        # participate; timestamps are not the concurrency authority.
+        if column.name not in {'created_at', 'updated_at'}:
+            statement = statement.where(column == original[column.name])
     # Even no-op saves must verify the snapshot atomically.
     statement = statement.values(changes or {'id': original['id']})
     try:

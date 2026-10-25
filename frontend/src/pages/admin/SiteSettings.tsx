@@ -92,7 +92,7 @@ export default function SiteSettings() {
     const submittedSnapshot = JSON.stringify(form);
     saveLock.current = true; setSaving(true); setMessage(null); setConflict(false);
     try {
-      const response = await updateSiteConfig({ ...form, expected_revision: revision });
+      const response = await updateSiteConfig({ ...form, expected_revision: revision ?? "" });
       const saved = toForm(response);
       if (!mounted.current) return;
       setRevision(response.revision);

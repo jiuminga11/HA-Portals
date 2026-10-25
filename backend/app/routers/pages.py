@@ -7,7 +7,7 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-from app.revisions import snapshot, revision, commit_edit
+from app.revisions import snapshot, revision, commit_edit, require_precondition
 from app.file_references import writer_lock
 
 from app.deps import get_current_admin, get_db
@@ -172,6 +172,7 @@ def reorder_pages(
 ) -> list[PageResponse]:
     """批量更新页面排序（需鉴权）。接收完整的 id+sort_order 映射。"""
     writer_lock(db)
+    require_precondition(db, body.expected_previous_order)
     # 校验：检查重复 ID
     ids = [item.id for item in body.orders]
     if len(ids) != len(set(ids)):
@@ -194,11 +195,10 @@ def reorder_pages(
             detail="部分 page ID 不存在",
         )
 
-    if body.expected_previous_order is not None:
-        current_order = [row.id for row in db.query(Page.id).order_by(Page.sort_order, Page.id).all()]
-        if body.expected_previous_order != current_order:
-            db.rollback()
-            raise HTTPException(status_code=409, detail='revision_conflict')
+    current_order = [row.id for row in db.query(Page.id).order_by(Page.sort_order, Page.id).all()]
+    if body.expected_previous_order != current_order:
+        db.rollback()
+        raise HTTPException(status_code=409, detail='revision_conflict')
 
     for p in db_pages:
         if p.id in order_map:
@@ -221,6 +221,7 @@ def update_page(
 ) -> PageResponse:
     """更新页面（需鉴权）。"""
     writer_lock(db)
+    require_precondition(db, body.expected_revision)
     page = db.query(Page).filter(Page.id == page_id).first()
     if not page:
         raise HTTPException(

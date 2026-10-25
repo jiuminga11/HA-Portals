@@ -116,7 +116,7 @@ PYTHONDONTWRITEBYTECODE=1 python3 scripts/remediation/verify.py --profile full
 ## 剩余限制
 
 - 未执行生产 apply/rollback，首次安装、配置证据与生产权限仍需另行确认。
-- 不带 `expected_revision`/`expected_previous_order` 的旧客户端保留无条件写入语义；排序冲突只比较重排前顺序，顺序变化后又恢复原状（ABA）的情况无法识别，不能宣称所有并发写入都已防覆盖。
+- 区块、页面、站点设置的更新及两类重排均必须携带 `expected_revision`/`expected_previous_order`，缺失、null 或空值返回 409 零写入，已无无条件写入通道（见文末“前置条件强制化”）。删除接口不带版本校验，依赖鉴权、首页保护与文件引用保护。
 - 绝对 URL 的删除引用扫描是保守匹配；写入时的目标存在性/跨进程协议仅覆盖相对本地路径，不保证绝对同站/远程 URL、直接 SQL 或外部磁盘写入。
 - 文件补偿覆盖已测异常；SIGKILL、断电、无法恢复的磁盘错误可能留下暂存/孤儿，需按日志人工核对。multipart 解析前的请求总量、生产并发压力与完整文件恶意内容扫描不在本轮证明范围。
 - 全站屏幕阅读器体验、所有自定义颜色与真实网络性能未全面验证；本地 LCP/CLS 和选定对比度不能外推成生产认证。
@@ -140,5 +140,16 @@ PYTHONDONTWRITEBYTECODE=1 python3 scripts/remediation/verify.py --profile full
 
 仍未解决：
 - SEO 元信息由浏览器运行时写入；需要服务端注入时，宜随生产部署方案一起设计。
-- 剩余 6 项依赖告警需上游修复或主版本迁移（Tailwind/编辑器），本轮未做破坏性升级。
+- 剩余依赖告警需上游修复或编辑器替换，本轮未做破坏性升级（后续进展见下节）。
 - 内容材料（简历 PDF、译文、项目案例、研究事实）与生产部署仍待站主提供与授权。
+
+## 前置条件强制化与构建依赖告警（2026-10-26）
+
+| 项目 | 处理 | 证据 |
+| --- | --- | --- |
+| 旧客户端无条件写入 | `PUT /sections/{id}`、`/admin/pages/{id}`、`/site-config` 必须携带非空 `expected_revision`；`/sections/reorder`、`/admin/pages/reorder` 必须携带完整 `expected_previous_order`。缺失/null/空值在写锁内返回 409 `revision_conflict` 且零写入（已打开的旧后台页沿用“刷新后重做”提示），类型错误仍为 422。前端 API 参数改为必填 | 后端 52 项测试（含各接口缺失/null/空值零写入）；完整验收 |
+| 构建期 CSS 解析告警（4 项中危） | `overrides` 将 `postcss-selector-parser` 统一为 7.1.7，Tailwind 3.4.19、typography 0.5.19 不变 | 基线与覆盖后构建的 3 个 CSS、21 个 JS 文件 SHA256 逐字节一致；干净安装/lint/TypeScript/构建通过；记录在 `.remediation-runtime/audit-parser-*` |
+
+依赖告警由 6 项降为 2 项低危，均为 Quill/react-quill-new：上游未发布修复，编辑器生成 HTML 时会经过受影响路径；内容在后端保存（nh3）与前端展示（DOMPurify）两层清洗，暴露面已受控但未消除。彻底解决需等待上游修复或替换编辑器（需转换并核对既有富文本），本轮不做。
+
+关于 ABA（内容或顺序被改后又恢复原状）：冲突判断比较的是完整内容指纹或该范围内完整 id 顺序，新增/删除都会改变比较结果；恢复原状时客户端提交所依据的正是当前真实状态，不会覆盖任何仍然有效的修改，因此不构成丢失更新。此前将其列为限制的表述已更正。

@@ -16,7 +16,7 @@ export interface SectionCreatePayload {
 }
 
 export interface SectionUpdatePayload {
-  expected_revision?: string;
+  expected_revision: string;
   title_zh?: string;
   title_en?: string;
   visible?: boolean;
@@ -37,7 +37,7 @@ export async function deleteSection(id: number): Promise<void> {
   await client.delete(`/sections/${id}`);
 }
 
-export async function reorderSections(orders: { id: number; sort_order: number }[], expectedPreviousOrder?: number[]): Promise<Section[]> {
+export async function reorderSections(orders: { id: number; sort_order: number }[], expectedPreviousOrder: number[]): Promise<Section[]> {
   const res = await client.put<Section[]>("/sections/reorder", { orders, expected_previous_order: expectedPreviousOrder });
   return res.data;
 }
