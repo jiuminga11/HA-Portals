@@ -1,3 +1,6 @@
+import { useLocale } from "../../hooks/useLocale";
+import adminZh from "../../locales/admin.zh.json";
+import adminEn from "../../locales/admin.en.json";
 import type { CtaBandContent, CTAButton } from "../../types";
 
 interface Props {
@@ -10,6 +13,8 @@ function emptyButton(): CTAButton {
 }
 
 export default function CtaBandEditor({ content, onChange }: Props) {
+  const { locale } = useLocale();
+  const labels = locale === "en" ? adminEn : adminZh;
   const update = (patch: Partial<CtaBandContent>) => {
     onChange({ ...content, ...patch });
   };
@@ -33,35 +38,35 @@ export default function CtaBandEditor({ content, onChange }: Props) {
     <div className="space-y-6">
       {/* Description */}
       <fieldset className="space-y-3">
-        <legend className="text-sm font-semibold text-slate-700 mb-2">描述文本</legend>
+        <legend className="text-sm font-semibold text-slate-700 mb-2">{labels.ctaBand.description}</legend>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="text-xs text-slate-500 mb-1 block">描述（中文）</label>
+            <label className="text-xs text-slate-500 mb-1 block">{labels.editor.descriptionZh}</label>
             <textarea
               value={content.description_zh}
               onChange={(e) => update({ description_zh: e.target.value })}
-              placeholder="欢迎与我交流合作……"
+              placeholder={labels.ctaBand.descriptionZhPlaceholder}
               rows={3}
               className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 ring-primary"
             />
           </div>
           <div>
-            <label className="text-xs text-slate-500 mb-1 block">描述（英文）</label>
+            <label className="text-xs text-slate-500 mb-1 block">{labels.editor.descriptionEn}</label>
             <textarea
               value={content.description_en}
               onChange={(e) => update({ description_en: e.target.value })}
-              placeholder="Feel free to reach out..."
+              placeholder={labels.ctaBand.descriptionEnPlaceholder}
               rows={3}
               className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 ring-primary"
             />
           </div>
         </div>
-        <p className="text-xs text-slate-400">标题使用区块自身的中/英文标题；首个按钮为主按钮（渐变样式）。</p>
+        <p className="text-xs text-slate-400">{labels.ctaBand.titleHint}</p>
       </fieldset>
 
       {/* Buttons */}
       <fieldset className="space-y-3">
-        <legend className="text-sm font-semibold text-slate-700 mb-2">按钮</legend>
+        <legend className="text-sm font-semibold text-slate-700 mb-2">{labels.ctaBand.buttons}</legend>
         <button
           type="button"
           onClick={addButton}
@@ -70,39 +75,39 @@ export default function CtaBandEditor({ content, onChange }: Props) {
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          添加按钮
+          {labels.editor.addButton}
         </button>
 
         {content.buttons.map((btn, idx) => (
           <div key={idx} className="flex items-start gap-3 bg-white border border-slate-200 rounded-xl p-3">
             <div className="grid grid-cols-3 gap-2 flex-1">
               <div>
-                <label className="text-xs text-slate-500 mb-1 block">按钮文字（中文）*</label>
+                <label className="text-xs text-slate-500 mb-1 block">{labels.editor.buttonLabelZh}</label>
                 <input
                   type="text"
                   value={btn.label_zh}
                   onChange={(e) => updateButton(idx, { label_zh: e.target.value })}
-                  placeholder="联系我"
+                  placeholder={labels.ctaBand.buttonZhPlaceholder}
                   className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 ring-primary"
                 />
               </div>
               <div>
-                <label className="text-xs text-slate-500 mb-1 block">按钮文字（英文）</label>
+                <label className="text-xs text-slate-500 mb-1 block">{labels.editor.buttonLabelEn}</label>
                 <input
                   type="text"
                   value={btn.label_en}
                   onChange={(e) => updateButton(idx, { label_en: e.target.value })}
-                  placeholder="Contact Me"
+                  placeholder={labels.ctaBand.buttonEnPlaceholder}
                   className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 ring-primary"
                 />
               </div>
               <div>
-                <label className="text-xs text-slate-500 mb-1 block">链接 URL *</label>
+                <label className="text-xs text-slate-500 mb-1 block">{labels.editor.linkUrl}</label>
                 <input
                   type="text"
                   value={btn.url}
                   onChange={(e) => updateButton(idx, { url: e.target.value })}
-                  placeholder="/cv 或 https://..."
+                  placeholder={labels.ctaBand.urlPlaceholder}
                   className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 ring-primary"
                 />
               </div>

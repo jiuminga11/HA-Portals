@@ -9,6 +9,8 @@ import test_security as fixture
 from fastapi import HTTPException
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import Session
+from pydantic import ValidationError
+from app.schemas import PageReorderRequest, SectionReorderRequest
 
 
 def reference_writer(database, uploads, ready):
@@ -80,6 +82,79 @@ class ConcurrencyTests(unittest.TestCase):
                 self.assertEqual(error.exception.status_code, 409)
                 second.rollback()
                 self.assertEqual(getattr(second.get(model, 1), field), 'first')
+
+    def prepare_reorder(self):
+        with Session(self.engine) as db:
+            db.add_all([fixture.Page(id=2, slug='test-hidden', title_zh='TEST ONLY', visible=False),
+                        fixture.Page(id=3, slug='test-other', title_zh='TEST ONLY')])
+            db.flush()
+            db.add_all([fixture.Section(id=2, page_id=1, type='rich_text', title_zh='TEST ONLY', visible=False),
+                        fixture.Section(id=3, page_id=1, type='rich_text', title_zh='TEST ONLY'),
+                        fixture.Section(id=4, page_id=3, type='rich_text', title_zh='TEST ONLY', sort_order=8)])
+            db.commit()
+        return [(fixture.Page, PageReorderRequest, fixture.pages.reorder_pages),
+                (fixture.Section, SectionReorderRequest, fixture.sections.reorder_sections)]
+
+    def reorder_snapshot(self, db, model):
+        query = db.query(model.id).order_by(model.sort_order, model.id)
+        if model is fixture.Section:
+            query = query.filter(model.page_id == 1)
+        return [row.id for row in query.all()]
+
+    def test_reorder_second_editor_conflicts_without_writes(self):
+        for model, schema, reorder in self.prepare_reorder():
+            with self.subTest(model=model.__name__), Session(self.engine, autoflush=False) as first, Session(self.engine, autoflush=False) as second:
+                previous = self.reorder_snapshot(first, model)
+                self.assertEqual(self.reorder_snapshot(second, model), previous)
+                self.assertEqual(previous, [1, 2, 3])  # tied ranks use ID; includes hidden rows
+                winner = list(reversed(previous))
+                response = reorder(schema(orders=[{'id': id_, 'sort_order': i} for i, id_ in enumerate(winner)],
+                                          expected_previous_order=previous), first, True)
+                self.assertEqual({row.id for row in response}, {1, 2, 3, 4} if model is fixture.Section else {1, 2, 3})
+                writes = []
+                def record_write(conn, cursor, statement, parameters, context, executemany):
+                    if statement.lstrip().split()[0].upper() in {'INSERT', 'UPDATE', 'DELETE'}:
+                        writes.append(statement)
+                event.listen(self.engine, 'before_cursor_execute', record_write)
+                try:
+                    with self.assertRaises(HTTPException) as error:
+                        reorder(schema(orders=[{'id': id_, 'sort_order': i} for i, id_ in enumerate([2, 3, 1])],
+                                       expected_previous_order=previous), second, True)
+                    self.assertEqual(error.exception.status_code, 409)
+                    self.assertEqual(error.exception.detail, 'revision_conflict')
+                    self.assertEqual(writes, [])
+                    self.assertFalse(second.dirty)
+                    self.assertEqual(self.reorder_snapshot(second, model), winner)
+                    if model is fixture.Section:
+                        self.assertEqual(second.get(model, 4).sort_order, 8)
+                finally:
+                    event.remove(self.engine, 'before_cursor_execute', record_write)
+
+    def test_legacy_reorder_still_accepts_missing_precondition(self):
+        for model, schema, reorder in self.prepare_reorder():
+            with self.subTest(model=model.__name__), Session(self.engine, autoflush=False) as db:
+                order = [3, 1, 2]
+                # Preserve page sparse-sort contract, while sections require 0..n-1.
+                scale = 7 if model is fixture.Page else 1
+                reorder(schema(orders=[{'id': id_, 'sort_order': i * scale} for i, id_ in enumerate(order)]), db, True)
+                self.assertEqual(self.reorder_snapshot(db, model), order)
+
+    def test_reorder_wrong_previous_values_do_not_mutate(self):
+        for model, schema, reorder in self.prepare_reorder():
+            for wrong in [[], [1], [1, 1, 3], [1, 2, 999], [1, 3, 2], [-1, 2, 3]]:
+                with self.subTest(model=model.__name__, previous=wrong), Session(self.engine, autoflush=False) as db:
+                    with self.assertRaises(HTTPException) as error:
+                        reorder(schema(orders=[{'id': id_, 'sort_order': i} for i, id_ in enumerate([3, 2, 1])],
+                                       expected_previous_order=wrong), db, True)
+                    self.assertEqual(error.exception.status_code, 409)
+                    self.assertFalse(db.dirty)
+                    self.assertEqual(self.reorder_snapshot(db, model), [1, 2, 3])
+
+    def test_reorder_precondition_types_are_strict(self):
+        for schema in [PageReorderRequest, SectionReorderRequest]:
+            for invalid in ['1,2,3', 1, {'id': 1}, ['1', 2, 3], [True, 2, 3], [1.0, 2, 3], [None]]:
+                with self.subTest(schema=schema.__name__, value=invalid), self.assertRaises(ValidationError):
+                    schema(orders=[{'id': 1, 'sort_order': 0}], expected_previous_order=invalid)
 
     def test_atomic_cas_rejects_change_after_snapshot(self):
         from app.revisions import snapshot, revision, commit_edit

@@ -6,18 +6,9 @@ import { getAdminPages } from "../../api/admin-pages";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { useLocale } from "../../hooks/useLocale";
 import { useModalDialog } from "../../components/common/useModalDialog";
-
-const TYPE_LABELS: Record<SectionType, string> = {
-  rich_text: "富文本",
-  image_gallery: "图片展示",
-  data_table: "数据表格",
-  external_links: "外链",
-  video: "视频",
-  metric_cards: "指标卡片",
-  timeline: "时间线",
-  profile_hero: "个人头图",
-  cta_band: "行动号召",
-};
+import { conflictMessage, isRevisionConflict } from "../../lib/securityMessages";
+import zh from "../../locales/admin-content.zh.json";
+import en from "../../locales/admin-content.en.json";
 
 const TYPE_COLORS: Record<SectionType, string> = {
   rich_text: "bg-blue-50 text-blue-700 border border-blue-200",
@@ -44,7 +35,8 @@ const SECTION_TYPES: SectionType[] = [
 ];
 
 export default function Dashboard() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const messages = locale === "en" ? en : zh;
   const mutationLock = useRef(false);
   const [mutating, setMutating] = useState(false);
   const [sections, setSections] = useState<Section[]>([]);
@@ -77,11 +69,11 @@ export default function Dashboard() {
       setPages(pagesData);
       setSections(sectionsData);
     } catch {
-      setError("加载失败，请刷新重试");
+      setError(messages.loadFailed);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [messages.loadFailed]);
 
   useEffect(() => {
     load();
@@ -141,16 +133,23 @@ export default function Dashboard() {
     [newSections[idx], newSections[target]] = [newSections[target], newSections[idx]];
 
     const previousSections = sections;
+    const expectedPreviousOrder = filteredSections.map(section => section.id);
     const reordered = newSections.map((s, sort_order) => ({ ...s, sort_order }));
     let pageIndex = 0;
     setSections(sections.map((s) => s.page_id === selectedPageId ? reordered[pageIndex++] : s));
 
     const orders = newSections.map((s, i) => ({ id: s.id, sort_order: i }));
     try {
-      await reorderSections(orders);
-    } catch {
+      setSections(await reorderSections(orders, expectedPreviousOrder));
+    } catch (error) {
       setSections(previousSections);
-      setError(t.admin.reorderFailed);
+      if (isRevisionConflict(error)) {
+        setError(conflictMessage(locale));
+        try { setSections(await getSections()); }
+        catch { setError(`${conflictMessage(locale)} ${messages.loadFailed}`); }
+      } else {
+        setError(t.admin.reorderFailed);
+      }
     } finally {
       endMutation();
     }
@@ -190,8 +189,8 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-xl font-bold text-slate-800">内容管理</h1>
-          <p className="text-sm text-slate-500 mt-0.5">管理前台展示的内容区块</p>
+          <h1 className="text-xl font-bold text-slate-800">{messages.title}</h1>
+          <p className="text-sm text-slate-500 mt-0.5">{messages.intro}</p>
         </div>
         <div className="flex items-center gap-3">
           <Link
@@ -201,7 +200,7 @@ export default function Dashboard() {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            管理页面
+            {messages.managePages}
           </Link>
           <button
             ref={newTriggerRef}
@@ -220,14 +219,14 @@ export default function Dashboard() {
       {/* Page filter */}
       {pages.length > 0 && (
         <div className="mb-4 flex flex-wrap items-center gap-2">
-          <label className="text-sm text-slate-500">页面筛选：</label>
+          <label className="text-sm text-slate-500">{messages.pageFilter}</label>
           <select
             disabled={mutating}
             value={selectedPageId ? String(selectedPageId) : "all"}
             onChange={(e) => handlePageFilter(e.target.value)}
             className="max-w-full min-w-0 px-3 py-1.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white"
           >
-            <option value="all">全部页面</option>
+            <option value="all">{messages.allPages}</option>
             {pages.map((page) => (
               <option key={page.id} value={String(page.id)}>
                 {page.title_zh} (/{page.slug})
@@ -236,11 +235,11 @@ export default function Dashboard() {
           </select>
           {selectedPageId ? (
             <span className="text-xs text-slate-400">
-              {filteredSections.length} 个区块
+              {messages.sectionCount.replace("{count}", String(filteredSections.length))}
             </span>
           ) : (
             <span className="text-xs text-amber-500">
-              请先选择页面再进行排序
+              {messages.choosePageToSort}
             </span>
           )}
         </div>
@@ -259,8 +258,8 @@ export default function Dashboard() {
           <svg className="w-12 h-12 mx-auto mb-3 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
           </svg>
-          <p className="text-slate-600 font-medium mb-1">暂无内容区块</p>
-          <p className="text-slate-500 text-sm">点击「新建区块」开始添加内容</p>
+          <p className="text-slate-600 font-medium mb-1">{messages.empty}</p>
+          <p className="text-slate-500 text-sm">{messages.emptyHint}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -298,7 +297,7 @@ export default function Dashboard() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-semibold text-slate-800 truncate">{section.title_zh}</span>
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${TYPE_COLORS[section.type]}`}>
-                    {TYPE_LABELS[section.type]}
+                    {t.admin.types[section.type]}
                   </span>
                   {!selectedPageId && pageMap.get(section.page_id) && (
                     <span className="text-xs px-2 py-0.5 rounded-full bg-slate-50 text-slate-400 border border-slate-100">
@@ -307,7 +306,7 @@ export default function Dashboard() {
                   )}
                   {!section.visible && (
                     <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
-                      已隐藏
+                      {messages.hidden}
                     </span>
                   )}
                 </div>
@@ -319,7 +318,7 @@ export default function Dashboard() {
                 <button
                   onClick={() => handleToggleVisible(section)}
                   disabled={mutating}
-                  title={section.visible ? "点击隐藏" : "点击显示"}
+                  title={section.visible ? messages.clickHide : messages.clickShow}
                   className={`w-9 h-5 rounded-full transition-colors relative ${
                     section.visible ? "bg-primary" : "bg-slate-300"
                   }`}
@@ -363,8 +362,8 @@ export default function Dashboard() {
       {/* Delete confirm */}
       <ConfirmDialog
         open={deleteId !== null}
-        title="删除区块"
-        message={`确定删除「${sections.find((s) => s.id === deleteId)?.title_zh}」区块？此操作不可撤销。`}
+        title={messages.deleteTitle}
+        message={messages.deleteMessage.replace("{title}", sections.find((s) => s.id === deleteId)?.title_zh ?? "")}
         confirmText={mutating ? t.admin.updating : t.admin.delete}
         busy={mutating}
         danger
@@ -392,15 +391,7 @@ export default function Dashboard() {
                     {t.admin.types[type]}
                   </span>
                   <span className="text-sm text-slate-600">
-                    {type === "rich_text" && "适合长文字描述、项目介绍"}
-                    {type === "image_gallery" && "适合展示图片、成果照片"}
-                    {type === "data_table" && "适合成员名单、数据统计"}
-                    {type === "external_links" && "适合媒体报道、外部链接"}
-                    {type === "video" && "适合教学视频、展示视频"}
-                    {type === "metric_cards" && "适合数据指标展示"}
-                    {type === "timeline" && "适合时间轴、经历展示"}
-                    {type === "profile_hero" && "适合个人简介头图"}
-                    {type === "cta_band" && "适合行动号召、转化引导"}
+                    {messages.typeHints[type]}
                   </span>
                 </button>
               ))}

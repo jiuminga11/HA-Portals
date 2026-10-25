@@ -40,8 +40,9 @@ export async function deletePage(id: number): Promise<void> {
 }
 
 export async function reorderPages(
-  orders: { id: number; sort_order: number }[]
+  orders: { id: number; sort_order: number }[],
+  expectedPreviousOrder?: number[]
 ): Promise<Page[]> {
-  const res = await client.put<Page[]>("/admin/pages/reorder", { orders });
+  const res = await client.put<Page[]>("/admin/pages/reorder", { orders, expected_previous_order: expectedPreviousOrder });
   return res.data;
 }

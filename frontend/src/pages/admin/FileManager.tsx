@@ -1,3 +1,5 @@
+import adminZh from "../../locales/admin.zh.json";
+import adminEn from "../../locales/admin.en.json";
 import { useEffect, useRef, useState } from "react";
 import { isAxiosError } from "axios";
 import type { FileResponse } from "../../types";
@@ -20,8 +22,8 @@ function formatBytes(bytes: number): string {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("zh-CN", {
+function formatDate(dateStr: string, locale: "zh" | "en"): string {
+  return new Date(dateStr).toLocaleDateString(locale === "en" ? "en-US" : "zh-CN", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -31,7 +33,8 @@ function formatDate(dateStr: string): string {
 }
 
 export default function FileManager() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const labels = locale === "en" ? adminEn : adminZh;
   const [files, setFiles] = useState<FileResponse[]>([]);
   const [filter, setFilter] = useState<FileFilter>("all");
   const [loading, setLoading] = useState(true);
@@ -123,7 +126,7 @@ export default function FileManager() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-bold text-slate-800">文件管理</h1>
+          <h1 className="text-xl font-bold text-slate-800">{labels.files.title}</h1>
           <p className="text-sm text-slate-500 mt-0.5">{t.files.description}</p>
         </div>
         <div className="flex items-center gap-3">
@@ -172,7 +175,7 @@ export default function FileManager() {
               filter === f ? "bg-white shadow-sm text-slate-800" : "text-slate-500 hover:text-slate-700"
             }`}
           >
-            {f === "all" ? "全部" : f === "image" ? "图片" : "视频"}
+            {labels.files.filters[f]}
           </button>
         ))}
       </div>
@@ -187,8 +190,8 @@ export default function FileManager() {
           <svg className="w-12 h-12 mx-auto mb-3 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
           </svg>
-          <p className="text-slate-600 font-medium mb-1">暂无文件</p>
-          <p className="text-slate-500 text-sm">点击「上传文件」按鈕添加</p>
+          <p className="text-slate-600 font-medium mb-1">{labels.files.empty}</p>
+          <p className="text-slate-500 text-sm">{labels.files.emptyHint}</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -211,7 +214,7 @@ export default function FileManager() {
                     <svg className="w-10 h-10 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                     </svg>
-                    <span className="text-xs">视频</span>
+                    <span className="text-xs">{labels.files.video}</span>
                   </div>
                 ) : (
                   <div className="w-full h-full flex flex-col gap-2 items-center justify-center text-slate-500">
@@ -226,7 +229,7 @@ export default function FileManager() {
                 <div className="absolute inset-0 bg-black/50 opacity-100 sm:opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex items-center justify-center gap-2">
                   <button
                     onClick={() => handleCopyUrl(file.file_url)}
-                    title="复制 URL"
+                    title={labels.files.copyUrl}
                     className="w-9 h-9 bg-white/90 rounded-lg flex items-center justify-center text-slate-700 hover:bg-white transition-colors"
                   >
                     {copiedUrl === documentUrl(file.file_url) ? (
@@ -258,7 +261,7 @@ export default function FileManager() {
                   {file.filename}
                 </p>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  {formatBytes(file.file_size)} · {formatDate(file.created_at)}
+                  {formatBytes(file.file_size)} · {formatDate(file.created_at, locale)}
                 </p>
                 {!isImage(file.mime_type) && !isVideo(file.mime_type) && <div className="flex flex-wrap gap-x-3 gap-y-2 mt-3 text-xs">
                   <a href={resolveMediaUrl(file.file_url)} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 text-slate-700">{t.files.viewDocument}</a>

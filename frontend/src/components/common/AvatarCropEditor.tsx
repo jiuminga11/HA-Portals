@@ -1,3 +1,6 @@
+import { useLocale } from "../../hooks/useLocale";
+import adminZh from "../../locales/admin.zh.json";
+import adminEn from "../../locales/admin.en.json";
 import { useEffect, useRef, useState } from "react";
 import { resolveMediaUrl } from "../../lib/basePath";
 
@@ -20,6 +23,8 @@ function parsePosition(pos: string): { x: number; y: number } {
  * dragging here moves the visible window the same way.
  */
 export default function AvatarCropEditor({ src, position, onChange }: Props) {
+  const { locale } = useLocale();
+  const labels = locale === "en" ? adminEn : adminZh;
   const circleRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
   // Ref mirrors the latest position so rapid pointermove events don't read stale props.
@@ -57,24 +62,24 @@ export default function AvatarCropEditor({ src, position, onChange }: Props) {
         className="relative w-32 h-32 rounded-full overflow-hidden border border-slate-200 bg-slate-50 select-none"
         style={{ cursor: dragging ? "grabbing" : "grab", touchAction: "none" }}
         role="img"
-        aria-label="头像取景调整"
+        aria-label={labels.avatar.adjust}
       >
         <img
           src={resolveMediaUrl(src)}
-          alt="头像取景预览"
+          alt={labels.avatar.preview}
           draggable={false}
           className="w-full h-full object-cover pointer-events-none"
           style={{ objectPosition: position }}
         />
       </div>
       <div className="flex items-center gap-3">
-        <p className="text-xs text-slate-400">在圆圈内拖动调整取景（与前台圆形裁切一致）</p>
+        <p className="text-xs text-slate-400">{labels.avatar.hint}</p>
         <button
           type="button"
           onClick={() => onChange("50% 50%")}
           className="text-xs text-primary hover:underline"
         >
-          重置居中
+          {labels.avatar.reset}
         </button>
       </div>
     </div>

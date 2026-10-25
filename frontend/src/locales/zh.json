@@ -11,7 +11,8 @@
     "imageAlt": "图片",
     "videoNotSupported": "您的浏览器不支持视频播放",
     "present": "至今",
-    "viewFullTimeline": "查看完整经历"
+    "showAllTimeline": "展开全部经历（共 {count} 项）",
+    "showRecentTimeline": "收起，仅显示最近经历"
   },
   "pagination": { "prev": "上一页", "next": "下一页" },
   "dataTable": { "index": "序号", "scrollHint": "表格较宽时，可左右滚动查看全部字段；键盘用户可聚焦表格后使用方向键。", "scrollLabel": "完整数据表格，可左右滚动" },

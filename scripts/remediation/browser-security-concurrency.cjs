@@ -80,6 +80,41 @@ const { PYTHON, assertFixture } = require('./browser-env.cjs');
       assert(!body.includes('<iframe')); assert(body.includes('TEST CELL') && body.includes('safe-anchor'));
       editor.off('request', count); await editor.close();
     });
+    await h.check('two-section-order-tabs-conflict-reloads-winner-without-retry', async () => {
+      const before = (await h.api('GET', '/sections')).filter(s => s.page_id === pageId)
+        .sort((a, b) => a.sort_order - b.sort_order || a.id - b.id);
+      assert(before.length >= 2, 'Synthetic page needs multiple sections');
+      await h.remember('/sections/reorder', { orders: before.map((s, sort_order) => ({ id: s.id, sort_order })) });
+      const [a, b] = await Promise.all([h.context.newPage(), h.context.newPage()]);
+      try {
+        for (const tab of [a, b]) {
+          await tab.goto(BASE + `/admin?page_id=${pageId}`);
+          await tab.getByRole('button', { name: t.admin.moveDown, exact: true }).first().waitFor();
+        }
+        const isReorder = r => new URL(r.url()).pathname === '/ha/api/sections/reorder' && r.request().method() === 'PUT';
+        const first = a.waitForResponse(r => isReorder(r) && r.status() === 200);
+        await a.getByRole('button', { name: t.admin.moveDown, exact: true }).first().click();
+        const winnerResponse = await first;
+        assert.deepEqual(winnerResponse.request().postDataJSON().expected_previous_order, before.map(s => s.id));
+        const winner = (await winnerResponse.json()).filter(s => s.page_id === pageId)
+          .sort((x, y) => x.sort_order - y.sort_order || x.id - y.id);
+        let attempts = 0;
+        b.on('request', request => { if (new URL(request.url()).pathname === '/ha/api/sections/reorder' && request.method() === 'PUT') attempts++; });
+        const conflict = b.waitForResponse(r => isReorder(r) && r.status() === 409);
+        const reloaded = b.waitForResponse(r => new URL(r.url()).pathname === '/ha/api/sections' && r.request().method() === 'GET' && r.status() === 200);
+        await b.getByRole('button', { name: t.admin.moveDown, exact: true }).first().click();
+        const loser = await conflict;
+        assert.deepEqual(loser.request().postDataJSON().expected_previous_order, before.map(s => s.id));
+        await reloaded;
+        await b.getByRole('alert').filter({ hasText: message }).waitFor();
+        await h.wait(async () => JSON.stringify(await b.locator('.font-semibold.text-slate-800.truncate').allTextContents())
+          === JSON.stringify(winner.map(s => s.title_zh)));
+        assert.equal(attempts, 1, 'Conflicting reorder must not retry automatically');
+        const persisted = (await h.api('GET', '/sections')).filter(s => s.page_id === pageId)
+          .sort((x, y) => x.sort_order - y.sort_order || x.id - y.id);
+        assert.deepEqual(persisted.map(s => s.id), winner.map(s => s.id));
+      } finally { await a.close(); await b.close(); }
+    });
     await h.check('two-section-editors-conflict-retains-losing-input', async () => {
       const [a, b] = await Promise.all([h.context.newPage(), h.context.newPage()]);
       for (const tab of [a, b]) { await tab.goto(BASE + `/admin/sections/${sectionId}`); await tab.getByLabel(t.admin.titleZh, { exact: true }).waitFor(); }
@@ -139,6 +174,7 @@ const { PYTHON, assertFixture } = require('./browser-env.cjs');
       }
     });
     h.results.pending.push('Legacy clients omitting expected_revision retain unconditional writes; this is not global conflict prevention.');
+    h.results.pending.push('Reorder clients omitting expected_previous_order retain last-writer-wins behavior; an order that changes and returns to the same IDs is not detected.');
   } catch (error) { failure = error; }
   finally { await h.finish(failure); }
 })().catch(error => { console.error(`bootstrap: ${error.name}`); process.exitCode = 1; });

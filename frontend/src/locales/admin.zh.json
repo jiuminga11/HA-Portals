@@ -1,0 +1,438 @@
+{
+  "guide": {
+    "title": "使用说明",
+    "intro": "网站管理操作指南",
+    "sections": [
+      {
+        "title": "快速开始",
+        "items": [
+          {
+            "label": "登录后台",
+            "desc": "使用管理员用户名和密码登录。账号和密码由服务器配置文件设置，后台不提供修改密码功能，如需修改请联系运维人员。"
+          },
+          {
+            "label": "基本流程",
+            "desc": "先在「页面管理」确认要展示的页面，再在「内容管理」为页面添加区块，最后在「站点设置」调整站点名称、图片和外观。"
+          },
+          {
+            "label": "查看效果",
+            "desc": "点击顶栏「访问前台」在新标签页打开公开网站。"
+          },
+          {
+            "label": "保存即公开",
+            "desc": "系统没有草稿或审核流程。保存后修改立即写入数据库，可见页面中的可见区块会在访客下次加载页面时显示新内容。"
+          }
+        ]
+      },
+      {
+        "title": "页面管理",
+        "items": [
+          {
+            "label": "新建页面",
+            "desc": "填写页面路径（slug）和中文标题（必填），英文标题和中英文页面描述可选；页面描述用于搜索与分享信息。"
+          },
+          {
+            "label": "新页面默认公开",
+            "desc": "新页面保存后立即出现在导航中并可访问，请确认标题与描述可以公开。如暂不公开，保存后点击「隐藏」。编辑已隐藏的页面不会自动公开。"
+          },
+          {
+            "label": "页面路径",
+            "desc": "页面路径创建后不可修改，请在创建前确认。"
+          },
+          {
+            "label": "首页保护",
+            "desc": "首页是站点入口，不能隐藏、删除或修改路径，但可以编辑标题与描述。"
+          },
+          {
+            "label": "排序与隐藏",
+            "desc": "使用上移 ↑ / 下移 ↓ 调整页面在导航中的顺序。隐藏的页面不在导航中显示，其网址和区块也不再对外提供，数据仍然保留。"
+          },
+          {
+            "label": "删除页面",
+            "desc": "删除页面会同时删除该页面的全部区块，此操作不可撤销。"
+          }
+        ]
+      },
+      {
+        "title": "内容管理",
+        "items": [
+          {
+            "label": "新建区块",
+            "desc": "点击「新建区块」并选择区块类型，然后选择所属页面、填写标题和内容后保存。区块类型和所属页面在创建后不可更改。新区块默认在前台显示。"
+          },
+          {
+            "label": "中英文标题",
+            "desc": "中文标题必填，英文标题可选。英文页面显示英文标题；英文标题留空时显示中文标题。"
+          },
+          {
+            "label": "区块排序",
+            "desc": "先在「页面筛选」中选择具体页面，再使用上移 ↑ / 下移 ↓ 调整顺序，前台按此顺序从上到下显示。"
+          },
+          {
+            "label": "显示 / 隐藏",
+            "desc": "点击区块卡片上的开关控制是否在前台展示。隐藏的区块仍保留数据，随时可以恢复显示。"
+          },
+          {
+            "label": "删除区块",
+            "desc": "点击删除并确认后永久删除该区块及其内容，此操作不可撤销。"
+          },
+          {
+            "label": "英文页面的原文提示",
+            "desc": "英文页面（网址以 /en/ 开头）中，富文本、图片展示、数据表格、外链和视频这五类区块的内容只有一种语言，会显示“按原文展示”的提示；其他四类区块如果某个中文字段已填写而对应英文字段为空，也会显示该提示，并以中文内容代替。"
+          }
+        ]
+      },
+      {
+        "title": "9 种区块类型",
+        "items": [
+          {
+            "label": "富文本",
+            "desc": "适合长文字介绍。支持二级 / 三级标题、加粗、斜体、有序和无序列表、链接，可通过工具栏的图片按钮直接上传并插入图片。内容为单一语言。"
+          },
+          {
+            "label": "图片展示",
+            "desc": "可一次上传多张图片，为每张图片填写标题，并替换、排序或删除。可设置每行 2–6 列，以及每页 4、8、12、16、20 张或不分页。"
+          },
+          {
+            "label": "数据表格",
+            "desc": "先定义列（标题、宽度、对齐方式、是否加粗，可左右移动），再逐行填写数据。支持从 Excel、Word 表格或 Tab / 逗号分隔文本批量导入，可选择追加或替换现有数据。已有数据行时列的 key 不可修改。"
+          },
+          {
+            "label": "外链",
+            "desc": "每条链接填写标题、URL、来源和日期。"
+          },
+          {
+            "label": "视频",
+            "desc": "每个视频填写标题，并填写外部视频直链（.mp4 / .webm）或上传 MP4 / WebM 文件，可选上传封面图。"
+          },
+          {
+            "label": "指标卡片",
+            "desc": "每张卡片包含中英文标签、数值和中英文详情，最多 6 张。"
+          },
+          {
+            "label": "时间线",
+            "desc": "可选择垂直或水平布局。每个节点包含开始日期、结束日期（留空表示至今）、分类（教育 / 职业 / 研究 / 社区 / 里程碑）、中英文标题、副标题、描述，以及可选的图标名称。"
+          },
+          {
+            "label": "个人头图",
+            "desc": "包含头像（上传后可在圆形预览中拖动调整取景，也可粘贴外部图片 URL）、中英文姓名、标语、使命宣言、标签、社交链接（Email、GitHub、Google Scholar、ORCID、LinkedIn、ResearchGate）和中英文按钮。"
+          },
+          {
+            "label": "行动号召",
+            "desc": "包含中英文描述和按钮。标题使用区块自身的中英文标题，第一个按钮显示为主按钮。"
+          }
+        ]
+      },
+      {
+        "title": "站点设置",
+        "items": [
+          {
+            "label": "站点名称",
+            "desc": "显示在顶部导航；页面和默认搜索标题都缺失时也用作浏览器标题。"
+          },
+          {
+            "label": "首页站点副标题",
+            "desc": "显示在首页的站点介绍区域，并用作横幅图片的替代文本。"
+          },
+          {
+            "label": "页脚文字",
+            "desc": "原样显示在每页底部，留空则不显示。"
+          },
+          {
+            "label": "导航标识图片",
+            "desc": "显示在顶部导航的站点名称旁，留空则只显示名称。"
+          },
+          {
+            "label": "首页横幅图片",
+            "desc": "仅在首页的站点介绍区域显示，留空则不显示横幅。"
+          },
+          {
+            "label": "配色预设",
+            "desc": "提供 5 套预设：青蓝琥珀、靛蓝鼠尾、森绿赤陶（设置中显示为“森林赤陶”）、赛博紫、墨蓝金。选择预设后可再微调主色、渐变色和强调色。"
+          },
+          {
+            "label": "字号与明暗模式",
+            "desc": "公开页面字号可选标准（16px）、大号（18px）、特大（20px）。访客默认明暗模式可选亮色、暗色或跟随系统，仅在访客尚未自行选择时生效。"
+          },
+          {
+            "label": "语言",
+            "desc": "语言由网址决定：/ 为中文，/en/ 为英文。"
+          },
+          {
+            "label": "搜索与分享回退信息",
+            "desc": "中英文默认页面标题、描述和默认分享图片。页面管理中填写的标题和描述优先使用。"
+          },
+          {
+            "label": "保存生效",
+            "desc": "外观修改只更新本页预览，所有设置均需点击「保存」后才会对公开页面生效。"
+          }
+        ]
+      },
+      {
+        "title": "文件管理",
+        "items": [
+          {
+            "label": "上传文件",
+            "desc": "支持图片（JPG / PNG / GIF / WebP）、视频（MP4 / WebM）和 PDF 文档，默认单个文件最大 50MB（可由服务器配置调整）。服务器同时检查文件类型和扩展名。"
+          },
+          {
+            "label": "筛选查看",
+            "desc": "顶部标签可按「全部 / 图片 / 视频」筛选，PDF 文档在「全部」中查看。"
+          },
+          {
+            "label": "复制链接",
+            "desc": "图片和视频卡片上的复制按钮可复制文件的完整网址；PDF 文档可点击「查看文档」或「复制链接」。"
+          },
+          {
+            "label": "删除文件",
+            "desc": "文件正被站点设置或任一区块使用时无法删除，系统会提示文件正在被使用。请先在对应内容中移除引用，保存后再删除。"
+          }
+        ]
+      },
+      {
+        "title": "编辑安全与注意事项",
+        "items": [
+          {
+            "label": "未保存离开提醒",
+            "desc": "编辑区块或站点设置时如有未保存的修改，切换页面、刷新或关闭标签页前会弹出确认提示。"
+          },
+          {
+            "label": "多人同时编辑",
+            "desc": "如果内容在你打开后已被其他标签页或其他人修改，保存时会提示冲突（HTTP 409），不会覆盖对方的修改。你的输入仍保留：请先复制未保存的内容，刷新页面加载最新版本，核对后重新修改并保存。区块、页面、区块排序和站点设置都有此保护。"
+          },
+          {
+            "label": "登录过期",
+            "desc": "登录失效时页面顶部会出现提示，当前输入保留在本标签页，请勿刷新或关闭。点击「在新标签页重新登录」，登录成功后回到原标签页，检查内容后手动点击保存；系统不会自动重试之前的修改。"
+          },
+          {
+            "label": "数据与备份",
+            "desc": "数据库位置由服务器配置 DATABASE_URL 决定（默认为后端目录下的 data/ha-portals.db），上传目录由 UPLOAD_DIR 配置（默认为 uploads）。备份和恢复请由运维人员按照 deploy/README.md 中的发布工具执行（确认全局停写后备份数据库与上传文件），不要手动复制运行中的数据库文件。"
+          }
+        ]
+      }
+    ]
+  },
+  "files": {
+    "title": "文件管理",
+    "filters": {
+      "all": "全部",
+      "image": "图片",
+      "video": "视频"
+    },
+    "empty": "暂无文件",
+    "emptyHint": "点击「上传文件」按鈕添加",
+    "video": "视频",
+    "copyUrl": "复制 URL"
+  },
+  "upload": {
+    "uploadImage": "上传图片",
+    "chooseFile": "选择文件",
+    "failed": "上传失败，请重试",
+    "uploading": "上传中",
+    "clear": "清除",
+    "preview": "预览",
+    "circularHint": "前台显示为圆形裁切效果"
+  },
+  "avatar": {
+    "adjust": "头像取景调整",
+    "preview": "头像取景预览",
+    "hint": "在圆圈内拖动调整取景（与前台圆形裁切一致）",
+    "reset": "重置居中"
+  },
+  "editor": {
+    "emptyHint": "暂无{item}，点击上方按钮添加",
+    "itemNumber": "{item} {n}",
+    "moveUp": "上移",
+    "moveDown": "下移",
+    "remove": "移除",
+    "titleZh": "标题（中文）*",
+    "titleEn": "标题（英文）",
+    "descriptionZh": "描述（中文）",
+    "descriptionEn": "描述（英文）",
+    "buttonLabelZh": "按钮文字（中文）*",
+    "buttonLabelEn": "按钮文字（英文）",
+    "linkUrl": "链接 URL *",
+    "url": "URL *",
+    "addButton": "添加按钮",
+    "urlPlaceholder": "https://..."
+  },
+  "richText": {
+    "uploadFailed": "图片上传失败，请重试",
+    "placeholder": "在此输入内容..."
+  },
+  "imageGallery": {
+    "columns": "每行列数",
+    "columnOption": "{n} 列",
+    "pageSize": "每页数量",
+    "noPaging": "不分页",
+    "pageSizeOption": "{n} 张/页",
+    "imageAlt": "图片",
+    "captionPlaceholder": "图片标题（可选）",
+    "replace": "替换图片",
+    "upload": "上传图片"
+  },
+  "dataTable": {
+    "defaultColumn": "列{n}",
+    "columns": "列定义",
+    "addColumn": "+ 添加列",
+    "noColumns": "暂无列，点击添加",
+    "key": "Key",
+    "keyLocked": "已有数据行时 key 不可修改",
+    "title": "标题",
+    "width": "宽度",
+    "auto": "自适应",
+    "align": "对齐",
+    "left": "左对齐",
+    "center": "居中",
+    "right": "右对齐",
+    "bold": "加粗",
+    "boldShort": "B",
+    "moveLeft": "左移",
+    "moveRight": "右移",
+    "deleteColumn": "删除列",
+    "rows": "数据行",
+    "bulkImport": "📋 批量导入",
+    "addRow": "+ 添加行",
+    "noRows": "暂无数据行",
+    "actions": "操作",
+    "delete": "删除",
+    "importTitle": "批量导入数据",
+    "close": "关闭",
+    "pasteLabel": "从 Excel 或 Word 表格中粘贴数据",
+    "pastePlaceholder": "在此粘贴表格数据\n支持 Excel 复制、Word 表格、Tab 分隔文本\n也支持逗号分隔 (CSV) 格式",
+    "firstRowHeader": "首行为表头",
+    "importMode": "导入方式：",
+    "append": "追加到现有数据",
+    "replace": "替换全部数据",
+    "preview": "预览（{rows} 行 × {cols} 列）",
+    "emptyCell": "（空）",
+    "moreRows": "还有 {n} 行未显示…",
+    "cancel": "取消",
+    "import": "导入",
+    "importRows": "导入 {n} 行",
+    "deleteColumnMessage": "确定删除「{title}」列？该操作会同步清除所有行中该列的数据。",
+    "deleteRow": "删除行",
+    "deleteRowMessage": "确定删除第 {n} 行数据？保存后不可恢复。"
+  },
+  "externalLinks": {
+    "add": "添加链接",
+    "item": "链接",
+    "titleRequired": "标题 *",
+    "titlePlaceholder": "链接标题",
+    "source": "来源",
+    "sourcePlaceholder": "如：CCTV",
+    "date": "日期"
+  },
+  "video": {
+    "uploadFailed": "视频上传失败，请重试",
+    "posterUploadFailed": "封面图上传失败，请重试",
+    "add": "添加视频",
+    "item": "视频",
+    "titleRequired": "视频标题 *",
+    "titlePlaceholder": "教学视频标题",
+    "source": "视频来源 *",
+    "urlPlaceholder": "外部视频直链 URL (*.mp4 / *.webm)",
+    "or": "或",
+    "uploadFile": "上传视频文件",
+    "current": "当前：{url}",
+    "poster": "封面图（可选）",
+    "choosePoster": "选择封面图",
+    "posterAlt": "封面预览",
+    "removePoster": "移除封面"
+  },
+  "metricCards": {
+    "add": "添加卡片",
+    "item": "指标卡片",
+    "card": "卡片",
+    "labelZh": "标签（中文）*",
+    "labelZhPlaceholder": "如：区分效度",
+    "labelEn": "标签（英文）",
+    "labelEnPlaceholder": "e.g. Discriminant Validity",
+    "value": "数值 *",
+    "valuePlaceholder": "如：ρ=0.936、100%、δ=0.852",
+    "detailZh": "详情（中文）",
+    "detailZhPlaceholder": "补充说明",
+    "detailEn": "详情（英文）",
+    "detailEnPlaceholder": "Detail in English"
+  },
+  "ctaBand": {
+    "description": "描述文本",
+    "descriptionZhPlaceholder": "欢迎与我交流合作……",
+    "descriptionEnPlaceholder": "Feel free to reach out...",
+    "titleHint": "标题使用区块自身的中/英文标题；首个按钮为主按钮（强调样式）。",
+    "buttons": "按钮",
+    "buttonZhPlaceholder": "联系我",
+    "buttonEnPlaceholder": "Contact Me",
+    "urlPlaceholder": "/cv 或 https://..."
+  },
+  "profileHero": {
+    "basic": "基本信息",
+    "avatar": "头像",
+    "uploadAvatar": "上传头像",
+    "avatarHint": "支持 JPG/PNG/GIF/WebP，上传后自动填充路径",
+    "avatarUrlPlaceholder": "或粘贴外部图片 URL（https://...）",
+    "nameZh": "姓名（中文）*",
+    "nameZhPlaceholder": "请输入姓名",
+    "nameEn": "姓名（英文）",
+    "nameEnPlaceholder": "Your Name",
+    "taglineZh": "标语（中文）",
+    "taglineZhPlaceholder": "连接AI、心理学与精神医学教育",
+    "taglineEn": "标语（英文）",
+    "taglineEnPlaceholder": "Bridging AI, Psychology & Psychiatry Education",
+    "missionZh": "使命宣言（中文）",
+    "missionZhPlaceholder": "核心理念",
+    "missionEn": "使命宣言（英文）",
+    "missionEnPlaceholder": "Mission statement",
+    "tags": "标签",
+    "tagPlaceholder": "输入标签后按回车添加",
+    "addTag": "添加",
+    "removeTag": "移除标签",
+    "social": "社交链接",
+    "addSocial": "添加社交链接",
+    "platform": "平台",
+    "label": "标签",
+    "labelPlaceholder": "显示名称",
+    "cta": "CTA 按钮",
+    "ctaZhPlaceholder": "查看研究",
+    "ctaEnPlaceholder": "View Research",
+    "ctaUrlPlaceholder": "/research 或 https://...",
+    "platforms": {
+      "email": "Email",
+      "github": "GitHub",
+      "google_scholar": "Google Scholar",
+      "orcid": "ORCID",
+      "linkedin": "LinkedIn",
+      "researchgate": "ResearchGate"
+    }
+  },
+  "timeline": {
+    "categories": {
+      "education": "教育",
+      "career": "职业",
+      "research": "研究",
+      "community": "社区",
+      "milestone": "里程碑"
+    },
+    "layout": "布局方向：",
+    "vertical": "垂直",
+    "horizontal": "水平",
+    "add": "添加时间节点",
+    "item": "时间节点",
+    "node": "节点",
+    "start": "开始日期 *",
+    "startPlaceholder": "2023 或 2023-09",
+    "end": "结束日期",
+    "endPlaceholder": "留空表示至今",
+    "category": "分类",
+    "titleZhPlaceholder": "如：学校或机构名称",
+    "titleEnPlaceholder": "e.g. Institution name",
+    "subtitleZh": "副标题（中文）",
+    "subtitleZhPlaceholder": "如：心理学 学术型硕士",
+    "subtitleEn": "副标题（英文）",
+    "subtitleEnPlaceholder": "e.g. M.S. Psychology",
+    "descriptionZhPlaceholder": "详细描述",
+    "descriptionEnPlaceholder": "Description in English",
+    "icon": "图标名称（可选）",
+    "iconPlaceholder": "Lucide 图标名，如：graduation-cap"
+  }
+}

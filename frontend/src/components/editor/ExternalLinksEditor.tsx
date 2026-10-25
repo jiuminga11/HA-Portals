@@ -1,3 +1,6 @@
+import { useLocale } from "../../hooks/useLocale";
+import adminZh from "../../locales/admin.zh.json";
+import adminEn from "../../locales/admin.en.json";
 import type { ExternalLinksContent, ExternalLinkItem } from "../../types";
 
 interface Props {
@@ -10,6 +13,8 @@ function emptyItem(): ExternalLinkItem {
 }
 
 export default function ExternalLinksEditor({ content, onChange }: Props) {
+  const { locale } = useLocale();
+  const labels = locale === "en" ? adminEn : adminZh;
   const { items = [] } = content;
 
   const update = (newItems: ExternalLinkItem[]) => {
@@ -44,12 +49,12 @@ export default function ExternalLinksEditor({ content, onChange }: Props) {
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
         </svg>
-        添加链接
+        {labels.externalLinks.add}
       </button>
 
       {items.length === 0 && (
         <p className="text-sm text-slate-400 text-center py-6 bg-slate-50 rounded-lg border border-slate-200">
-          暂无链接，点击上方按钮添加
+          {labels.editor.emptyHint.replace("{item}", labels.externalLinks.item)}
         </p>
       )}
 
@@ -58,7 +63,7 @@ export default function ExternalLinksEditor({ content, onChange }: Props) {
           <div key={idx} className="bg-white border border-slate-200 rounded-xl p-4 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                链接 {idx + 1}
+                {labels.externalLinks.item} {idx + 1}
               </span>
               <div className="flex items-center gap-1">
                 <button
@@ -90,38 +95,38 @@ export default function ExternalLinksEditor({ content, onChange }: Props) {
             </div>
             <div className="space-y-2">
               <div>
-                <label className="text-xs text-slate-500 mb-1 block">标题 *</label>
+                <label className="text-xs text-slate-500 mb-1 block">{labels.externalLinks.titleRequired}</label>
                 <input
                   type="text"
                   value={item.title}
                   onChange={(e) => updateItem(idx, { title: e.target.value })}
-                  placeholder="链接标题"
+                  placeholder={labels.externalLinks.titlePlaceholder}
                   className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 ring-primary"
                 />
               </div>
               <div>
-                <label className="text-xs text-slate-500 mb-1 block">URL *</label>
+                <label className="text-xs text-slate-500 mb-1 block">{labels.editor.url}</label>
                 <input
                   type="url"
                   value={item.url}
                   onChange={(e) => updateItem(idx, { url: e.target.value })}
-                  placeholder="https://..."
+                  placeholder={labels.editor.urlPlaceholder}
                   className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 ring-primary"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-slate-500 mb-1 block">来源</label>
+                  <label className="text-xs text-slate-500 mb-1 block">{labels.externalLinks.source}</label>
                   <input
                     type="text"
                     value={item.source || ""}
                     onChange={(e) => updateItem(idx, { source: e.target.value })}
-                    placeholder="如：CCTV"
+                    placeholder={labels.externalLinks.sourcePlaceholder}
                     className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 ring-primary"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-500 mb-1 block">日期</label>
+                  <label className="text-xs text-slate-500 mb-1 block">{labels.externalLinks.date}</label>
                   <input
                     type="date"
                     value={item.date || ""}

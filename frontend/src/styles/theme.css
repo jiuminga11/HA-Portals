@@ -387,6 +387,10 @@
 /* Reading surfaces: preserve palette accents without gradient text endpoints
    becoming low-contrast. These tokens do not change the CMS content. */
 .public-page, .public-state, .profile-hero { background-color: var(--color-bg); color: var(--text-base); }
+/* Loading placeholder fills the first viewport (below the fixed 4rem header) so
+   the footer is never painted above the fold and then pushed down when content
+   arrives. lvh covers mobile toolbar states; vh is the fallback. */
+.public-loading { min-height: calc(100vh - 4rem); min-height: calc(100lvh - 4rem); }
 .reading-muted { color: var(--reading-muted); }
 .page-heading { color: var(--ink); }
 .text-gradient, .tech-prose :is(h1, h2, h3, h4) {

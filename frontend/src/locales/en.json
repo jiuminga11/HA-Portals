@@ -11,7 +11,8 @@
     "imageAlt": "Image",
     "videoNotSupported": "Your browser does not support video playback",
     "present": "Present",
-    "viewFullTimeline": "View full timeline"
+    "showAllTimeline": "Show all {count} entries",
+    "showRecentTimeline": "Show recent entries only"
   },
   "pagination": { "prev": "Previous", "next": "Next" },
   "dataTable": { "index": "No.", "scrollHint": "If the table is wider than the screen, scroll horizontally to see every field. Keyboard users can focus the table and use the arrow keys.", "scrollLabel": "Complete data table, scroll horizontally" },

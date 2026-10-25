@@ -1,18 +1,12 @@
+import { useLocale } from "../../hooks/useLocale";
+import adminZh from "../../locales/admin.zh.json";
+import adminEn from "../../locales/admin.en.json";
 import type { TimelineContent, TimelineItem } from "../../types";
 
 interface Props {
   content: TimelineContent;
   onChange: (content: TimelineContent) => void;
 }
-
-const CATEGORY_OPTIONS = [
-  { value: "education", label: "教育" },
-  { value: "career", label: "职业" },
-  { value: "research", label: "研究" },
-  { value: "community", label: "社区" },
-  { value: "milestone", label: "里程碑" },
-];
-
 function emptyItem(): TimelineItem {
   return {
     date_start: "",
@@ -29,6 +23,16 @@ function emptyItem(): TimelineItem {
 }
 
 export default function TimelineEditor({ content, onChange }: Props) {
+  const { locale } = useLocale();
+  const labels = locale === "en" ? adminEn : adminZh;
+  const categoryOptions = [
+    { value: "education", label: labels.timeline.categories.education },
+    { value: "career", label: labels.timeline.categories.career },
+    { value: "research", label: labels.timeline.categories.research },
+    { value: "community", label: labels.timeline.categories.community },
+    { value: "milestone", label: labels.timeline.categories.milestone },
+  ];
+
   const { items = [], layout = "vertical" } = content;
 
   const updateItems = (newItems: TimelineItem[]) => {
@@ -61,7 +65,7 @@ export default function TimelineEditor({ content, onChange }: Props) {
     <div className="space-y-4">
       {/* Layout selector */}
       <div className="flex items-center gap-4">
-        <span className="text-sm text-slate-600 font-medium">布局方向：</span>
+        <span className="text-sm text-slate-600 font-medium">{labels.timeline.layout}</span>
         <label className="inline-flex items-center gap-1.5 cursor-pointer">
           <input
             type="radio"
@@ -71,7 +75,7 @@ export default function TimelineEditor({ content, onChange }: Props) {
             onChange={() => setLayout("vertical")}
             className="accent-[var(--color-primary)]"
           />
-          <span className="text-sm text-slate-600">垂直</span>
+          <span className="text-sm text-slate-600">{labels.timeline.vertical}</span>
         </label>
         <label className="inline-flex items-center gap-1.5 cursor-pointer">
           <input
@@ -82,7 +86,7 @@ export default function TimelineEditor({ content, onChange }: Props) {
             onChange={() => setLayout("horizontal")}
             className="accent-[var(--color-primary)]"
           />
-          <span className="text-sm text-slate-600">水平</span>
+          <span className="text-sm text-slate-600">{labels.timeline.horizontal}</span>
         </label>
       </div>
 
@@ -94,12 +98,12 @@ export default function TimelineEditor({ content, onChange }: Props) {
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
         </svg>
-        添加时间节点
+        {labels.timeline.add}
       </button>
 
       {items.length === 0 && (
         <p className="text-sm text-slate-400 text-center py-6 bg-slate-50 rounded-lg border border-slate-200">
-          暂无时间节点，点击上方按钮添加
+          {labels.editor.emptyHint.replace("{item}", labels.timeline.item)}
         </p>
       )}
 
@@ -108,7 +112,7 @@ export default function TimelineEditor({ content, onChange }: Props) {
           <div key={idx} className="bg-white border border-slate-200 rounded-xl p-4 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                节点 {idx + 1}
+                {labels.timeline.node} {idx + 1}
               </span>
               <div className="flex items-center gap-1">
                 <button type="button" onClick={() => moveItem(idx, -1)} disabled={idx === 0} className="p-1 text-slate-400 hover:text-slate-600 disabled:opacity-30">↑</button>
@@ -125,33 +129,33 @@ export default function TimelineEditor({ content, onChange }: Props) {
               {/* Date & Category row */}
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="text-xs text-slate-500 mb-1 block">开始日期 *</label>
+                  <label className="text-xs text-slate-500 mb-1 block">{labels.timeline.start}</label>
                   <input
                     type="text"
                     value={item.date_start}
                     onChange={(e) => updateItem(idx, { date_start: e.target.value })}
-                    placeholder="2023 或 2023-09"
+                    placeholder={labels.timeline.startPlaceholder}
                     className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 ring-primary"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-500 mb-1 block">结束日期</label>
+                  <label className="text-xs text-slate-500 mb-1 block">{labels.timeline.end}</label>
                   <input
                     type="text"
                     value={item.date_end || ""}
                     onChange={(e) => updateItem(idx, { date_end: e.target.value || undefined })}
-                    placeholder="留空表示至今"
+                    placeholder={labels.timeline.endPlaceholder}
                     className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 ring-primary"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-500 mb-1 block">分类</label>
+                  <label className="text-xs text-slate-500 mb-1 block">{labels.timeline.category}</label>
                   <select
                     value={item.category}
                     onChange={(e) => updateItem(idx, { category: e.target.value })}
                     className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 ring-primary"
                   >
-                    {CATEGORY_OPTIONS.map((opt) => (
+                    {categoryOptions.map((opt) => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
                     ))}
                   </select>
@@ -161,22 +165,22 @@ export default function TimelineEditor({ content, onChange }: Props) {
               {/* Title */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-slate-500 mb-1 block">标题（中文）*</label>
+                  <label className="text-xs text-slate-500 mb-1 block">{labels.editor.titleZh}</label>
                   <input
                     type="text"
                     value={item.title_zh}
                     onChange={(e) => updateItem(idx, { title_zh: e.target.value })}
-                    placeholder="如：河南医药大学"
+                    placeholder={labels.timeline.titleZhPlaceholder}
                     className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 ring-primary"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-500 mb-1 block">标题（英文）</label>
+                  <label className="text-xs text-slate-500 mb-1 block">{labels.editor.titleEn}</label>
                   <input
                     type="text"
                     value={item.title_en}
                     onChange={(e) => updateItem(idx, { title_en: e.target.value })}
-                    placeholder="e.g. Henan Medical University"
+                    placeholder={labels.timeline.titleEnPlaceholder}
                     className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 ring-primary"
                   />
                 </div>
@@ -185,22 +189,22 @@ export default function TimelineEditor({ content, onChange }: Props) {
               {/* Subtitle */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-slate-500 mb-1 block">副标题（中文）</label>
+                  <label className="text-xs text-slate-500 mb-1 block">{labels.timeline.subtitleZh}</label>
                   <input
                     type="text"
                     value={item.subtitle_zh}
                     onChange={(e) => updateItem(idx, { subtitle_zh: e.target.value })}
-                    placeholder="如：心理学 学术型硕士"
+                    placeholder={labels.timeline.subtitleZhPlaceholder}
                     className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 ring-primary"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-500 mb-1 block">副标题（英文）</label>
+                  <label className="text-xs text-slate-500 mb-1 block">{labels.timeline.subtitleEn}</label>
                   <input
                     type="text"
                     value={item.subtitle_en}
                     onChange={(e) => updateItem(idx, { subtitle_en: e.target.value })}
-                    placeholder="e.g. M.S. Psychology"
+                    placeholder={labels.timeline.subtitleEnPlaceholder}
                     className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 ring-primary"
                   />
                 </div>
@@ -209,21 +213,21 @@ export default function TimelineEditor({ content, onChange }: Props) {
               {/* Description */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-slate-500 mb-1 block">描述（中文）</label>
+                  <label className="text-xs text-slate-500 mb-1 block">{labels.editor.descriptionZh}</label>
                   <textarea
                     value={item.description_zh}
                     onChange={(e) => updateItem(idx, { description_zh: e.target.value })}
-                    placeholder="详细描述"
+                    placeholder={labels.timeline.descriptionZhPlaceholder}
                     rows={2}
                     className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 ring-primary resize-none"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-500 mb-1 block">描述（英文）</label>
+                  <label className="text-xs text-slate-500 mb-1 block">{labels.editor.descriptionEn}</label>
                   <textarea
                     value={item.description_en}
                     onChange={(e) => updateItem(idx, { description_en: e.target.value })}
-                    placeholder="Description in English"
+                    placeholder={labels.timeline.descriptionEnPlaceholder}
                     rows={2}
                     className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 ring-primary resize-none"
                   />
@@ -232,12 +236,12 @@ export default function TimelineEditor({ content, onChange }: Props) {
 
               {/* Icon */}
               <div>
-                <label className="text-xs text-slate-500 mb-1 block">图标名称（可选）</label>
+                <label className="text-xs text-slate-500 mb-1 block">{labels.timeline.icon}</label>
                 <input
                   type="text"
                   value={item.icon || ""}
                   onChange={(e) => updateItem(idx, { icon: e.target.value || undefined })}
-                  placeholder="Lucide 图标名，如：graduation-cap"
+                  placeholder={labels.timeline.iconPlaceholder}
                   className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 ring-primary"
                 />
               </div>

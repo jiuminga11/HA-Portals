@@ -1,0 +1,28 @@
+{
+  "loadFailed": "Failed to load. Refresh and try again.",
+  "title": "Content management",
+  "intro": "Manage content sections displayed on the public site",
+  "managePages": "Manage pages",
+  "pageFilter": "Filter by page:",
+  "allPages": "All pages",
+  "sectionCount": "{count} sections",
+  "choosePageToSort": "Select a page before reordering",
+  "empty": "No content sections yet",
+  "emptyHint": "Click “New section” to start adding content",
+  "hidden": "Hidden",
+  "clickHide": "Click to hide",
+  "clickShow": "Click to show",
+  "deleteTitle": "Delete section",
+  "deleteMessage": "Delete the “{title}” section? This cannot be undone.",
+  "typeHints": {
+    "rich_text": "For long descriptions and project introductions",
+    "image_gallery": "For images and achievement photos",
+    "data_table": "For member lists and statistics",
+    "external_links": "For media coverage and external links",
+    "video": "For instructional and showcase videos",
+    "metric_cards": "For displaying key metrics",
+    "timeline": "For timelines and experience",
+    "profile_hero": "For a personal introduction header",
+    "cta_band": "For calls to action and conversion prompts"
+  }
+}

@@ -1,3 +1,6 @@
+import { useLocale } from "../../hooks/useLocale";
+import adminZh from "../../locales/admin.zh.json";
+import adminEn from "../../locales/admin.en.json";
 import { useRef, useState } from "react";
 import type { DataTableContent, DataTableColumn } from "../../types";
 import ConfirmDialog from "../common/ConfirmDialog";
@@ -80,6 +83,8 @@ function parsePaste(e: React.ClipboardEvent<HTMLTextAreaElement>): string[][] | 
 /* ────────────────── Component ────────────────── */
 
 export default function DataTableEditor({ content, onChange }: Props) {
+  const { locale } = useLocale();
+  const labels = locale === "en" ? adminEn : adminZh;
   const { columns = [], rows = [] } = content;
   const hasRows = rows.length > 0;
   const [confirmDeleteCol, setConfirmDeleteCol] = useState<string | null>(null);
@@ -99,7 +104,7 @@ export default function DataTableEditor({ content, onChange }: Props) {
 
   const addColumn = () => {
     const key = `col_${colCounter++}`;
-    update({ columns: [...columns, { key, title: `列${columns.length + 1}` }] });
+    update({ columns: [...columns, { key, title: labels.dataTable.defaultColumn.replace("{n}", String(columns.length + 1)) }] });
   };
 
   const updateColumn = (index: number, patch: Partial<DataTableColumn>) => {
@@ -184,7 +189,7 @@ export default function DataTableEditor({ content, onChange }: Props) {
       // Use existing column titles or generate defaults
       const colCount = importGrid[0].length;
       headerRow = Array.from({ length: colCount }, (_, i) =>
-        columns[i]?.title || `列${i + 1}`
+        columns[i]?.title || labels.dataTable.defaultColumn.replace("{n}", String(i + 1))
       );
       dataRows = importGrid;
     }
@@ -194,7 +199,7 @@ export default function DataTableEditor({ content, onChange }: Props) {
       const existing = columns.find((c) => c.title === title);
       if (existing) return existing;
       const key = `col_${colCounter++}`;
-      return { key, title: title || `列${i + 1}` };
+      return { key, title: title || labels.dataTable.defaultColumn.replace("{n}", String(i + 1)) };
     });
 
     // Build rows
@@ -233,23 +238,23 @@ export default function DataTableEditor({ content, onChange }: Props) {
       {/* Column definitions */}
       <div className="bg-slate-50 rounded-lg border border-slate-200 p-4 space-y-3">
         <div className="flex items-center justify-between">
-          <h4 className="text-sm font-semibold text-slate-700">列定义</h4>
+          <h4 className="text-sm font-semibold text-slate-700">{labels.dataTable.columns}</h4>
           <button
             type="button"
             onClick={addColumn}
             className="text-xs px-3 py-1.5 bg-primary text-white rounded-lg hover:opacity-90 transition-opacity"
           >
-            + 添加列
+            {labels.dataTable.addColumn}
           </button>
         </div>
         {columns.length === 0 ? (
-          <p className="text-xs text-slate-400 text-center py-2">暂无列，点击添加</p>
+          <p className="text-xs text-slate-400 text-center py-2">{labels.dataTable.noColumns}</p>
         ) : (
           <div className="space-y-2">
             {columns.map((col, idx) => (
               <div key={col.key} className="flex items-center gap-2 flex-wrap">
                 <div className="flex items-center gap-1">
-                  <span className="text-xs text-slate-500 w-6">Key</span>
+                  <span className="text-xs text-slate-500 w-6">{labels.dataTable.key}</span>
                   <input
                     type="text"
                     value={col.key}
@@ -259,7 +264,7 @@ export default function DataTableEditor({ content, onChange }: Props) {
                         updateColumn(idx, { key: e.target.value.replace(/\s+/g, "_") });
                       }
                     }}
-                    title={hasRows ? "已有数据行时 key 不可修改" : ""}
+                    title={hasRows ? labels.dataTable.keyLocked : ""}
                     className={`text-sm border rounded-lg px-2 py-1 w-28 font-mono ${
                       hasRows
                         ? "bg-slate-100 text-slate-400 cursor-not-allowed border-slate-200"
@@ -268,7 +273,7 @@ export default function DataTableEditor({ content, onChange }: Props) {
                   />
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="text-xs text-slate-500 w-6">标题</span>
+                  <span className="text-xs text-slate-500 w-6">{labels.dataTable.title}</span>
                   <input
                     type="text"
                     value={col.title}
@@ -277,45 +282,45 @@ export default function DataTableEditor({ content, onChange }: Props) {
                   />
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="text-xs text-slate-500 w-8">宽度</span>
+                  <span className="text-xs text-slate-500 w-8">{labels.dataTable.width}</span>
                   <input
                     type="number"
                     value={col.width || ""}
                     onChange={(e) => updateColumn(idx, { width: e.target.value ? Number(e.target.value) : undefined })}
-                    placeholder="自适应"
+                    placeholder={labels.dataTable.auto}
                     className="text-sm border border-slate-200 rounded-lg px-2 py-1 w-20 bg-white focus:outline-none focus:ring-1 ring-primary"
                   />
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="text-xs text-slate-500 w-8">对齐</span>
+                  <span className="text-xs text-slate-500 w-8">{labels.dataTable.align}</span>
                   <select
                     value={col.align || 'left'}
                     onChange={(e) => updateColumn(idx, { align: e.target.value as 'left' | 'center' | 'right' })}
                     className="text-sm border border-slate-200 rounded-lg px-2 py-1 bg-white focus:outline-none focus:ring-1 ring-primary"
                   >
-                    <option value="left">左对齐</option>
-                    <option value="center">居中</option>
-                    <option value="right">右对齐</option>
+                    <option value="left">{labels.dataTable.left}</option>
+                    <option value="center">{labels.dataTable.center}</option>
+                    <option value="right">{labels.dataTable.right}</option>
                   </select>
                 </div>
                 <button
                   type="button"
                   onClick={() => updateColumn(idx, { bold: !col.bold })}
-                  title="加粗"
+                  title={labels.dataTable.bold}
                   className={`text-xs px-2 py-1 rounded border transition-colors ${
                     col.bold
                       ? 'bg-slate-700 text-white border-slate-700'
                       : 'bg-white text-slate-500 border-slate-200 hover:border-slate-400'
                   }`}
                 >
-                  <strong>B</strong>
+                  <strong>{labels.dataTable.boldShort}</strong>
                 </button>
                 <div className="flex items-center gap-0.5">
                   <button
                     type="button"
                     onClick={() => moveColumn(idx, -1)}
                     disabled={idx === 0}
-                    title="左移"
+                    title={labels.dataTable.moveLeft}
                     className="text-xs w-6 h-6 flex items-center justify-center rounded border border-slate-200 text-slate-400 hover:text-slate-600 hover:border-slate-400 disabled:opacity-30 transition-colors"
                   >
                     ←
@@ -324,7 +329,7 @@ export default function DataTableEditor({ content, onChange }: Props) {
                     type="button"
                     onClick={() => moveColumn(idx, 1)}
                     disabled={idx === columns.length - 1}
-                    title="右移"
+                    title={labels.dataTable.moveRight}
                     className="text-xs w-6 h-6 flex items-center justify-center rounded border border-slate-200 text-slate-400 hover:text-slate-600 hover:border-slate-400 disabled:opacity-30 transition-colors"
                   >
                     →
@@ -335,7 +340,7 @@ export default function DataTableEditor({ content, onChange }: Props) {
                   onClick={() => setConfirmDeleteCol(col.key)}
                   className="text-xs text-red-400 hover:text-red-600 px-2 py-1 rounded hover:bg-red-50 transition-colors"
                 >
-                  删除列
+                  {labels.dataTable.deleteColumn}
                 </button>
               </div>
             ))}
@@ -346,14 +351,14 @@ export default function DataTableEditor({ content, onChange }: Props) {
       {/* Rows */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h4 className="text-sm font-semibold text-slate-700">数据行</h4>
+          <h4 className="text-sm font-semibold text-slate-700">{labels.dataTable.rows}</h4>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={openImport}
               className="text-xs px-3 py-1.5 border border-slate-300 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors"
             >
-              📋 批量导入
+              {labels.dataTable.bulkImport}
             </button>
             <button
               type="button"
@@ -361,14 +366,14 @@ export default function DataTableEditor({ content, onChange }: Props) {
               disabled={columns.length === 0}
               className="text-xs px-3 py-1.5 bg-primary text-white rounded-lg hover:opacity-90 disabled:opacity-40 transition-opacity"
             >
-              + 添加行
+              {labels.dataTable.addRow}
             </button>
           </div>
         </div>
 
         {rows.length === 0 ? (
           <p className="text-sm text-slate-400 text-center py-4 bg-slate-50 rounded-lg border border-slate-200">
-            暂无数据行
+            {labels.dataTable.noRows}
           </p>
         ) : (
           <div className="overflow-x-auto rounded-lg border border-slate-200">
@@ -380,7 +385,7 @@ export default function DataTableEditor({ content, onChange }: Props) {
                       {col.title}
                     </th>
                   ))}
-                  <th className="px-3 py-2 text-center text-xs font-medium text-slate-500 w-16">操作</th>
+                  <th className="px-3 py-2 text-center text-xs font-medium text-slate-500 w-16">{labels.dataTable.actions}</th>
                 </tr>
               </thead>
               <tbody>
@@ -402,7 +407,7 @@ export default function DataTableEditor({ content, onChange }: Props) {
                         onClick={() => setConfirmDeleteRow(rowIdx)}
                         className="text-red-400 hover:text-red-600 text-xs px-2 py-1 rounded hover:bg-red-50"
                       >
-                        删除
+                        {labels.dataTable.delete}
                       </button>
                     </td>
                   </tr>
@@ -422,7 +427,7 @@ export default function DataTableEditor({ content, onChange }: Props) {
           >
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
-              <h3 className="text-base font-semibold text-slate-800">批量导入数据</h3>
+              <h3 className="text-base font-semibold text-slate-800">{labels.dataTable.importTitle}</h3>
               <button
                 type="button"
                 onClick={() => setImportOpen(false)}
@@ -437,14 +442,14 @@ export default function DataTableEditor({ content, onChange }: Props) {
               {/* Paste area */}
               <div>
                 <label className="text-sm font-medium text-slate-700 block mb-1.5">
-                  从 Excel 或 Word 表格中粘贴数据
+                  {labels.dataTable.pasteLabel}
                 </label>
                 <textarea
                   ref={textareaRef}
                   value={importText}
                   onChange={(e) => handleTextChange(e.target.value)}
                   onPaste={handlePaste}
-                  placeholder={"在此粘贴表格数据\n支持 Excel 复制、Word 表格、Tab 分隔文本\n也支持逗号分隔 (CSV) 格式"}
+                  placeholder={labels.dataTable.pastePlaceholder}
                   className="w-full h-32 text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 ring-primary font-mono resize-none"
                 />
               </div>
@@ -460,17 +465,17 @@ export default function DataTableEditor({ content, onChange }: Props) {
                         onChange={(e) => setFirstRowIsHeader(e.target.checked)}
                         className="rounded border-slate-300"
                       />
-                      首行为表头
+                      {labels.dataTable.firstRowHeader}
                     </label>
                     <div className="flex items-center gap-2 text-sm text-slate-600">
-                      <span>导入方式：</span>
+                      <span>{labels.dataTable.importMode}</span>
                       <select
                         value={importMode}
                         onChange={(e) => setImportMode(e.target.value as "append" | "replace")}
                         className="text-sm border border-slate-200 rounded-lg px-2 py-1 bg-white focus:outline-none focus:ring-1 ring-primary"
                       >
-                        <option value="append">追加到现有数据</option>
-                        <option value="replace">替换全部数据</option>
+                        <option value="append">{labels.dataTable.append}</option>
+                        <option value="replace">{labels.dataTable.replace}</option>
                       </select>
                     </div>
                   </div>
@@ -478,7 +483,7 @@ export default function DataTableEditor({ content, onChange }: Props) {
                   {/* Preview */}
                   <div>
                     <p className="text-sm font-medium text-slate-700 mb-1.5">
-                      预览（{previewRows.length} 行 × {importGrid[0].length} 列）
+                      {labels.dataTable.preview.replace("{rows}", String(previewRows.length)).replace("{cols}", String(importGrid[0].length))}
                     </p>
                     <div className="overflow-x-auto rounded-lg border border-slate-200 max-h-52">
                       <table className="w-full text-sm">
@@ -487,7 +492,7 @@ export default function DataTableEditor({ content, onChange }: Props) {
                             <tr className="bg-slate-100 border-b border-slate-200">
                               {previewHeaders.map((h, i) => (
                                 <th key={i} className="px-3 py-1.5 text-left text-xs font-semibold text-slate-600 whitespace-nowrap">
-                                  {h || <span className="text-slate-300">（空）</span>}
+                                  {h || <span className="text-slate-300">{labels.dataTable.emptyCell}</span>}
                                 </th>
                               ))}
                             </tr>
@@ -509,7 +514,7 @@ export default function DataTableEditor({ content, onChange }: Props) {
                                 colSpan={importGrid[0].length}
                                 className="px-3 py-1.5 text-center text-xs text-slate-400 bg-slate-50"
                               >
-                                还有 {previewRows.length - 20} 行未显示…
+                                {labels.dataTable.moreRows.replace("{n}", String(previewRows.length - 20))}
                               </td>
                             </tr>
                           )}
@@ -528,7 +533,7 @@ export default function DataTableEditor({ content, onChange }: Props) {
                 onClick={() => setImportOpen(false)}
                 className="text-sm px-4 py-2 border border-slate-300 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors"
               >
-                取消
+                {labels.dataTable.cancel}
               </button>
               <button
                 type="button"
@@ -536,7 +541,7 @@ export default function DataTableEditor({ content, onChange }: Props) {
                 disabled={!importGrid || previewRows.length === 0}
                 className="text-sm px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90 disabled:opacity-40 transition-opacity"
               >
-                导入 {previewRows.length > 0 ? `${previewRows.length} 行` : ""}
+                {previewRows.length > 0 ? labels.dataTable.importRows.replace("{n}", String(previewRows.length)) : labels.dataTable.import}
               </button>
             </div>
           </div>
@@ -545,18 +550,18 @@ export default function DataTableEditor({ content, onChange }: Props) {
 
       <ConfirmDialog
         open={!!confirmDeleteCol}
-        title="删除列"
-        message={`确定删除「${columns.find((c) => c.key === confirmDeleteCol)?.title || confirmDeleteCol}」列？该操作会同步清除所有行中该列的数据。`}
-        confirmText="删除"
+        title={labels.dataTable.deleteColumn}
+        message={labels.dataTable.deleteColumnMessage.replace("{title}", () => columns.find((c) => c.key === confirmDeleteCol)?.title || confirmDeleteCol || "")}
+        confirmText={labels.dataTable.delete}
         danger
         onConfirm={() => confirmDeleteCol && deleteColumn(confirmDeleteCol)}
         onCancel={() => setConfirmDeleteCol(null)}
       />
       <ConfirmDialog
         open={confirmDeleteRow !== null}
-        title="删除行"
-        message={`确定删除第 ${confirmDeleteRow !== null ? confirmDeleteRow + 1 : ''} 行数据？保存后不可恢复。`}
-        confirmText="删除"
+        title={labels.dataTable.deleteRow}
+        message={labels.dataTable.deleteRowMessage.replace("{n}", confirmDeleteRow !== null ? String(confirmDeleteRow + 1) : "")}
+        confirmText={labels.dataTable.delete}
         danger
         onConfirm={() => { if (confirmDeleteRow !== null) { deleteRow(confirmDeleteRow); setConfirmDeleteRow(null); } }}
         onCancel={() => setConfirmDeleteRow(null)}

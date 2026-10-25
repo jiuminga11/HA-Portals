@@ -1,9 +1,7 @@
-import { useLayoutEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { useId, useLayoutEffect, useRef, useState } from "react";
 import type { TimelineContent, TimelineItem } from "../../types";
 import { useLocale } from "../../hooks/useLocale";
 import { contentLang } from "../../lib/displayContent";
-import { localePath } from "../../lib/localePath";
 
 interface Props {
   content: TimelineContent;
@@ -88,9 +86,12 @@ function TimelineRow({ item, isLast, transitionDelay }: { item: TimelineItem; is
 }
 
 export default function Timeline({ content, isHome = false }: Props) {
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const { items = [] } = content;
   const listRef = useRef<HTMLDivElement>(null);
+  const revealedRef = useRef(false);
+  const [expanded, setExpanded] = useState(false);
+  const listId = useId();
 
   // §7.3 slide-in: one observer per Timeline (not per row), §7.1 contract.
   // Stagger comes from per-row inline transition-delay.
@@ -98,6 +99,7 @@ export default function Timeline({ content, isHome = false }: Props) {
     const el = listRef.current;
     if (!el) return;
     const showAll = () => {
+      revealedRef.current = true;
       el.querySelectorAll(".reveal-x").forEach((row) => row.classList.add("visible"));
     };
     if (typeof IntersectionObserver === "undefined") {
@@ -117,6 +119,14 @@ export default function Timeline({ content, isHome = false }: Props) {
     return () => observer.disconnect();
   }, []);
 
+  // Rows mounted by expanding after the reveal must not stay transparent.
+  useLayoutEffect(() => {
+    const el = listRef.current;
+    if (el && revealedRef.current) {
+      el.querySelectorAll(".reveal-x").forEach((row) => row.classList.add("visible"));
+    }
+  }, [expanded]);
+
   if (items.length === 0) {
     return (
       <div className="text-center py-8" style={{ color: 'var(--ink-4)' }}>
@@ -126,30 +136,35 @@ export default function Timeline({ content, isHome = false }: Props) {
   }
 
   // DB stores items oldest-first. On home, preview the LAST N (most recent)
-  // while keeping chronological order for CV-style reading continuity.
-  const truncated = isHome && items.length > HOME_LIMIT;
-  const visibleItems = truncated ? items.slice(-HOME_LIMIT) : items;
+  // in chronological order. The toggle exists only when more entries exist,
+  // and reveals them in place instead of promising content on another page.
+  const collapsible = isHome && items.length > HOME_LIMIT;
+  const visibleItems = collapsible && !expanded ? items.slice(-HOME_LIMIT) : items;
 
   return (
-    <div className="w-full" ref={listRef}>
+    <div className="w-full" ref={listRef} id={listId}>
       {visibleItems.map((item, idx) => (
         <TimelineRow
-          key={idx}
+          key={items.length - visibleItems.length + idx}
           item={item}
           isLast={idx === visibleItems.length - 1}
           transitionDelay={`${Math.min(idx * 80, 400)}ms`}
         />
       ))}
-      {truncated && (
+      {collapsible && (
         <div className="pl-[36px] sm:pl-[42px]">
-          <Link
-            to={localePath("/about", locale)}
+          <button
+            type="button"
+            aria-expanded={expanded}
+            aria-controls={listId}
+            onClick={() => setExpanded((value) => !value)}
             className="inline-flex items-center text-lg font-medium transition-opacity duration-200 motion-reduce:transition-none hover:opacity-70"
             style={{ color: "var(--accent)" }}
           >
-            {t.section.viewFullTimeline}
-            <span aria-hidden="true" className="ml-1.5">→</span>
-          </Link>
+            {expanded
+              ? t.section.showRecentTimeline
+              : t.section.showAllTimeline.replace("{count}", String(items.length))}
+          </button>
         </div>
       )}
     </div>

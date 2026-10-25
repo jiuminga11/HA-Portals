@@ -1,3 +1,6 @@
+import { useLocale } from "../../hooks/useLocale";
+import adminZh from "../../locales/admin.zh.json";
+import adminEn from "../../locales/admin.en.json";
 import { useRef } from "react";
 import type { VideoContent, VideoItem } from "../../types";
 import { uploadFile } from "../../api/upload";
@@ -13,6 +16,8 @@ function emptyItem(): VideoItem {
 }
 
 export default function VideoEditor({ content, onChange }: Props) {
+  const { locale } = useLocale();
+  const labels = locale === "en" ? adminEn : adminZh;
   const { items = [] } = content;
   const videoInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
   const posterInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
@@ -40,7 +45,7 @@ export default function VideoEditor({ content, onChange }: Props) {
       const res = await uploadFile(file);
       updateItem(idx, { url: res.file_url });
     } catch {
-      alert("视频上传失败，请重试");
+      alert(labels.video.uploadFailed);
     }
   };
 
@@ -49,7 +54,7 @@ export default function VideoEditor({ content, onChange }: Props) {
       const res = await uploadFile(file);
       updateItem(idx, { poster: res.file_url });
     } catch {
-      alert("封面图上传失败，请重试");
+      alert(labels.video.posterUploadFailed);
     }
   };
 
@@ -63,12 +68,12 @@ export default function VideoEditor({ content, onChange }: Props) {
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
         </svg>
-        添加视频
+        {labels.video.add}
       </button>
 
       {items.length === 0 && (
         <p className="text-sm text-slate-400 text-center py-6 bg-slate-50 rounded-lg border border-slate-200">
-          暂无视频，点击上方按钮添加
+          {labels.editor.emptyHint.replace("{item}", labels.video.item)}
         </p>
       )}
 
@@ -77,7 +82,7 @@ export default function VideoEditor({ content, onChange }: Props) {
           <div key={idx} className="bg-white border border-slate-200 rounded-xl p-4 space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                视频 {idx + 1}
+                {labels.video.item} {idx + 1}
               </span>
               <div className="flex items-center gap-1">
                 <button type="button" onClick={() => moveItem(idx, -1)} disabled={idx === 0} className="p-1 text-slate-400 hover:text-slate-600 disabled:opacity-30">↑</button>
@@ -92,30 +97,30 @@ export default function VideoEditor({ content, onChange }: Props) {
 
             {/* Title */}
             <div>
-              <label className="text-xs text-slate-500 mb-1 block">视频标题 *</label>
+              <label className="text-xs text-slate-500 mb-1 block">{labels.video.titleRequired}</label>
               <input
                 type="text"
                 value={item.title}
                 onChange={(e) => updateItem(idx, { title: e.target.value })}
-                placeholder="教学视频标题"
+                placeholder={labels.video.titlePlaceholder}
                 className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ring-primary"
               />
             </div>
 
             {/* Video source */}
             <div>
-              <label className="text-xs text-slate-500 mb-1 block">视频来源 *</label>
+              <label className="text-xs text-slate-500 mb-1 block">{labels.video.source}</label>
               <div className="flex flex-wrap gap-3 items-start">
                 <div className="flex-1 min-w-0">
                   <input
                     type="url"
                     value={item.url}
                     onChange={(e) => updateItem(idx, { url: e.target.value })}
-                    placeholder="外部视频直链 URL (*.mp4 / *.webm)"
+                    placeholder={labels.video.urlPlaceholder}
                     className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ring-primary"
                   />
                 </div>
-                <div className="shrink-0 text-xs text-slate-400 py-2">或</div>
+                <div className="shrink-0 text-xs text-slate-400 py-2">{labels.video.or}</div>
                 <div>
                   <input
                     ref={(el) => { videoInputRefs.current[idx] = el; }}
@@ -132,18 +137,18 @@ export default function VideoEditor({ content, onChange }: Props) {
                     onClick={() => videoInputRefs.current[idx]?.click()}
                     className="text-sm px-3 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors whitespace-nowrap"
                   >
-                    上传视频文件
+                    {labels.video.uploadFile}
                   </button>
                 </div>
               </div>
               {item.url && (
-                <p className="text-xs text-slate-400 mt-1 truncate">当前：{item.url}</p>
+                <p className="text-xs text-slate-400 mt-1 truncate">{labels.video.current.replace("{url}", () => item.url)}</p>
               )}
             </div>
 
             {/* Poster */}
             <div>
-              <label className="text-xs text-slate-500 mb-1 block">封面图（可选）</label>
+              <label className="text-xs text-slate-500 mb-1 block">{labels.video.poster}</label>
               <div className="flex items-center gap-3 flex-wrap">
                 <input
                   ref={(el) => { posterInputRefs.current[idx] = el; }}
@@ -160,13 +165,13 @@ export default function VideoEditor({ content, onChange }: Props) {
                   onClick={() => posterInputRefs.current[idx]?.click()}
                   className="text-sm px-3 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors whitespace-nowrap"
                 >
-                  选择封面图
+                  {labels.video.choosePoster}
                 </button>
                 {item.poster && (
                   <>
                     <img
                       src={resolveMediaUrl(item.poster)}
-                      alt="封面预览"
+                      alt={labels.video.posterAlt}
                       className="h-14 w-auto object-contain rounded border border-slate-200"
                     />
                     <button
@@ -174,7 +179,7 @@ export default function VideoEditor({ content, onChange }: Props) {
                       onClick={() => updateItem(idx, { poster: "" })}
                       className="text-xs text-red-400 hover:text-red-600"
                     >
-                      移除封面
+                      {labels.video.removePoster}
                     </button>
                   </>
                 )}

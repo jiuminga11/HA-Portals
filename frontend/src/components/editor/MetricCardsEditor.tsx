@@ -1,3 +1,6 @@
+import { useLocale } from "../../hooks/useLocale";
+import adminZh from "../../locales/admin.zh.json";
+import adminEn from "../../locales/admin.en.json";
 import type { MetricCardsContent, MetricCardItem } from "../../types";
 
 interface Props {
@@ -12,6 +15,8 @@ function emptyCard(): MetricCardItem {
 const MAX_CARDS = 6;
 
 export default function MetricCardsEditor({ content, onChange }: Props) {
+  const { locale } = useLocale();
+  const labels = locale === "en" ? adminEn : adminZh;
   const { cards = [] } = content;
 
   const update = (newCards: MetricCardItem[]) => {
@@ -51,7 +56,7 @@ export default function MetricCardsEditor({ content, onChange }: Props) {
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          添加卡片
+          {labels.metricCards.add}
         </button>
         <span className="text-xs text-slate-400">
           {cards.length} / {MAX_CARDS}
@@ -60,7 +65,7 @@ export default function MetricCardsEditor({ content, onChange }: Props) {
 
       {cards.length === 0 && (
         <p className="text-sm text-slate-400 text-center py-6 bg-slate-50 rounded-lg border border-slate-200">
-          暂无指标卡片，点击上方按钮添加
+          {labels.editor.emptyHint.replace("{item}", labels.metricCards.item)}
         </p>
       )}
 
@@ -69,7 +74,7 @@ export default function MetricCardsEditor({ content, onChange }: Props) {
           <div key={idx} className="bg-white border border-slate-200 rounded-xl p-4 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                卡片 {idx + 1}
+                {labels.metricCards.card} {idx + 1}
               </span>
               <div className="flex items-center gap-1">
                 <button type="button" onClick={() => moveCard(idx, -1)} disabled={idx === 0} className="p-1 text-slate-400 hover:text-slate-600 disabled:opacity-30">↑</button>
@@ -85,56 +90,56 @@ export default function MetricCardsEditor({ content, onChange }: Props) {
             <div className="space-y-2">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-slate-500 mb-1 block">标签（中文）*</label>
+                  <label className="text-xs text-slate-500 mb-1 block">{labels.metricCards.labelZh}</label>
                   <input
                     type="text"
                     value={card.label_zh}
                     onChange={(e) => updateCard(idx, { label_zh: e.target.value })}
-                    placeholder="如：区分效度"
+                    placeholder={labels.metricCards.labelZhPlaceholder}
                     className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 ring-primary"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-500 mb-1 block">标签（英文）</label>
+                  <label className="text-xs text-slate-500 mb-1 block">{labels.metricCards.labelEn}</label>
                   <input
                     type="text"
                     value={card.label_en}
                     onChange={(e) => updateCard(idx, { label_en: e.target.value })}
-                    placeholder="e.g. Discriminant Validity"
+                    placeholder={labels.metricCards.labelEnPlaceholder}
                     className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 ring-primary"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs text-slate-500 mb-1 block">数值 *</label>
+                <label className="text-xs text-slate-500 mb-1 block">{labels.metricCards.value}</label>
                 <input
                   type="text"
                   value={card.value}
                   onChange={(e) => updateCard(idx, { value: e.target.value })}
-                  placeholder="如：ρ=0.936、100%、δ=0.852"
+                  placeholder={labels.metricCards.valuePlaceholder}
                   className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 ring-primary"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-slate-500 mb-1 block">详情（中文）</label>
+                  <label className="text-xs text-slate-500 mb-1 block">{labels.metricCards.detailZh}</label>
                   <input
                     type="text"
                     value={card.detail_zh}
                     onChange={(e) => updateCard(idx, { detail_zh: e.target.value })}
-                    placeholder="补充说明"
+                    placeholder={labels.metricCards.detailZhPlaceholder}
                     className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 ring-primary"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-500 mb-1 block">详情（英文）</label>
+                  <label className="text-xs text-slate-500 mb-1 block">{labels.metricCards.detailEn}</label>
                   <input
                     type="text"
                     value={card.detail_en}
                     onChange={(e) => updateCard(idx, { detail_en: e.target.value })}
-                    placeholder="Detail in English"
+                    placeholder={labels.metricCards.detailEnPlaceholder}
                     className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 ring-primary"
                   />
                 </div>

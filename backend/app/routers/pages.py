@@ -194,6 +194,12 @@ def reorder_pages(
             detail="部分 page ID 不存在",
         )
 
+    if body.expected_previous_order is not None:
+        current_order = [row.id for row in db.query(Page.id).order_by(Page.sort_order, Page.id).all()]
+        if body.expected_previous_order != current_order:
+            db.rollback()
+            raise HTTPException(status_code=409, detail='revision_conflict')
+
     for p in db_pages:
         if p.id in order_map:
             p.sort_order = order_map[p.id]

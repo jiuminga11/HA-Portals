@@ -6,7 +6,7 @@ import re
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, field_validator, model_validator
+from pydantic import BaseModel, Field, StrictInt, field_validator, model_validator
 from app.revisions import snapshot, revision
 
 
@@ -228,6 +228,10 @@ class ReorderItem(BaseModel):
 
 class PageReorderRequest(BaseModel):
     orders: list[ReorderItem]
+    # Optional for legacy clients; omission retains last-writer-wins behavior.
+    expected_previous_order: list[StrictInt] | None = Field(
+        default=None, description="All page IDs in the previously observed sort_order,id order. "
+        "A mismatch returns 409 revision_conflict. Omission/null retains legacy last-writer-wins behavior.")
 
 
 # ===== Section =====
@@ -286,6 +290,11 @@ class SectionResponse(RevisionResponse):
 
 class SectionReorderRequest(BaseModel):
     orders: list[ReorderItem]
+    # Complete same-page ID order, including hidden sections. Not a version counter.
+    expected_previous_order: list[StrictInt] | None = Field(
+        default=None, description="All same-page section IDs (including hidden) in the previously observed "
+        "sort_order,id order. A mismatch returns 409 revision_conflict. "
+        "Omission/null retains legacy last-writer-wins behavior.")
 
 
 # ===== File =====

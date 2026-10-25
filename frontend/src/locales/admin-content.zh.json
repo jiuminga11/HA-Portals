@@ -1,0 +1,28 @@
+{
+  "loadFailed": "加载失败，请刷新重试",
+  "title": "内容管理",
+  "intro": "管理前台展示的内容区块",
+  "managePages": "管理页面",
+  "pageFilter": "页面筛选：",
+  "allPages": "全部页面",
+  "sectionCount": "{count} 个区块",
+  "choosePageToSort": "请先选择页面再进行排序",
+  "empty": "暂无内容区块",
+  "emptyHint": "点击「新建区块」开始添加内容",
+  "hidden": "已隐藏",
+  "clickHide": "点击隐藏",
+  "clickShow": "点击显示",
+  "deleteTitle": "删除区块",
+  "deleteMessage": "确定删除「{title}」区块？此操作不可撤销。",
+  "typeHints": {
+    "rich_text": "适合长文字描述、项目介绍",
+    "image_gallery": "适合展示图片、成果照片",
+    "data_table": "适合成员名单、数据统计",
+    "external_links": "适合媒体报道、外部链接",
+    "video": "适合教学视频、展示视频",
+    "metric_cards": "适合数据指标展示",
+    "timeline": "适合时间轴、经历展示",
+    "profile_hero": "适合个人简介头图",
+    "cta_band": "适合行动号召、转化引导"
+  }
+}

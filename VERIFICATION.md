@@ -172,4 +172,4 @@ unit 覆盖所有权/symlink拒删、环境过滤、进程组范围、失败返�
 - 部署测试改由 `deploy_suite.py` 收集计数、固定测试ID和受限错误类型；完整入口在失败时也保留该摘要，不公开原始 traceback、断言正文、subtest参数或秘密。
 - 本地整合报告 `reports/verify-58f9c17591064892b902fcdbaed20223/report.json` 已确认部署34项通过，但后续 `hidden-page-no-stale-content` 浏览器断言失败。定向复现发现旧断言以 URL 更新作为 React 提交边界，混淆了提交前仍显示的公开旧内容；原失败现场已清理，不能追认其具体帧。测试现使用真实 Header Link，先加载菜单再于隔离 API 隐藏目标，延迟真实响应并检查 React 提交后无旧区块、隐藏内容始终不存在、匿名 API 与直接访问404。两次定向运行通过，未修改应用代码或跳过断言。**此记录不代表新一轮远端 CI 已通过。**
 - 公开页交互测试另补有时限的 `html.lang`/菜单展开状态等待和图片解码等待；不再把 URL 先更新当成 React DOM 已同步。矩阵成功检查改为固定名称，以便安全报告白名单保留。
-- 修正后的完整入口最终退出 **0**，所有阶段通过，部署34项零失败/错误/跳过；本地证据：`.remediation-runtime/reports/verify-9958b4d2fba244b2bc13b4f13bddd50d/report.json`，日志 `.remediation-runtime/ci-40046699498/full-integration-stable.log`。后续推送触发的远端结果仍需单独核对。
+- 修正后的完整入口最终退出 **0**，所有阶段通过，部署34项零失败/错误/跳过；本地证据：`.remediation-runtime/reports/verify-9958b4d2fba244b2bc13b4f13bddd50d/report.json`，日志 `.remediation-runtime/ci-40046699498/full-integration-stable.log`。推送后 GitHub Actions run `40049135234`（`a7dc128`）与 `40077593072`（`10aadba`）均通过。评审后修正的验收记录见 `HARDENING_REPORT.md` 末节。

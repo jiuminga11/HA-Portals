@@ -41,7 +41,7 @@ export default function PageManager() {
       try {
         const [pageData, sections] = await Promise.all([getAdminPages(), getSections()]);
         if (cancelled) return;
-        setPages([...pageData].sort((a, b) => a.sort_order - b.sort_order));
+        setPages([...pageData].sort((a, b) => a.sort_order - b.sort_order || a.id - b.id));
         const next: Record<number, number> = {};
         for (const section of sections) next[section.page_id] = (next[section.page_id] || 0) + 1;
         setCounts(next); setLoaded(true);
@@ -111,8 +111,15 @@ export default function PageManager() {
     [next[index], next[target]] = [next[target], next[index]];
     const normalized = next.map((page, sort_order) => ({ ...page, sort_order }));
     setPages(normalized);
-    try { setPages(await reorderPages(normalized.map(({ id, sort_order }) => ({ id, sort_order })))); }
-    catch { setPages(previous); setError("reorderError"); }
+    try { setPages(await reorderPages(normalized.map(({ id, sort_order }) => ({ id, sort_order })), previous.map(page => page.id))); }
+    catch (error) {
+      setPages(previous); setError("reorderError");
+      if (isRevisionConflict(error)) {
+        setConflict(true);
+        try { setPages(await getAdminPages()); }
+        catch { setLoaded(false); }
+      }
+    }
     finally { end(); }
   };
 

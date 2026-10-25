@@ -117,7 +117,7 @@ export default function PublicPage({ slug }: Props) {
 
   // Do not show the previous page's sections while a new route begins loading.
   if (loading || (page && page.slug !== slug)) return (
-    <div role="status" className="public-state min-h-[60vh] px-4 py-24 text-center">
+    <div role="status" className="public-state public-loading px-4 py-24 text-center">
       <div aria-hidden="true" className="mx-auto mb-5 h-10 w-10 rounded-full border-2 border-primary border-t-transparent animate-spin motion-reduce:animate-none" />
       <p>{t.common.loading}</p>
     </div>

@@ -1,3 +1,6 @@
+import { useLocale } from "../../hooks/useLocale";
+import adminZh from "../../locales/admin.zh.json";
+import adminEn from "../../locales/admin.en.json";
 import { useRef } from "react";
 import type { ImageGalleryContent, ImageGalleryItem } from "../../types";
 import { uploadFile } from "../../api/upload";
@@ -9,6 +12,8 @@ interface Props {
 }
 
 export default function ImageGalleryEditor({ content, onChange }: Props) {
+  const { locale } = useLocale();
+  const labels = locale === "en" ? adminEn : adminZh;
   const { columns = 4, page_size = 8, items = [] } = content;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const replaceInputRef = useRef<HTMLInputElement>(null);
@@ -79,27 +84,27 @@ export default function ImageGalleryEditor({ content, onChange }: Props) {
       {/* Config row */}
       <div className="flex flex-wrap gap-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
         <div className="flex items-center gap-3">
-          <label className="text-sm font-medium text-slate-700 whitespace-nowrap">每行列数</label>
+          <label className="text-sm font-medium text-slate-700 whitespace-nowrap">{labels.imageGallery.columns}</label>
           <select
             value={columns}
             onChange={(e) => update({ columns: Number(e.target.value) })}
             className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 ring-primary"
           >
             {[2, 3, 4, 5, 6].map((n) => (
-              <option key={n} value={n}>{n} 列</option>
+              <option key={n} value={n}>{labels.imageGallery.columnOption.replace("{n}", String(n))}</option>
             ))}
           </select>
         </div>
         <div className="flex items-center gap-3">
-          <label className="text-sm font-medium text-slate-700 whitespace-nowrap">每页数量</label>
+          <label className="text-sm font-medium text-slate-700 whitespace-nowrap">{labels.imageGallery.pageSize}</label>
           <select
             value={page_size}
             onChange={(e) => update({ page_size: Number(e.target.value) })}
             className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 ring-primary"
           >
-            <option value={0}>不分页</option>
+            <option value={0}>{labels.imageGallery.noPaging}</option>
             {[4, 8, 12, 16, 20].map((n) => (
-              <option key={n} value={n}>{n} 张/页</option>
+              <option key={n} value={n}>{labels.imageGallery.pageSizeOption.replace("{n}", String(n))}</option>
             ))}
           </select>
         </div>
@@ -112,7 +117,7 @@ export default function ImageGalleryEditor({ content, onChange }: Props) {
             <div className="aspect-square overflow-hidden bg-slate-100">
               <img
                 src={resolveMediaUrl(item.url)}
-                alt={item.caption || "图片"}
+                alt={item.caption || labels.imageGallery.imageAlt}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -121,7 +126,7 @@ export default function ImageGalleryEditor({ content, onChange }: Props) {
                 type="text"
                 value={item.caption || ""}
                 onChange={(e) => updateItem(idx, { caption: e.target.value })}
-                placeholder="图片标题（可选）"
+                placeholder={labels.imageGallery.captionPlaceholder}
                 className="w-full text-xs border border-slate-200 rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 ring-primary"
               />
             </div>
@@ -130,7 +135,7 @@ export default function ImageGalleryEditor({ content, onChange }: Props) {
               <button
                 type="button"
                 onClick={() => handleReplace(idx)}
-                title="替换图片"
+                title={labels.imageGallery.replace}
                 className="w-7 h-7 bg-black/50 text-white rounded-md flex items-center justify-center hover:bg-black/70"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -175,7 +180,7 @@ export default function ImageGalleryEditor({ content, onChange }: Props) {
           <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
           </svg>
-          <span className="text-xs">上传图片</span>
+          <span className="text-xs">{labels.imageGallery.upload}</span>
         </button>
       </div>
 

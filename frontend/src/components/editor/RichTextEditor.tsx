@@ -1,3 +1,6 @@
+import { useLocale } from "../../hooks/useLocale";
+import adminZh from "../../locales/admin.zh.json";
+import adminEn from "../../locales/admin.en.json";
 import { useCallback, useMemo, useRef } from "react";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
@@ -12,6 +15,8 @@ interface Props {
 }
 
 export default function RichTextEditor({ content, onChange }: Props) {
+  const { locale } = useLocale();
+  const labels = locale === "en" ? adminEn : adminZh;
   const quillRef = useRef<ReactQuill>(null);
 
   const imageHandler = useCallback(() => {
@@ -31,10 +36,10 @@ export default function RichTextEditor({ content, onChange }: Props) {
           quill.setSelection(range.index + 1, 0);
         }
       } catch {
-        alert("图片上传失败，请重试");
+        alert(labels.richText.uploadFailed);
       }
     };
-  }, []);
+  }, [labels.richText.uploadFailed]);
 
   const modules = useMemo(
     () => ({
@@ -65,7 +70,7 @@ export default function RichTextEditor({ content, onChange }: Props) {
         onChange={(val, _delta, source) => { if (source === "user") onChange({ body: val }); }}
         modules={modules}
         formats={formats}
-        placeholder="在此输入内容..."
+        placeholder={labels.richText.placeholder}
         style={{ minHeight: "300px" }}
       />
     </div>

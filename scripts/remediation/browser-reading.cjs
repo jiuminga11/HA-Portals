@@ -60,6 +60,40 @@ let browser;
   assert.equal(await page.evaluate(() => navigator.clipboard.readText()), address);
   assert.equal(await email.getAttribute('href'), `mailto:${address}`);
   report.checks.push('Wrapped email copies in full through Ctrl+C and real browser clipboard; mailto unchanged');
+  // Home timeline: the toggle appears only when entries exceed the preview,
+  // and reveals them in place (synthetic GET mock; no persistence claimed).
+  const zh = JSON.parse(fs.readFileSync(path.join(root, 'frontend/src/locales/zh.json'), 'utf8'));
+  const homeSections = await (await fetch(`${origin}/ha/api/pages/home/sections`)).json();
+  const timelineRoute = `${origin}/ha/api/pages/home/sections`;
+  for (const count of [8, 10]) {
+    const items = Array.from({ length: count }, (_, index) => ({ date_start: String(2000 + index), title_zh: `测试经历 ${index + 1}`,
+      title_en: `Test entry ${index + 1}`, subtitle_zh: '', subtitle_en: '', description_zh: '', description_en: '', category: 'milestone' }));
+    const synthetic = [...homeSections, { id: 990100, page_id: homeSections[0].page_id, title_zh: '测试时间线', title_en: 'Test timeline',
+      type: 'timeline', visible: true, sort_order: homeSections.length, revision: '', content: { items, layout: 'vertical' } }];
+    await page.route(timelineRoute, route => route.request().method() === 'GET'
+      ? route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(synthetic) }) : route.continue());
+    await page.goto(`${origin}/ha/`); await page.locator('#section-990100').waitFor();
+    const rows = page.locator('#section-990100 .reveal-x');
+    const toggle = page.locator('#section-990100 button[aria-controls]');
+    assert.equal(await page.locator('#section-990100 a[href$="/about"]').count(), 0);
+    if (count === 8) {
+      assert.equal(await toggle.count(), 0, 'No toggle without additional entries');
+      assert.equal(await rows.count(), 8);
+    } else {
+      assert.equal(await toggle.getAttribute('aria-expanded'), 'false');
+      assert.equal(await toggle.textContent(), zh.section.showAllTimeline.replace('{count}', '10'));
+      assert.equal(await rows.count(), 8);
+      await toggle.click();
+      assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
+      assert.equal(await rows.count(), 10);
+      await page.evaluate(() => document.querySelector('#section-990100').scrollIntoView());
+      await page.waitForFunction(() => [...document.querySelectorAll('#section-990100 .reveal-x')].every(row => getComputedStyle(row).opacity === '1'));
+      await toggle.click();
+      assert.equal(await rows.count(), 8);
+    }
+    await page.unroute(timelineRoute);
+  }
+  report.checks.push('Home timeline shows an in-place expand toggle only when entries exceed the preview');
   report.status = 'passed';
 })().catch(error => { report.status = 'failed'; report.error = error.name; process.exitCode = 1; }).finally(async () => {
   fs.writeFileSync(path.join(RUN, 'reading-browser.json'), JSON.stringify(report, null, 2));

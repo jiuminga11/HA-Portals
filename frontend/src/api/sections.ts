@@ -37,7 +37,7 @@ export async function deleteSection(id: number): Promise<void> {
   await client.delete(`/sections/${id}`);
 }
 
-export async function reorderSections(orders: { id: number; sort_order: number }[]): Promise<Section[]> {
-  const res = await client.put<Section[]>("/sections/reorder", { orders });
+export async function reorderSections(orders: { id: number; sort_order: number }[], expectedPreviousOrder?: number[]): Promise<Section[]> {
+  const res = await client.put<Section[]>("/sections/reorder", { orders, expected_previous_order: expectedPreviousOrder });
   return res.data;
 }

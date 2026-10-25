@@ -1,3 +1,6 @@
+import { useLocale } from "../../hooks/useLocale";
+import adminZh from "../../locales/admin.zh.json";
+import adminEn from "../../locales/admin.en.json";
 import { useRef, useState } from "react";
 import { uploadFile } from "../../api/upload";
 import { resolveMediaUrl } from "../../lib/basePath";
@@ -13,7 +16,9 @@ label?: string;
   hidePreview?: boolean;
 }
 
-export default function ImageUpload({ value, onChange, label = "上传图片", placeholder, circular = false, hidePreview = false }: Props) {
+export default function ImageUpload({ value, onChange, label, placeholder, circular = false, hidePreview = false }: Props) {
+  const { locale } = useLocale();
+  const labels = locale === "en" ? adminEn : adminZh;
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -31,7 +36,7 @@ export default function ImageUpload({ value, onChange, label = "上传图片", p
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ||
-        "上传失败，请重试";
+        labels.upload.failed;
       setError(msg);
     } finally {
       setUploading(false);
@@ -63,14 +68,14 @@ export default function ImageUpload({ value, onChange, label = "上传图片", p
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
-              上传中 {progress}%
+              {labels.upload.uploading} {progress}%
             </>
           ) : (
             <>
               <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
               </svg>
-              {label}
+              {label ?? labels.upload.uploadImage}
             </>
           )}
         </button>
@@ -80,7 +85,7 @@ export default function ImageUpload({ value, onChange, label = "上传图片", p
             onClick={() => onChange(null)}
             className="px-3 py-2 text-sm text-red-500 border border-red-100 rounded-lg hover:bg-red-50 transition-colors"
           >
-            清除
+            {labels.upload.clear}
           </button>
         )}
       </div>
@@ -100,19 +105,19 @@ export default function ImageUpload({ value, onChange, label = "上传图片", p
             <div className="w-24 h-24 rounded-full overflow-hidden border border-slate-200 bg-slate-50">
 <img
 src={resolveMediaUrl(value)}
-            alt={placeholder || "预览"}
+            alt={placeholder || labels.upload.preview}
                 className="w-full h-full object-cover"
               />
             </div>
           ) : (
             <img
               src={resolveMediaUrl(value)}
-              alt={placeholder || "预览"}
+              alt={placeholder || labels.upload.preview}
 className="h-24 w-auto object-contain rounded-lg border border-slate-200 bg-slate-50"
           />
           )}
           {circular && (
-            <p className="mt-1 text-xs text-slate-400">前台显示为圆形裁切效果</p>
+            <p className="mt-1 text-xs text-slate-400">{labels.upload.circularHint}</p>
           )}
 </div>
       ) : (

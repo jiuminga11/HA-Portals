@@ -189,6 +189,13 @@ def reorder_sections(
             detail="orders 必须属于同一页面",
         )
     page_id = next(iter(page_ids))
+    if body.expected_previous_order is not None:
+        current_order = [row.id for row in db.query(Section.id)
+                         .filter(Section.page_id == page_id)
+                         .order_by(Section.sort_order, Section.id).all()]
+        if body.expected_previous_order != current_order:
+            db.rollback()
+            raise HTTPException(status_code=409, detail='revision_conflict')
     page_section_ids = {
         row.id for row in db.query(Section.id).filter(Section.page_id == page_id).all()
     }

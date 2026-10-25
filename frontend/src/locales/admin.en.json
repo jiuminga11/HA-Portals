@@ -1,0 +1,438 @@
+{
+  "files": {
+    "title": "File management",
+    "filters": {
+      "all": "All",
+      "image": "Images",
+      "video": "Videos"
+    },
+    "empty": "No files yet",
+    "emptyHint": "Click Upload file to add one",
+    "video": "Video",
+    "copyUrl": "Copy URL"
+  },
+  "upload": {
+    "uploadImage": "Upload image",
+    "chooseFile": "Choose file",
+    "failed": "Upload failed. Please try again",
+    "uploading": "Uploading",
+    "clear": "Clear",
+    "preview": "Preview",
+    "circularHint": "Displayed with a circular crop on the public site"
+  },
+  "avatar": {
+    "adjust": "Adjust avatar framing",
+    "preview": "Avatar framing preview",
+    "hint": "Drag inside the circle to adjust framing (matches the public circular crop)",
+    "reset": "Reset to center"
+  },
+  "editor": {
+    "emptyHint": "No {item} yet. Use the button above to add one",
+    "itemNumber": "{item} {n}",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "remove": "Remove",
+    "titleZh": "Title (Chinese)*",
+    "titleEn": "Title (English)",
+    "descriptionZh": "Description (Chinese)",
+    "descriptionEn": "Description (English)",
+    "buttonLabelZh": "Button label (Chinese)*",
+    "buttonLabelEn": "Button label (English)",
+    "linkUrl": "Link URL *",
+    "url": "URL *",
+    "addButton": "Add button",
+    "urlPlaceholder": "https://..."
+  },
+  "richText": {
+    "uploadFailed": "Image upload failed. Please try again",
+    "placeholder": "Enter content here..."
+  },
+  "imageGallery": {
+    "columns": "Columns per row",
+    "columnOption": "{n} columns",
+    "pageSize": "Images per page",
+    "noPaging": "No pagination",
+    "pageSizeOption": "{n} images/page",
+    "imageAlt": "Image",
+    "captionPlaceholder": "Image caption (optional)",
+    "replace": "Replace image",
+    "upload": "Upload image"
+  },
+  "dataTable": {
+    "defaultColumn": "Column {n}",
+    "columns": "Column definitions",
+    "addColumn": "+ Add column",
+    "noColumns": "No columns yet. Click Add column",
+    "key": "Key",
+    "keyLocked": "Keys cannot be changed while data rows exist",
+    "title": "Title",
+    "width": "Width",
+    "auto": "Auto",
+    "align": "Align",
+    "left": "Left",
+    "center": "Center",
+    "right": "Right",
+    "bold": "Bold",
+    "boldShort": "B",
+    "moveLeft": "Move left",
+    "moveRight": "Move right",
+    "deleteColumn": "Delete column",
+    "rows": "Data rows",
+    "bulkImport": "📋 Bulk import",
+    "addRow": "+ Add row",
+    "noRows": "No data rows",
+    "actions": "Actions",
+    "delete": "Delete",
+    "importTitle": "Bulk import data",
+    "close": "Close",
+    "pasteLabel": "Paste data from an Excel or Word table",
+    "pastePlaceholder": "Paste table data here\nSupports Excel, Word tables and tab-separated text\nComma-separated (CSV) data is also supported",
+    "firstRowHeader": "First row contains headers",
+    "importMode": "Import mode:",
+    "append": "Append to existing data",
+    "replace": "Replace all data",
+    "preview": "Preview ({rows} rows × {cols} columns)",
+    "emptyCell": "(empty)",
+    "moreRows": "{n} more rows not shown…",
+    "cancel": "Cancel",
+    "import": "Import",
+    "importRows": "Import {n} rows",
+    "deleteColumnMessage": "Delete column “{title}”? This also removes its data from every row.",
+    "deleteRow": "Delete row",
+    "deleteRowMessage": "Delete row {n}? This cannot be recovered after saving."
+  },
+  "externalLinks": {
+    "add": "Add link",
+    "item": "link",
+    "titleRequired": "Title *",
+    "titlePlaceholder": "Link title",
+    "source": "Source",
+    "sourcePlaceholder": "e.g. CCTV",
+    "date": "Date"
+  },
+  "video": {
+    "uploadFailed": "Video upload failed. Please try again",
+    "posterUploadFailed": "Poster upload failed. Please try again",
+    "add": "Add video",
+    "item": "video",
+    "titleRequired": "Video title *",
+    "titlePlaceholder": "Instructional video title",
+    "source": "Video source *",
+    "urlPlaceholder": "Direct external video URL (*.mp4 / *.webm)",
+    "or": "or",
+    "uploadFile": "Upload video file",
+    "current": "Current: {url}",
+    "poster": "Poster image (optional)",
+    "choosePoster": "Choose poster",
+    "posterAlt": "Poster preview",
+    "removePoster": "Remove poster"
+  },
+  "metricCards": {
+    "add": "Add card",
+    "item": "metric cards",
+    "card": "Card",
+    "labelZh": "Label (Chinese)*",
+    "labelZhPlaceholder": "e.g. Discriminant validity",
+    "labelEn": "Label (English)",
+    "labelEnPlaceholder": "e.g. Discriminant Validity",
+    "value": "Value *",
+    "valuePlaceholder": "e.g. ρ=0.936, 100%, δ=0.852",
+    "detailZh": "Details (Chinese)",
+    "detailZhPlaceholder": "Additional details",
+    "detailEn": "Details (English)",
+    "detailEnPlaceholder": "Detail in English"
+  },
+  "ctaBand": {
+    "description": "Description text",
+    "descriptionZhPlaceholder": "Feel free to get in touch about collaboration…",
+    "descriptionEnPlaceholder": "Feel free to reach out...",
+    "titleHint": "Uses the section’s Chinese/English title. The first button is the primary action (highlighted style).",
+    "buttons": "Buttons",
+    "buttonZhPlaceholder": "Contact me",
+    "buttonEnPlaceholder": "Contact Me",
+    "urlPlaceholder": "/cv or https://..."
+  },
+  "profileHero": {
+    "basic": "Basic information",
+    "avatar": "Avatar",
+    "uploadAvatar": "Upload avatar",
+    "avatarHint": "Supports JPG/PNG/GIF/WebP; uploading fills in the path automatically",
+    "avatarUrlPlaceholder": "Or paste an external image URL (https://...)",
+    "nameZh": "Name (Chinese)*",
+    "nameZhPlaceholder": "Enter a name",
+    "nameEn": "Name (English)",
+    "nameEnPlaceholder": "Your Name",
+    "taglineZh": "Tagline (Chinese)",
+    "taglineZhPlaceholder": "Bridging AI, Psychology & Psychiatry Education",
+    "taglineEn": "Tagline (English)",
+    "taglineEnPlaceholder": "Bridging AI, Psychology & Psychiatry Education",
+    "missionZh": "Mission statement (Chinese)",
+    "missionZhPlaceholder": "Core values",
+    "missionEn": "Mission statement (English)",
+    "missionEnPlaceholder": "Mission statement",
+    "tags": "Tags",
+    "tagPlaceholder": "Enter a tag and press Enter",
+    "addTag": "Add",
+    "removeTag": "Remove tag",
+    "social": "Social links",
+    "addSocial": "Add social link",
+    "platform": "Platform",
+    "label": "Label",
+    "labelPlaceholder": "Display name",
+    "cta": "CTA buttons",
+    "ctaZhPlaceholder": "View research",
+    "ctaEnPlaceholder": "View Research",
+    "ctaUrlPlaceholder": "/research or https://...",
+    "platforms": {
+      "email": "Email",
+      "github": "GitHub",
+      "google_scholar": "Google Scholar",
+      "orcid": "ORCID",
+      "linkedin": "LinkedIn",
+      "researchgate": "ResearchGate"
+    }
+  },
+  "timeline": {
+    "categories": {
+      "education": "Education",
+      "career": "Career",
+      "research": "Research",
+      "community": "Community",
+      "milestone": "Milestone"
+    },
+    "layout": "Layout direction:",
+    "vertical": "Vertical",
+    "horizontal": "Horizontal",
+    "add": "Add timeline event",
+    "item": "timeline events",
+    "node": "Event",
+    "start": "Start date *",
+    "startPlaceholder": "2023 or 2023-09",
+    "end": "End date",
+    "endPlaceholder": "Leave empty for Present",
+    "category": "Category",
+    "titleZhPlaceholder": "e.g. Institution name",
+    "titleEnPlaceholder": "e.g. Institution name",
+    "subtitleZh": "Subtitle (Chinese)",
+    "subtitleZhPlaceholder": "e.g. M.S. Psychology",
+    "subtitleEn": "Subtitle (English)",
+    "subtitleEnPlaceholder": "e.g. M.S. Psychology",
+    "descriptionZhPlaceholder": "Detailed description",
+    "descriptionEnPlaceholder": "Description in English",
+    "icon": "Icon name (optional)",
+    "iconPlaceholder": "Lucide icon name, e.g. graduation-cap"
+  },
+  "guide": {
+    "title": "User guide",
+    "intro": "Website administration guide",
+    "sections": [
+      {
+        "title": "Getting started",
+        "items": [
+          {
+            "label": "Sign in",
+            "desc": "Sign in with the administrator username and password. Credentials are set in the server configuration; there is no password-change screen. Contact the operator to change them."
+          },
+          {
+            "label": "Workflow",
+            "desc": "Set up pages in Page management, add sections in Content management, then configure the site name, images and appearance in Site settings."
+          },
+          {
+            "label": "View the result",
+            "desc": "Use Visit site in the top bar to open the public website in a new tab."
+          },
+          {
+            "label": "Saving publishes changes",
+            "desc": "There is no draft or approval workflow. Saving writes changes to the database immediately. Visible sections on visible pages show updated content the next time visitors load the page."
+          }
+        ]
+      },
+      {
+        "title": "Page management",
+        "items": [
+          {
+            "label": "Create a page",
+            "desc": "Enter a page path (slug) and a Chinese title (required). The English title and bilingual descriptions are optional; descriptions are used for search and sharing."
+          },
+          {
+            "label": "New pages are public",
+            "desc": "A new page becomes accessible and appears in navigation as soon as it is saved. Check that its title and descriptions are ready to publish. To keep it out of public view, click Hide after saving. Editing a hidden page does not automatically publish it."
+          },
+          {
+            "label": "Page paths",
+            "desc": "The page editor does not allow changing a path after creation. Check it before creating the page."
+          },
+          {
+            "label": "Home page protection",
+            "desc": "The home page cannot be hidden, deleted or assigned a different path. Its titles and descriptions remain editable."
+          },
+          {
+            "label": "Order and visibility",
+            "desc": "Use the up/down arrows to change navigation order. Hidden pages are excluded from navigation, and their URLs and sections are unavailable to visitors. Their data is retained."
+          },
+          {
+            "label": "Delete a page",
+            "desc": "Deleting a page also deletes all its sections. This cannot be undone."
+          }
+        ]
+      },
+      {
+        "title": "Content management",
+        "items": [
+          {
+            "label": "Create a section",
+            "desc": "Click New section, select its type and page, enter the titles and content, then save. The type and page cannot be changed after creation. New sections are visible by default."
+          },
+          {
+            "label": "Bilingual titles",
+            "desc": "A Chinese title is required; the English title is optional. English pages show the English title, falling back to the Chinese title when it is empty."
+          },
+          {
+            "label": "Order sections",
+            "desc": "Select a specific page in the page filter, then use the up/down arrows. Sections appear in this order on the public page."
+          },
+          {
+            "label": "Show / hide",
+            "desc": "The switch on each section card controls its public visibility. Hidden sections retain their data and can be shown again."
+          },
+          {
+            "label": "Delete a section",
+            "desc": "Confirming deletion permanently removes the section and its content. This cannot be undone."
+          },
+          {
+            "label": "Original-language notice",
+            "desc": "On English pages (URLs starting with /en/), rich text, image galleries, tables, external links and videos have single-language content and show an original-language notice. The other four types also show this notice when a populated Chinese content field has no English counterpart, using the Chinese content as a fallback."
+          }
+        ]
+      },
+      {
+        "title": "9 section types",
+        "items": [
+          {
+            "label": "Rich text",
+            "desc": "For longer introductions. Supports level-2/3 headings, bold, italics, ordered and unordered lists, links, and direct image uploads through the toolbar. Content is single-language."
+          },
+          {
+            "label": "Image gallery",
+            "desc": "Upload multiple images, add captions, replace, reorder or remove them. Choose 2–6 columns and 4, 8, 12, 16 or 20 images per page, or disable pagination."
+          },
+          {
+            "label": "Data table",
+            "desc": "Define columns (title, width, alignment, bold styling and order), then enter rows. Import from Excel, Word tables, tab-separated text or CSV, appending to or replacing existing data. Column keys cannot be edited while data rows exist."
+          },
+          {
+            "label": "External links",
+            "desc": "Each link has a title, URL, source and date."
+          },
+          {
+            "label": "Video",
+            "desc": "Enter a title and a direct video URL (.mp4 / .webm), or upload an MP4 / WebM file. A poster image is optional."
+          },
+          {
+            "label": "Metric cards",
+            "desc": "Each card has bilingual labels and details, plus a value. Up to 6 cards are supported."
+          },
+          {
+            "label": "Timeline",
+            "desc": "Choose a vertical or horizontal layout. Each event includes start/end dates (leave the end empty for Present), a category (education, career, research, community or milestone), bilingual titles, subtitles and descriptions, and an optional icon name."
+          },
+          {
+            "label": "Profile hero",
+            "desc": "Includes an avatar (upload and drag within the circular preview to adjust framing, or paste an external image URL), bilingual names, taglines and mission statements, tags, social links (Email, GitHub, Google Scholar, ORCID, LinkedIn and ResearchGate), and bilingual buttons."
+          },
+          {
+            "label": "Call to action",
+            "desc": "Includes bilingual descriptions and buttons. Uses the section’s bilingual title; the first button is styled as the primary action."
+          }
+        ]
+      },
+      {
+        "title": "Site settings",
+        "items": [
+          {
+            "label": "Site name",
+            "desc": "Shown in the top navigation and used as the browser-title fallback when page and default search titles are missing."
+          },
+          {
+            "label": "Home introduction",
+            "desc": "Shown in the home page introduction and used as alternative text for the banner image."
+          },
+          {
+            "label": "Footer text",
+            "desc": "Shown as entered at the bottom of each page; omitted when empty."
+          },
+          {
+            "label": "Navigation image",
+            "desc": "Shown next to the site name in navigation. Leave empty to show only the name."
+          },
+          {
+            "label": "Home banner",
+            "desc": "Shown only in the home introduction. No banner is shown when empty."
+          },
+          {
+            "label": "Color presets",
+            "desc": "Five presets are available: Teal + Amber, Deep Indigo + Sage, Forest + Terracotta, Cyber Purple and Ink Blue + Gold. You can then adjust the primary, gradient and accent colors."
+          },
+          {
+            "label": "Font size and color mode",
+            "desc": "Public font sizes are Standard (16px), Large (18px) and Extra large (20px). The default mode can be light, dark or system, and applies only until a visitor makes their own choice."
+          },
+          {
+            "label": "Language",
+            "desc": "The URL determines the language: / for Chinese and /en/ for English."
+          },
+          {
+            "label": "Search and sharing fallbacks",
+            "desc": "Set bilingual default titles and descriptions, plus a default sharing image. Titles and descriptions in Page management take precedence."
+          },
+          {
+            "label": "Save to apply",
+            "desc": "Appearance edits update only the local preview. Save to apply the settings to the public site."
+          }
+        ]
+      },
+      {
+        "title": "File management",
+        "items": [
+          {
+            "label": "Upload files",
+            "desc": "Supports JPG / PNG / GIF / WebP images, MP4 / WebM videos and PDF documents. The default limit is 50MB per file. The server checks both file type and extension."
+          },
+          {
+            "label": "Filter files",
+            "desc": "Use All / Images / Videos to filter. PDF documents appear under All."
+          },
+          {
+            "label": "Copy links",
+            "desc": "The copy button on image and video cards copies the full file URL. PDF documents have View document and Copy link actions."
+          },
+          {
+            "label": "Delete files",
+            "desc": "A file referenced by site settings or any section cannot be deleted. Remove the references and save those changes before deleting it."
+          }
+        ]
+      },
+      {
+        "title": "Editing safely",
+        "items": [
+          {
+            "label": "Unsaved changes",
+            "desc": "When editing a section or site settings, leaving the page, refreshing or closing the tab prompts for confirmation if changes have not been saved."
+          },
+          {
+            "label": "Concurrent edits",
+            "desc": "If another person or tab changes content after you open it, saving shows a conflict (HTTP 409) rather than overwriting their changes. Your input is retained: copy unsaved content, refresh to load the latest version, review it, reapply your changes and save. Sections, pages, section ordering and site settings have conflict protection."
+          },
+          {
+            "label": "Expired login",
+            "desc": "A notice appears when your login expires. Keep the editing tab open without refreshing it. Use Sign in again in a new tab, then return to the original tab, review your input and save manually. Previous changes are not retried automatically."
+          },
+          {
+            "label": "Data and backups",
+            "desc": "The database location is controlled by DATABASE_URL (default: data/ha-portals.db under the backend directory); uploads use UPLOAD_DIR (default: uploads). Ask the operator to follow deploy/README.md and its release tooling to back up or restore the database and uploads after stopping all writes. Do not manually copy a running database."
+          }
+        ]
+      }
+    ]
+  }
+}
